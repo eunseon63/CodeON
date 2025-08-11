@@ -8,9 +8,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 @RequestMapping("/")
 public class FrontController {
 	
-	@GetMapping("CodeON")
+	@GetMapping("")
 	public String start() {
-		return "test";
+		return "index";
 	}
 
 	@GetMapping("member/register")
