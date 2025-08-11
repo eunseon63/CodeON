@@ -12,6 +12,9 @@ public class FrontController {
 	public String start() {
 		return "test";
 	}
-	
-	
+
+	@GetMapping("member/register")
+	public String memberRegister() {
+		return "member/register";
+	}
 }
