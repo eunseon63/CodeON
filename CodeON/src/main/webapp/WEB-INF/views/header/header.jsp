@@ -2,7 +2,7 @@
 <%
     String ctxPath = request.getContextPath();
 %>
-
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <style>
   header {
     display: flex;
@@ -80,7 +80,8 @@
     </nav>
   </div>
 
-  <form action="<c:url value='/logout' />" method="post">
-    <button type="submit" class="logout-btn">로그아웃</button>
+  <form action="${pageContext.request.contextPath}/login/logout" method="get">
+  	<button type="submit" class="logout-btn">로그아웃</button>
   </form>
+
 </header>
