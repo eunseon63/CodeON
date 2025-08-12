@@ -1,6 +1,6 @@
 spring: # 주의할 점은 내용작성시 들여쓰기 내어쓰기를 반드시 꼭 지켜야 한다. 
   application:
-    name: jpa_dsl
+    name: CodeON
 
   profiles: #실행환경(local(로컬),dev(개발),real(운영))  https://bepoz-study-diary.tistory.com/371 참조
     active: local 
