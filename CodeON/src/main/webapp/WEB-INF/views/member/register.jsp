@@ -1,25 +1,19 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8"
     pageEncoding="UTF-8"%>
-    
+
 <%
    String ctxPath = request.getContextPath();
-   // ctxPath => 
 %>      
+<jsp:include page="../header/header.jsp" />
 
-<!DOCTYPE html>
-<html>
-<head>
-<!-- Required meta tags -->
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<title></title>
+<title>사원 등록</title>
 
-<!-- Bootstrap CSS -->
-<link rel="stylesheet" href="<%= ctxPath%>/bootstrap-4.6.2-dist/css/bootstrap.min.css" type="text/css">
+<link rel="stylesheet" href="<%= ctxPath %>/bootstrap-4.6.2-dist/css/bootstrap.min.css" type="text/css">
 
-<%-- Optional JavaScript --%>
-<script type="text/javascript" src="<%=ctxPath%>/js/jquery-3.7.1.min.js"></script>
-<script type="text/javascript" src="<%=ctxPath%>/bootstrap-4.6.2-dist/js/bootstrap.bundle.min.js" ></script>
+<script src="<%= ctxPath %>/js/jquery-3.7.1.min.js"></script>
+<script src="<%= ctxPath %>/bootstrap-4.6.2-dist/js/bootstrap.bundle.min.js"></script>
 
 <script type="text/javascript">
 $(function() {
@@ -28,88 +22,110 @@ $(function() {
         console.log(formData);
 
         $.ajax({
-            url: "<%= ctxPath%>/memberInfo/register",
+            url: "<%= ctxPath %>/memberInfo/register",
             type: "POST",
             data: formData,
             dataType: "json",
             success: function(json) {
-                console.log(JSON.stringify(json));
+                // console.log(JSON.stringify(json));
                 alert("등록이 완료되었습니다.");
-                $("form[name='sendFrm']")[0].reset();
+                $("form[name='sendFrm']")[0].reset(); // 등록 후 폼 초기화
             },
             error: function(request, status, error) {
-                alert("code: "+request.status+"\nmessage: "+request.responseText+"\nerror: "+error);
+                alert("code: " + request.status + "\nmessage: " + request.responseText + "\nerror: " + error);
             }
         });
     });
-});
+}); // end of $(function() {})----------------
 </script>
-</head>
 
 <body>
-<div class="form-container">
-    <h4 class="form-title">사원 등록</h4>
-    <form name="sendFrm">
-        <div class="form-row">
-            <div class="form-group col-md-6">
-                <label>이름</label>
-                <input type="text" name="memberName" class="form-control" required>
-            </div>
-            <div class="form-group col-md-6">
-                <label>사원번호</label>
-                <input type="text" name="memberSeq" class="form-control" required>
-            </div>
+<br><br><br>
+<div class="container my-5">
+    <div class="card shadow-sm">
+        <div class="card-header bg-primary text-white text-center">
+            <h4 class="mb-0">사원 등록</h4>
         </div>
+        <div class="card-body">
+            <form name="sendFrm" novalidate>
+                <div class="form-row">
+                    <div class="form-group col-md-6">
+                        <label for="memberName">이름 <small class="text-danger">*</small></label>
+                        <input type="text" name="memberName" id="memberName" class="form-control" required placeholder="홍길동">
+                    </div>
+                    <div class="form-group col-md-6">
+                        <label for="memberUserid">아이디 <small class="text-danger">*</small></label>
+                        <input type="text" name="memberUserid" id="memberUserid" class="form-control" required placeholder="영문, 숫자 조합">
+                    </div>
+                </div>
 
-        <div class="form-row">
-            <div class="form-group col-md-6">
-                <label>아이디</label>
-                <input type="text" name="memberUserid" class="form-control" required>
-            </div>
-            <div class="form-group col-md-6">
-                <label>비밀번호</label>
-                <input type="password" name="memberPwd" class="form-control" required>
-            </div>
-        </div>
+                <div class="form-row">
+                    <div class="form-group col-md-6">
+                        <label for="memberPwd">비밀번호 <small class="text-danger">*</small></label>
+                        <input type="password" name="memberPwd" id="memberPwd" class="form-control" required placeholder="비밀번호를 입력하세요">
+                    </div>
+                    <div class="form-group col-md-6">
+                        <label for="memberEmail">이메일 <small class="text-danger">*</small></label>
+                        <input type="email" name="memberEmail" id="memberEmail" class="form-control" required placeholder="example@domain.com">
+                    </div>
+                </div>
 
-        <div class="form-row">
-            <div class="form-group col-md-6">
-                <label>전화번호</label>
-                <input type="text" name="memberPhone" class="form-control" placeholder="010-1234-5678">
-            </div>
-            <div class="form-group col-md-6">
-                <label>이메일</label>
-                <input type="email" name="memberEmail" class="form-control">
-            </div>
-        </div>
+                <div class="form-group">
+                    <label for="memberMobile">전화번호</label>
+                    <input type="tel" name="memberMobile" id="memberMobile" class="form-control" placeholder="010-1234-5678">
+                </div>
 
-        <div class="form-row">
-            <div class="form-group col-md-6">
-                <label>부서</label>
-                <input type="text" name="fkGradeSeq" class="form-control">
-            </div>
-            <div class="form-group col-md-6">
-                <label>직급</label>
-                <input type="text" name="fkDepartmentSeq" class="form-control">
-            </div>
-        </div>
+                <div class="form-row">
+                    <div class="form-group col-md-6">
+                        <label for="fkDepartmentSeq">부서 <small class="text-danger">*</small></label>
+                        <select name="fkDepartmentSeq" id="fkDepartmentSeq" class="form-control" required>
+                            <option value="" disabled selected>선택하세요</option>
+                            <option value="10">인사팀</option>
+                            <option value="20">개발팀</option>
+                            <option value="30">기획팀</option>
+                        </select>
+                    </div>
+                    <div class="form-group col-md-6">
+                        <label for="fkGradeSeq">직급 <small class="text-danger">*</small></label>
+                        <select name="fkGradeSeq" id="fkGradeSeq" class="form-control" required>
+                            <option value="" disabled selected>선택하세요</option>
+                            <option value="1">사원</option>
+                            <option value="2">대리</option>
+                            <option value="3">과장</option>
+                        </select>
+                    </div>
+                </div>
 
-        <div class="form-row">
-            <div class="form-group col-md-6">
-                <label>주민번호</label>
-                <input type="text" name="memberJubun" class="form-control" placeholder="000000-0000000">
-            </div>
-            <div class="form-group col-md-6">
-                <label>입사일자</label>
-                <input type="date" name="memberHiredate" class="form-control">
-            </div>
-        </div>
+                <div class="form-row">
+                    <div class="form-group col-md-4">
+                        <label for="memberBirthday">생년월일</label>
+                        <input type="text" name="memberBirthday" id="memberBirthday" class="form-control" placeholder="YYYYMMDD">
+                    </div>
+                    <div class="form-group col-md-4">
+                        <label for="memberHiredate">입사일자</label>
+                        <input type="date" name="memberHiredate" id="memberHiredate" class="form-control">
+                    </div>
+                    <div class="form-group col-md-4">
+                        <label class="d-block">성별</label>
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="radio" name="memberGender" id="genderMale" value="0" required>
+                            <label class="form-check-label" for="genderMale">남성</label>
+                        </div>
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="radio" name="memberGender" id="genderFemale" value="1" required>
+                            <label class="form-check-label" for="genderFemale">여성</label>
+                        </div>
+                    </div>
+                </div>
 
-        <div class="text-center mt-4">
-            <button type="button" id="btnRegister" class="btn btn-primary px-4">등록</button>
-            <button type="reset" class="btn btn-secondary px-4 ml-2">초기화</button>
+                <div class="text-center mt-4">
+                    <button type="button" id="btnRegister" class="btn btn-primary px-5 me-2">등록</button>
+                    <button type="reset" class="btn btn-outline-secondary px-5">초기화</button>
+                </div>
+            </form>
         </div>
-    </form>
+    </div>
 </div>
 </body>
-</html>
+
+<jsp:include page="../footer/footer.jsp" />

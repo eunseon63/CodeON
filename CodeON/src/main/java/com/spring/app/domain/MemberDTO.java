@@ -1,6 +1,8 @@
 package com.spring.app.domain;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
+
+import org.springframework.format.annotation.DateTimeFormat;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -15,16 +17,19 @@ import lombok.Setter;
 @Builder
 public class MemberDTO {
 	
-    private String memberSeq;
+    private int memberSeq;
     private int fkGradeSeq;
     private int fkDepartmentSeq;
     private String memberName;
     private String memberUserid;
     private String memberPwd;
     private String memberEmail;
-    private int memberSalary;
-    private LocalDateTime memberHiredate;
-    private String memberJubun;
+    private long memberSalary;
+    
+    @DateTimeFormat(pattern="yyyy-MM-dd")
+    private LocalDate memberHiredate;
     private String memberMobile;
+    private String memberBirthday;
+    private int memberGender;
     private String stampImage;
 }

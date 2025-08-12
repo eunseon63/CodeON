@@ -17,4 +17,9 @@ public class FrontController {
 	public String memberRegister() {
 		return "member/register";
 	}
+	
+	@GetMapping("member/list")
+	public String memberList() {
+		return "member/list";
+	}
 }

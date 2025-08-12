@@ -1,6 +1,8 @@
 package com.spring.app.entity;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
+
+import com.spring.app.domain.MemberDTO;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -23,16 +25,14 @@ public class Member {
 
 	@Id
     @Column(name = "member_seq", length = 9)  // YYYY(4) + dept(2) + seq(3) 총 9자리 문자열
-    private String memberSeq;
+    private int memberSeq;
 
-    // ====== 연관관계 매핑 ======
 	@Column(name = "fk_grade_seq", nullable = false)
 	private int fkGradeSeq;
 
 	@Column(name = "fk_department_seq", nullable = false)
 	private int fkDepartmentSeq;
 
-    // ====== 일반 컬럼 ======
     @Column(name = "member_name", nullable = false, length = 30)
     private String memberName;
 
@@ -49,15 +49,37 @@ public class Member {
     private Long memberSalary;
 
     @Column(name = "member_hiredate", nullable = false)
-    private LocalDateTime memberHiredate;
+    private LocalDate memberHiredate;
 
-    @Column(name = "member_jubun", nullable = false, length = 30)
-    private String memberJubun;
+    @Column(name = "member_birthday", nullable = false, length = 30)
+    private String memberBirthday;
 
     @Column(name = "member_mobile", nullable = false, length = 30)
     private String memberMobile;
+    
+    @Column(name = "member_gender", nullable = false, length = 10)
+    private int memberGender;
 
     @Column(name = "stamp_image", length = 50)
     private String stampImage;
+    
+    // Entity를 DTO로 변환하기
+    public MemberDTO toDTO() {
+    	return MemberDTO.builder()
+    			.memberSeq(this.memberSeq)
+    			.fkGradeSeq(this.fkGradeSeq)
+    			.fkDepartmentSeq(this.fkDepartmentSeq)
+    			.memberName(this.memberName)
+    			.memberUserid(this.memberUserid)
+    			.memberPwd(this.memberPwd)
+    			.memberEmail(this.memberEmail)
+    			.memberSalary(this.memberSalary)
+    			.memberHiredate(this.memberHiredate)
+    			.memberBirthday(this.memberBirthday)
+    			.memberMobile(this.memberMobile)
+    			.memberGender(this.memberGender)
+    			.stampImage(this.stampImage)
+    			.build();
+    }
 }
 
