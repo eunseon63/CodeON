@@ -3,6 +3,8 @@
     String ctxPath = request.getContextPath();
 %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+
+<!-- header.css 따로 분리 권장 -->
 <style>
   header {
     display: flex;
@@ -15,7 +17,8 @@
     box-sizing: border-box;
     position: fixed;
     width: 100%;
-   	top: 0;
+    top: 0;
+    z-index: 1000;
   }
   .left-section {
     display: flex;
@@ -28,6 +31,7 @@
     font-weight: 700;
     font-size: 26px;
     color: #0055a5;
+    text-decoration: none;
   }
   .logo img {
     height: 55px; 
@@ -44,6 +48,7 @@
     color: black;
     padding-bottom: 2px;
     border-bottom: 2px solid transparent;
+    transition: all 0.2s ease;
   }
   nav a:hover {
     border-bottom: 2px solid black;
@@ -57,6 +62,7 @@
     border-radius: 3px;
     font-size: 15px;
     cursor: pointer;
+    transition: background-color 0.2s ease;
   }
   .logout-btn:hover {
     background-color: #1C86EE;
@@ -65,14 +71,16 @@
 
 <header>
   <div class="left-section">
-    <div class="logo">
+    <!-- 로고 전체 클릭 가능 -->
+    <a href="<%= ctxPath %>/index" class="logo">
       <img src="<%= ctxPath %>/image/logo.png" alt="CODEON 로고" />
-    </div>
+    </a>
+
     <nav>
       <a href="#">게시판</a>
       <a href="#">메일</a>
       <a href="#">일정</a>
-      <a href="#">근태관리</a>
+      <a href="<%= ctxPath %>/member/work">근태관리</a>
       <a href="<%= ctxPath %>/sign/main">전자결재</a>
       <a href="#">주소록</a>
       <a href="#">마이페이지</a>
@@ -80,8 +88,7 @@
     </nav>
   </div>
 
-  <form action="${pageContext.request.contextPath}/login/logout" method="get">
-  	<button type="submit" class="logout-btn">로그아웃</button>
+  <form action="<%= ctxPath %>/login/logout" method="get">
+    <button type="submit" class="logout-btn">로그아웃</button>
   </form>
-
 </header>
