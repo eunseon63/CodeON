@@ -109,13 +109,15 @@ public class MemberService_imple implements MemberService {
 		
 		if ("fkDepartmentSeq".equals(searchType) && (searchWord != null && !searchWord.trim().isEmpty())) {
 		    // 부서명으로 조건 걸기 (조인)
-		    condition = condition.and(department.departmentName.eq(searchWord));
+		    condition = condition.and(department.departmentName.contains(searchWord));
 		
 		} else if ("memberName".equals(searchType) && (searchWord != null && !searchWord.trim().isEmpty())) {
 		    
-			condition = condition.and(member.memberName.eq(searchWord));
+			condition = condition.and(member.memberName.contains(searchWord));
 		
-		} else if ("0".equals(gender) || "1".equals(gender)) {
+		}
+		
+		if ("0".equals(gender) || "1".equals(gender)) {
 		    
 			condition = condition.and(member.memberGender.eq(Integer.parseInt(gender)));
 		

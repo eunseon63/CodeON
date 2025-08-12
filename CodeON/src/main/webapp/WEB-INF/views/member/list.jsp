@@ -63,7 +63,7 @@ function goSearch() {
     // 1. 검색 조건 가져오기 (예시: 실제 id/name에 맞게 수정하세요)
     let searchType = $('#searchType').val() || '';
     let searchWord = $('#searchWord').val() || '';
-    let gender = $('input[name="gender"]:checked').val() || '';
+    let gender = $('#gender').val() || '';
 
     $.ajax({
         url: "<%= ctxPath %>/memberInfo/searchMember",
@@ -135,16 +135,16 @@ function goSearch() {
          <form name="searchFrm">
             <ul style="list-style-type: none; padding: 0; border: solid 0px blue;">
               <li style="display: inline-block; border: solid 0px green; width:35%;">
-                <select name="searchType" style="width: 20%; height: 35px;">
+                <select name="searchType" id="searchType" style="width: 20%; height: 35px;">
                    <option value="">선택</option>
                    <option value="fkDepartmentSeq">부서</option>
                    <option value="memberName">이름</option>
                 </select>
-                <input type="text" name="searchWord" width="40%" />
+                <input type="text" name="searchWord" id="searchWord" width="40%" />
                 <input type="text" style="display: none;" />
               </li>
               <li style="display: inline-block; width:60%;">
-                <select name="gender" style="width: 20%; height: 35px;">
+                <select name="gender" id="gender" style="width: 20%; height: 35px;">
                    <option value="">성별선택</option>
                    <option value="0">남</option>
                    <option value="1">여</option>
