@@ -20,7 +20,7 @@ public class Grade {
         allocationSize = 1
     )
     @Column(name = "grade_seq", nullable = false)
-    private Long gradeSeq;
+    private int gradeSeq;
 
     @Column(name = "grade_name", nullable = false, length = 30)
     private String gradeName;

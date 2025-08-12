@@ -1,5 +1,8 @@
 select * from tab;
 select * from tbl_member;
+select * from TBL_GRADE;
+SELECT sequence_name
+FROM user_sequences;
 
 ----- ==== *** 휴지통 조회하기 *** ==== -----
 select * 
@@ -18,13 +21,18 @@ NOCACHE;
 insert into TBL_DEPARTMENT values(SEQ_DEPARTMENT.nextval, '인사팀');
 insert into TBL_DEPARTMENT values(SEQ_DEPARTMENT.nextval, '개발팀');
 insert into TBL_DEPARTMENT values(SEQ_DEPARTMENT.nextval, '기획팀');
+insert into TBL_DEPARTMENT values(SEQ_DEPARTMENT.nextval, '영업팀');
+insert into TBL_DEPARTMENT values(SEQ_DEPARTMENT.nextval, '고객지원팀');
 commit;
 
 insert into TBL_GRADE values(SEQ_GRADE.nextval, '사원');
 insert into TBL_GRADE values(SEQ_GRADE.nextval, '대리');
 insert into TBL_GRADE values(SEQ_GRADE.nextval, '과장');
+insert into TBL_GRADE values(SEQ_GRADE.nextval, '부장');
+insert into TBL_GRADE values(SEQ_GRADE.nextval, '사장');
 commit;
 
+drop SEQUENCE MEMBER_SEQ_GENERATOR;
 CREATE SEQUENCE MEMBER_SEQ_GENERATOR
   START WITH 1
   INCREMENT BY 1

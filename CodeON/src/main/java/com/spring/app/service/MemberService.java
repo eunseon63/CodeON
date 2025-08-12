@@ -1,6 +1,7 @@
 package com.spring.app.service;
 
 import java.util.List;
+import java.util.Map;
 
 import com.spring.app.domain.MemberDTO;
 import com.spring.app.entity.Member;
@@ -13,7 +14,11 @@ public interface MemberService {
 	// 직원등록
 	Member registerMember(Member member);
 
+	// 모든 회원 조회
 	List<MemberDTO> getAllMember();
+
+	// 검색 회원 조회
+	public List<MemberDTO> searchMember(Map<String, String> paraMap);
 	
 }
 
