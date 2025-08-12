@@ -1,85 +1,85 @@
 package com.spring.app.entity;
 
-import jakarta.persistence.*;
-import lombok.*;
-
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 
 import com.spring.app.domain.MemberDTO;
 
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
 @Entity
-@Table(name = "tbl_member") 
+@Table(name = "TBL_MEMBER")
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@ToString
 public class Member {
 
-    @Id
-    @Column(name = "MEMBER_SEQ", nullable = false)
-    @SequenceGenerator(
-            name = "SEQ_MEMBER_GENERATOR",
-            sequenceName = "seq_tbl_member", 
-            allocationSize = 1
-    )
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "SEQ_MEMBER_GENERATOR")
-    private Long memberSeq;
+	@Id
+    @Column(name = "member_seq", length = 9)  // YYYY(4) + dept(2) + seq(3) 총 9자리 문자열
+    private int memberSeq;
 
-    @Column(name = "FK_DEPARTMENT_SEQ", nullable = false)
-    private Long fkDepartmentSeq;
+	@Column(name = "fk_grade_seq", nullable = false)
+	private int fkGradeSeq;
 
-    @Column(name = "FK_GRADE_SEQ", nullable = false)
-    private Long fkGradeSeq;
+	@Column(name = "fk_department_seq", nullable = false)
+	private int fkDepartmentSeq;
 
-    @Column(name = "MEMBER_GENDER", nullable = false)
-    private Integer memberGender;
-
-    @Column(name = "MEMBER_HIREDATE", nullable = false)
-    private LocalDate memberHireDate;
-
-    @Column(name = "MEMBER_SALARY")
-    private Long memberSalary;
-
-    @Column(name = "MEMBER_BIRTHDAY", nullable = false, length = 30)
-    private String memberBirthday;
-
-    @Column(name = "MEMBER_MOBILE", nullable = false, length = 30)
-    private String memberMobile;
-
-    @Column(name = "MEMBER_NAME", nullable = false, length = 30)
+    @Column(name = "member_name", nullable = false, length = 30)
     private String memberName;
 
-    @Column(name = "MEMBER_PWD", nullable = false, length = 30)
+    @Column(name = "member_userid", nullable = false, length = 30)
+    private String memberUserid;
+
+    @Column(name = "member_pwd", nullable = false, length = 30)
     private String memberPwd;
 
-    @Column(name = "MEMBER_USERID", nullable = false, length = 30)
-    private String memberUserId;
-
-    @Column(name = "MEMBER_EMAIL", nullable = false, length = 50)
+    @Column(name = "member_email", nullable = false, length = 50, unique = true)
     private String memberEmail;
 
-    @Column(name = "STAMP_IMAGE", length = 50)
+    @Column(name = "member_salary")
+    private Long memberSalary;
+
+    @Column(name = "member_hiredate", nullable = false)
+    private LocalDate memberHiredate;
+
+    @Column(name = "member_birthday", nullable = false, length = 30)
+    private String memberBirthday;
+
+    @Column(name = "member_mobile", nullable = false, length = 30)
+    private String memberMobile;
+    
+    @Column(name = "member_gender", nullable = false, length = 10)
+    private int memberGender;
+
+    @Column(name = "stamp_image", length = 50)
     private String stampImage;
     
+    // Entity를 DTO로 변환하기
     public MemberDTO toDTO() {
-        return MemberDTO.builder()
-                .memberSeq(this.memberSeq)
-                .fkDepartmentSeq(this.fkDepartmentSeq)
-                .fkGradeSeq(this.fkGradeSeq)
-                .memberGender(this.memberGender)
-                .memberHireDate(this.memberHireDate != null ? this.memberHireDate.toString() : null)
-                .memberSalary(this.memberSalary)
-                .memberBirthday(this.memberBirthday)
-                .memberMobile(this.memberMobile)
-                .memberName(this.memberName)
-                .memberPwd(this.memberPwd)
-                .memberUserId(this.memberUserId)
-                .memberEmail(this.memberEmail)
-                .stampImage(this.stampImage)
-                .build();
+    	return MemberDTO.builder()
+    			.memberSeq(this.memberSeq)
+    			.fkGradeSeq(this.fkGradeSeq)
+    			.fkDepartmentSeq(this.fkDepartmentSeq)
+    			.memberName(this.memberName)
+    			.memberUserid(this.memberUserid)
+    			.memberPwd(this.memberPwd)
+    			.memberEmail(this.memberEmail)
+    			.memberSalary(this.memberSalary)
+    			.memberHiredate(this.memberHiredate)
+    			.memberBirthday(this.memberBirthday)
+    			.memberMobile(this.memberMobile)
+    			.memberGender(this.memberGender)
+    			.stampImage(this.stampImage)
+    			.build();
     }
-
 }
+

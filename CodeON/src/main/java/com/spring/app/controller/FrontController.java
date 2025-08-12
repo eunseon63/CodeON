@@ -18,5 +18,16 @@ public class FrontController {
 		return "index";
 		//   /WEB-INF/views/index.jsp 파일을 만들어야 한다.
 	}
+	
+	@GetMapping("member/register")
+	public String memberRegister() {
+		return "member/register";
+	}
+
+
+	@GetMapping("member/list")
+	public String memberList() {
+		return "member/list";
+	}
 
 }
