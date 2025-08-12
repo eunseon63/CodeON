@@ -21,7 +21,7 @@ public class Department {
         initialValue = 10
     )
     @Column(name = "department_seq", nullable = false)
-    private Long departmentSeq;
+    private int departmentSeq;
 
     @Column(name = "department_name", nullable = false, length = 30)
     private String departmentName;

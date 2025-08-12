@@ -83,6 +83,8 @@ $(function() {
                             <option value="10">인사팀</option>
                             <option value="20">개발팀</option>
                             <option value="30">기획팀</option>
+                            <option value="40">영업팀</option>
+                            <option value="50">고객지원팀</option>
                         </select>
                     </div>
                     <div class="form-group col-md-6">
@@ -92,6 +94,8 @@ $(function() {
                             <option value="1">사원</option>
                             <option value="2">대리</option>
                             <option value="3">과장</option>
+                            <option value="4">부장</option>
+                            <option value="5">사장</option>
                         </select>
                     </div>
                 </div>
