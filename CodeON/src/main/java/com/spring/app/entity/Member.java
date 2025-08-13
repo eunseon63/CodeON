@@ -74,6 +74,7 @@ public class Member {
     private String stampImage;
 
     public MemberDTO toDTO() {
+
         return MemberDTO.builder()
                 .memberSeq(this.memberSeq)
                 .fkGradeSeq(this.fkGradeSeq)
@@ -89,6 +90,7 @@ public class Member {
                 .memberGender(this.memberGender)
                 .stampImage(this.stampImage)
                 .build();
+
     }
 }
 

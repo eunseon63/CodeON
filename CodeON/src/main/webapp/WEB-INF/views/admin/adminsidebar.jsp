@@ -31,9 +31,8 @@
 </style>
 
 <div class="sidebar">
-  <a href="#">직원 등록 하기</a>
-  <a href="#">직원 목록 보기</a>
-  <a href="#">전직원 근태 관리</a>
+  <a href="<%= request.getContextPath() %>/admin">직원 등록 하기</a>
+  <a href="<%= request.getContextPath() %>/list">직원 목록 보기</a>
+  <a href="#">전사 근태 관리</a>
   <a href="#">통계보기</a>
-  <a href="<%= request.getContextPath() %>/sign/setting">환경설정</a>
 </div>
