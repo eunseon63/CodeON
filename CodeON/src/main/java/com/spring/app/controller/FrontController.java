@@ -30,4 +30,5 @@ public class FrontController {
 		return "admin/list";
 		//   /WEB-INF/views/admin/list.jsp 파일을 만들어야 한다.
 	}
+
 }

@@ -1,6 +1,7 @@
 package com.spring.app.service;
 
 import static com.spring.app.entity.QDepartment.department;
+import static com.spring.app.entity.QGrade.grade;
 import static com.spring.app.entity.QMember.member;
 
 import java.util.ArrayList;
@@ -10,6 +11,7 @@ import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -115,7 +117,10 @@ public class MemberService_imple implements MemberService {
 		    
 			condition = condition.and(member.memberName.contains(searchWord));
 		
-		}
+		} else if ("fkGradeSeq".equals(searchType) && (searchWord != null && !searchWord.trim().isEmpty())) {
+			
+	        condition = condition.and(grade.gradeName.contains(searchWord));
+	    }
 		
 		if ("0".equals(gender) || "1".equals(gender)) {
 		    
@@ -125,7 +130,8 @@ public class MemberService_imple implements MemberService {
 
 		List<Member> members = jPAQueryFactory
 		                        .selectFrom(member)
-		                        .join(member.department, department)  // 조인
+		                        .join(member.department, department)
+		                        .join(member.grade, grade) // 조인
 		                        .where(condition)
 		                        .fetch();
 		/*
@@ -141,7 +147,20 @@ public class MemberService_imple implements MemberService {
 		return memberDtoList;
 	}
 
+	// 회원 삭제
+	@Override
+	public int delete(int memberSeq) {
+	    int n = 0;
+	    try {
+	        memberRepository.deleteById(memberSeq);
+	        n = 1;
+	    } catch (EmptyResultDataAccessException e) {
+	        e.printStackTrace();
+	    }
+	    return n;
+	}
 
 	
     
 }
+
