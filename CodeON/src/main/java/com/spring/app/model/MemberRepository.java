@@ -19,5 +19,4 @@ public interface MemberRepository extends JpaRepository<Member, Integer> {
 	@Query("UPDATE Member m SET m.stampImage = :newFilename WHERE m.memberUserid = :memberUserid")
 	void stampImageSave(@Param("memberUserid") String memberUserid, @Param("newFilename") String newFilename);
 
-
 }

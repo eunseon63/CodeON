@@ -19,6 +19,9 @@ public interface MemberService {
 
 	// 검색 회원 조회
 	public List<MemberDTO> searchMember(Map<String, String> paraMap);
+
+	// 회원 삭제
+	public int delete(int memberSeq);
 	
 }
 
