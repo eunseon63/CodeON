@@ -1,65 +1,94 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
+
+<%
+
+	String ctxPath = request.getContextPath();
+
+%>
+
 <html>
 <head>
-    <title>일정 캘린더</title>
 
-    <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.7/index.global.min.css" rel="stylesheet" />
-    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.7/index.global.min.js"></script>
+<jsp:include page="/WEB-INF/views/header/header.jsp" />
 
-    <style>
-        .container {
-            display: flex;
-            margin-top: 30px;
-            font-family: 'Arial';
-        }
+<title>일정 캘린더</title>
 
-        #calendar-sidebar {
-            width: 250px;
-            padding: 40px;
-            border-right: 1px solid #ccc;
-        }
+<!-- FullCalendar CSS -->
+<link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.7/index.global.min.css" rel="stylesheet" />
 
-        .calendar-category {
-            margin-bottom: 20px;
-        }
+<!-- FullCalendar JS -->
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.7/index.global.min.js"></script>
 
-        .calendar-category h4 {
-            font-size: 16px;
-            border-bottom: 1px solid #ccc;
-            padding-bottom: 5px;
-            margin-bottom: 10px;
-        }
+<style>
+    .container {
+        display: flex;
+        margin-top: 30px;
+        font-family: 'Arial';
+    }
 
-        /* 버튼 스타일 */
-        #calendar-sidebar button {
-            display: block;
-            width: 100%;
-            padding: 8px 10px;
-            margin-bottom: 10px;
-            font-size: 14px;
-            cursor: pointer;
-            border: 1px solid #888;
-            border-radius: 4px;
-            background-color: #f0f0f0;
-            transition: background-color 0.2s ease;
-        }
+    #calendar-sidebar {
+        width: 250px;
+        padding: 40px;
+        border-right: 1px solid #ccc;
+    }
 
-        #calendar-sidebar button:hover {
-            background-color: #ddd;
-        }
+    .calendar-category {
+        margin-bottom: 20px;
+    }
 
-        /* 기존 수정, 삭제 버튼 숨김 (필요하면 다시 살릴 수 있음) */
-        .btn-edit, .btn-delete {
-            display: none;
-        }
+    .calendar-category h4 {
+        font-size: 16px;
+        border-bottom: 1px solid #ccc;
+        padding-bottom: 5px;
+        margin-bottom: 10px;
+    }
 
-        #calendar {
-            flex: 1;
-            padding: 20px;
-        }
-    </style>
+    #calendar-sidebar button {
+        display: block;
+        width: 100%;
+        padding: 8px 10px;
+        margin-bottom: 10px;
+        margin-top: 40px;    
+        font-size: 14px;
+        cursor: pointer;
+        border: 1px solid #888;
+        border-radius: 4px;
+        background-color: #f0f0f0;
+        transition: background-color 0.2s ease;
+    }
+
+    #calendar-sidebar button:hover {
+        background-color: #ddd;
+    }
+    
+    #calendar-sidebar {
+    	margin-top: 40px;
+    }
+
+    .btn-edit, .btn-delete {
+        display: none;
+    }
+
+    #calendar {
+        flex: 1;
+        padding: 20px;
+        margin-top: 80px;    
+        margin-bottom: 80px; 
+    }
+    
+    .fc-day-today {
+    background-color: transparent !important;  
+    
+	}
+    
+    
+    
+    
+</style>
 </head>
 <body>
+
+	
 
 <div id="calendar-search" style="margin: 20px 0 0 20px;">
     <form id="searchForm" onsubmit="searchEvents(); return false;">
@@ -80,10 +109,10 @@
 </div>
 
 <div class="container">
-    <!-- 왼쪽: 카테고리별 버튼 -->
+
     <div id="calendar-sidebar">
         <div class="calendar-category">
-            <h4>캘린더 종류 선택</h4>
+            <h4></h4>
             <button onclick="showCalendar('사내')">사내 일정</button>
             <button onclick="showCalendar('부서')">부서 일정</button>
             <button onclick="showCalendar('개인')">개인 일정</button>
@@ -91,14 +120,43 @@
         </div>
     </div>
 
-    <!-- 오른쪽: 캘린더 표시 -->
     <div id="calendar"></div>
 </div>
 
+
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.7/index.global.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@fullcalendar/google-calendar@6.1.7/index.global.min.js"></script>
+
 <script>
+
+//=== 검색 기능 === //
+function goSearch(){
+
+	if( $("#fromDate").val() > $("#toDate").val() ) {
+		alert("검색 시작날짜가 검색 종료날짜 보다 크므로 검색할 수 없습니다.");
+		return;
+	}
+    
+	if( $("select#searchType").val()=="" && $("input#searchWord").val()!="" ) {
+		alert("검색대상 선택을 해주세요!!");
+		return;
+	}
+	
+	if( $("select#searchType").val()!="" && $("input#searchWord").val()=="" ) {
+		alert("검색어를 입력하세요!!");
+		return;
+	}
+	
+   	var frm = document.searchScheduleFrm;
+    frm.method="get";
+    frm.action="<%= ctxPath%>/schedule/searchSchedule";
+    frm.submit();
+	
+}// end of function goSearch(){}--------------------------
 
     let calendar;
 
+    // 내부 일정 예시
     const events = [
         { title: '사내 회의', start: '2025-08-10', color: '#1E90FF', type: '사내' },
         { title: '부서 회의', start: '2025-08-12', color: '#FF6347', type: '부서' },
@@ -112,39 +170,63 @@
         }
 
         const calendarEl = document.getElementById('calendar');
-        calendarEl.innerHTML = '';  // 캘린더 div 비우기 (안해도 되지만 안전하게)
-
-        // 선택한 카테고리 이벤트만 필터링
-        const filteredEvents = events.filter(e => e.type === category);
+        calendarEl.innerHTML = '';
 
         calendar = new FullCalendar.Calendar(calendarEl, {
             initialView: 'dayGridMonth',
-            events: filteredEvents,
-            eventColor: filteredEvents.length > 0 ? filteredEvents[0].color : undefined,
-            locale: 'ko',   // ← 이 부분 추가
+            locale: 'ko',
             headerToolbar: {
                 left: 'prev,next today',
                 center: 'title',
                 right: 'dayGridMonth,timeGridWeek,timeGridDay'
             },
-            dateClick: function(info) {
-                alert(info.dateStr + " - " + category + " 일정 선택됨");
-            }
-        });
 
+            googleCalendarApiKey: "AIzaSyASM5hq3PTF2dNRmliR_rXpjqNqC-6aPbQ",  // 본인 API 키로 교체
+
+            eventSources: [
+                {
+                    events: events.filter(e => e.type === category),
+                },
+                {
+                    googleCalendarId: 'ko.south_korea#holiday@group.v.calendar.google.com',
+                    googleCalendar: true,
+                    color: 'red',
+                    textColor: 'white'
+                }
+            ],
+
+            dateClick: function(info) {
+                // 클릭한 날짜
+                const selectedDate = info.dateStr;
+                // 현재 캘린더 카테고리 (showCalendar 매개변수 category 사용)
+                const selectedCategory = category;
+
+                // 일정 등록 페이지로 이동 (쿼리스트링에 날짜와 카테고리 전달)
+                window.location.href = "<%= ctxPath %>/Calendar/addCalendarForm?date=" 
+                                       + selectedDate 
+                                       + "&category=" 
+                                       + encodeURIComponent(selectedCategory);
+            }
+
+        });
 
         calendar.render();
     }
 
     document.addEventListener('DOMContentLoaded', function() {
-        showCalendar('사내');  // 기본으로 사내 일정 보여주기
+        showCalendar('사내');
     });
 
     function searchEvents() {
-        // 검색 기능 구현 위치 (필요하면 추가 가능)
         alert('검색 기능은 아직 구현되지 않았습니다.');
     }
+    
+    
+    
+    
 </script>
 
 </body>
 </html>
+
+<jsp:include page="../footer/footer.jsp" />

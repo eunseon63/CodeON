@@ -1,6 +1,9 @@
-package com.spring.app.domain;
+package com.spring.app.calendar.domain;
 
 import com.spring.app.entity.Member;
+
+import java.util.Map;
+
 import com.spring.app.entity.CalendarBigCategory;
 import com.spring.app.entity.CalendarSmallCategory;
 

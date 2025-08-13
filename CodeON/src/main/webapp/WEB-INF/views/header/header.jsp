@@ -16,6 +16,7 @@
     position: fixed;
     width: 100%;
    	top: 0;
+   	z-index: 999;
   }
   .left-section {
     display: flex;
@@ -61,6 +62,8 @@
   .logout-btn:hover {
     background-color: #1C86EE;
   }
+  
+
 </style>
 
 <header>

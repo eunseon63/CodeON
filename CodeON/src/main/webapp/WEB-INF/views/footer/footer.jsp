@@ -20,7 +20,11 @@
 	  	font-size: 14px;
 	  	width: 100%;
 	  	bottom: 0;
+	  	z-index: 999;
 	}
+	
+
+	
 </style>
 
 <footer id="footer">

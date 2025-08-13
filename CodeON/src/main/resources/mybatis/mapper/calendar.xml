@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- ==== mapper 기본설정 ==== -->
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<!-- ==== 루트 엘리먼트 & 네임스페이스 설정(프로젝트 전체내에서 유일해야 한다.) ==== -->
+<mapper namespace="calendar">
+
+<insert id="addCalendarEvent" parameterType="Map">
+  INSERT INTO TBL_CALENDAR (
+    calendar_seq,
+    fk_member_seq,
+    fk_big_category_seq,
+    fk_small_category_seq,
+    calendar_start,
+    calendar_end,
+    calendar_name,
+    calendar_content,
+    calendar_color,
+    calendar_location,
+    calendar_user
+  ) VALUES (
+    SEQ_TBL_CALENDAR.nextval,
+   #{memberSeq, jdbcType=NUMERIC},
+    #{bigCategorySeq, jdbcType=NUMERIC},
+    #{smallCategorySeq, jdbcType=NUMERIC},
+    #{calendarStart, jdbcType=TIMESTAMP},
+    #{calendarEnd, jdbcType=TIMESTAMP},
+    #{calendarName, jdbcType=VARCHAR},
+    #{calendarContent, jdbcType=VARCHAR},
+    #{calendarColor, jdbcType=VARCHAR},
+    #{calendarLocation, jdbcType=VARCHAR},
+    #{calendarUser, jdbcType=VARCHAR}
+  )
+</insert>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</mapper>

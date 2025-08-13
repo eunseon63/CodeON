@@ -13,10 +13,5 @@ public class FrontController {
 		return "index";
 	}
 	
-	@GetMapping("Calendar/list")
-	public String calendarList() {
-		return "Calendar/list";
-	}
-	
 	
 }
