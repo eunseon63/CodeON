@@ -62,6 +62,14 @@
     background-color: #1C86EE;
   }
 </style>
+  <%-- Optional JavaScript --%>
+  <script type="text/javascript" src="<%=ctxPath%>/js/jquery-3.7.1.min.js"></script>
+  <script type="text/javascript" src="<%=ctxPath%>/bootstrap-4.6.2-dist/js/bootstrap.bundle.min.js" ></script>
+  <script type="text/javascript" src="<%=ctxPath%>/smarteditor/js/HuskyEZCreator.js" charset="utf-8"></script> 
+  
+<%-- 스피너 및 datepicker 를 사용하기 위해 jQueryUI CSS 및 JS --%>
+    <link rel="stylesheet" type="text/css" href="<%=ctxPath%>/jquery-ui-1.13.1.custom/jquery-ui.min.css" />
+    <script type="text/javascript" src="<%=ctxPath%>/jquery-ui-1.13.1.custom/jquery-ui.min.js"></script>
 
 <header>
   <div class="left-section">
@@ -69,7 +77,7 @@
       <img src="<%= ctxPath %>/image/logo.png" alt="CODEON 로고" />
     </div>
     <nav>
-      <a href="#">게시판</a>
+      <a href="<%= ctxPath %>/board/list">게시판</a>
       <a href="#">메일</a>
       <a href="#">일정</a>
       <a href="#">근태관리</a>

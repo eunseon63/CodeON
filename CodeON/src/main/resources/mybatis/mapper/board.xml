@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- ==== mapper 기본설정 ==== -->
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<!-- ==== 루트 엘리먼트 & 네임스페이스 설정(프로젝트 전체내에서 유일해야 한다.) ==== -->
+
+<mapper namespace="board">
+
+   <!-- === 파일첨부가 없는 글쓰기 === -->
+<insert id="add" parameterType="BoardDTO">
+   INSERT INTO TBL_BOARD
+   (fk_Board_Type_Seq, fk_Member_Seq, board_Title, board_Content, board_Regdate, board_Readcount)
+   VALUES
+   (#{fk_Board_Type_Seq,jdbcType=INTEGER}, #{fk_Member_Seq,jdbcType=INTEGER}, #{board_Title}, #{board_Content}, SYSDATE, 0)
+</insert>
+   
+ 
+</mapper>
+
+
+
+
+

@@ -14,7 +14,9 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
         body {
-            padding: 20px;
+        padding-top: 70px; 
+        padding-left: 20px;
+        padding-right: 20px;
         }
         .sidebar {
             min-width: 200px;
@@ -29,6 +31,10 @@
     </style>
 </head>
 <body>
+
+
+
+<jsp:include page="/WEB-INF/views/header/header.jsp" />
 
 <div class="container-fluid">
     <div class="row">
@@ -47,7 +53,7 @@
         <div class="col-md-10">
           <div class="d-flex justify-content-between align-items-center mt-4 mb-3">
     		<h5 class="mb-0 fw-bold">사내게시판</h5>
-			<button type="button" class="btn btn-success" onclick="location.href='<%= ctxPath %>/CodeON/board/add'">글쓰기</button>
+			<button type="button" class="btn btn-success" onclick="location.href='<%= ctxPath %>/board/add'">글쓰기</button>
 	
 		</div>
 			 
@@ -120,4 +126,6 @@
 
 
 
-
+<jsp:include page="/WEB-INF/views/footer/footer.jsp" />
+</body>
+</html>
