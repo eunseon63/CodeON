@@ -2,26 +2,46 @@ package com.spring.app.entity;
 
 import java.time.LocalDate;
 
+import com.spring.app.domain.MemberDTO;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import lombok.ToString;
 
 @Entity
 @Table(name = "TBL_MEMBER")
 @Getter
 @Setter
 @NoArgsConstructor
-@ToString
+@AllArgsConstructor
+@Builder
 public class Member {
 
     @Id
-    @Column(name = "member_seq")
-    private Long memberSeq;
+    @Column(name = "member_seq", length = 9)
+    private int memberSeq;
+
+    @Column(name = "fk_grade_seq", nullable = false)
+    private int fkGradeSeq;
+
+    @Column(name = "fk_department_seq", nullable = false)
+    private int fkDepartmentSeq;
+    
+    @ManyToOne
+    @JoinColumn(name = "fk_grade_seq", insertable = false, updatable = false)
+    private Grade grade;
+
+    @ManyToOne
+    @JoinColumn(name = "fk_department_seq", insertable = false, updatable = false)
+    private Department department;
 
     @Column(name = "member_name", nullable = false, length = 30)
     private String memberName;
@@ -36,32 +56,44 @@ public class Member {
     private String memberEmail;
 
     @Column(name = "member_salary")
-    private Integer memberSalary;
+    private Long memberSalary;
 
     @Column(name = "member_hiredate", nullable = false)
     private LocalDate memberHiredate;
 
-    @Column(name = "member_jubun", nullable = false, length = 30)
-    private String memberJubun;
+    @Column(name = "member_birthday", nullable = false, length = 30)
+    private String memberBirthday;
 
     @Column(name = "member_mobile", nullable = false, length = 30)
     private String memberMobile;
 
+    @Column(name = "member_gender", nullable = false, length = 10)
+    private int memberGender;
+
     @Column(name = "stamp_image", length = 50)
     private String stampImage;
 
-    // === 연관 관계 ===
+    public MemberDTO toDTO() {
 
-	/*
-	 * @ManyToOne
-	 * 
-	 * @JoinColumn(name = "fk_grade_seq", referencedColumnName = "grade_seq",
-	 * insertable = false, updatable = false) private Grade grade;
-	 * 
-	 * @ManyToOne
-	 * 
-	 * @JoinColumn(name = "fk_department_seq", referencedColumnName =
-	 * "department_seq", insertable = false, updatable = false) private Department
-	 * department;
-	 */
+        return MemberDTO.builder()
+                .memberSeq(this.memberSeq)
+                .fkGradeSeq(this.fkGradeSeq)
+                .fkDepartmentSeq(this.fkDepartmentSeq)
+                .memberName(this.memberName)
+                .memberUserid(this.memberUserid)
+                .memberPwd(this.memberPwd)
+                .memberEmail(this.memberEmail)
+                .memberSalary(memberSalary != null ? memberSalary : 0L)
+                .memberHiredate(this.memberHiredate)
+                .memberBirthday(this.memberBirthday)
+                .memberMobile(this.memberMobile)
+                .memberGender(this.memberGender)
+                .stampImage(this.stampImage)
+                .build();
+
+    }
 }
+
+
+
+

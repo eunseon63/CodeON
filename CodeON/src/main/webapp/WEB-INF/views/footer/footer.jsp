@@ -20,14 +20,11 @@
 	  	font-size: 14px;
 	  	width: 100%;
 	  	bottom: 0;
-	  	z-index: 999;
 	}
-	
-
-	
 </style>
 
 <footer id="footer">
   <p>&copy; Company 2025 &nbsp;&nbsp; 대표전화(전국) : 1234-1234</p>
   <p>CodeON</p>
 </footer>
+
