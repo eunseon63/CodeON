@@ -73,7 +73,7 @@ public class Member {
     			.memberUserid(this.memberUserid)
     			.memberPwd(this.memberPwd)
     			.memberEmail(this.memberEmail)
-    			.memberSalary(this.memberSalary)
+    			.memberSalary(this.memberSalary != null ? this.memberSalary : 0L)
     			.memberHiredate(this.memberHiredate)
     			.memberBirthday(this.memberBirthday)
     			.memberMobile(this.memberMobile)

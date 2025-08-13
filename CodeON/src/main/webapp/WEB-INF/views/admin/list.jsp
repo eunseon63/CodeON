@@ -4,16 +4,13 @@
 <%
    String ctxPath = request.getContextPath();
 %>      
+<link rel="stylesheet" href="<%= ctxPath %>/bootstrap-4.6.2-dist/css/bootstrap.min.css" type="text/css">
 <jsp:include page="../header/header.jsp" />
+<jsp:include page="adminsidebar.jsp" />
 
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <title>사원 등록</title>
-
-<link rel="stylesheet" href="<%= ctxPath %>/bootstrap-4.6.2-dist/css/bootstrap.min.css" type="text/css">
-
-<script src="<%= ctxPath %>/js/jquery-3.7.1.min.js"></script>
-<script src="<%= ctxPath %>/bootstrap-4.6.2-dist/js/bootstrap.bundle.min.js"></script>
 
 <script type="text/javascript">
 $(function() {
@@ -72,8 +69,8 @@ function allMember() {
 <jsp:include page="../footer/footer.jsp" />
 
 <body>
-<br><br><br>
-   <div class="container">
+<br><br>
+   <div class="container" style="margin-left: 220px;">
      <div class="row pt-5">
       <div class="col-md-8">
          <p class="h2 text-center text-muted">회원정보</p>

@@ -3,17 +3,15 @@
 
 <%
    String ctxPath = request.getContextPath();
-%>      
+%>     
+
+<link rel="stylesheet" href="<%= ctxPath %>/bootstrap-4.6.2-dist/css/bootstrap.min.css" type="text/css"> 
 <jsp:include page="../header/header.jsp" />
+<jsp:include page="adminsidebar.jsp" />
 
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <title>사원 등록</title>
-
-<link rel="stylesheet" href="<%= ctxPath %>/bootstrap-4.6.2-dist/css/bootstrap.min.css" type="text/css">
-
-<script src="<%= ctxPath %>/js/jquery-3.7.1.min.js"></script>
-<script src="<%= ctxPath %>/bootstrap-4.6.2-dist/js/bootstrap.bundle.min.js"></script>
 
 <script type="text/javascript">
 $(function() {
@@ -40,8 +38,8 @@ $(function() {
 </script>
 
 <body>
-<br><br><br>
-<div class="container my-5">
+<br><br>
+<div class="container my-5" style="margin-left: 220px;">
     <div class="card shadow-sm">
         <div class="card-header bg-primary text-white text-center">
             <h4 class="mb-0">사원 등록</h4>
