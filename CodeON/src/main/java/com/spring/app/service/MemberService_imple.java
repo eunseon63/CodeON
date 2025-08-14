@@ -261,7 +261,7 @@ public class MemberService_imple implements MemberService {
 	    SXSSFSheet sheet = workbook.createSheet("CodeON 사원정보");
 
 	    // 열 너비 설정
-	    int[] columnWidths = {4000, 4000, 4000, 4000, 4000, 6000};
+	    int[] columnWidths = {4000, 4000, 4000, 4000, 4000, 8000};
 	    for (int i = 0; i < columnWidths.length; i++) {
 	        sheet.setColumnWidth(i, columnWidths[i]);
 	    }
