@@ -1,8 +1,10 @@
 package com.spring.app.board.model;
 
 
-import org.mybatis.spring.SqlSessionTemplate;
-import org.springframework.beans.factory.annotation.Qualifier;
+import java.util.List;
+import java.util.Map;
+
+import org.apache.ibatis.session.SqlSession;
 import org.springframework.stereotype.Repository;
 
 import com.spring.app.board.domain.BoardDTO;
@@ -15,21 +17,18 @@ import lombok.RequiredArgsConstructor;
 public class BoardDAO_imple implements BoardDAO {
 	
 
-	// 의존객체를 생성자 주입(DI : Dependency Injection)
-	@Qualifier("sqlsession")
-	private final SqlSessionTemplate sql;
-	
+	 private final SqlSession sqlSession;
+
+	    @Override
+	    public void insertBoard(BoardDTO boardDto) {
+	        sqlSession.insert("board.insertBoard", boardDto);
+	    }
+
 		@Override
-		public int add(BoardDTO boardDto) {
-			int n = sql.insert("board.add", boardDto);
-			return n;
+		public List<BoardDTO> selectBoardList(Map<String, String> paramMap) {
+			 return sqlSession.selectList("board.selectBoardList", paramMap);
 		}
-		
-		//글쓰기(파일첨부가 있는 글쓰기)
-		@Override
-		public int add_withFile(BoardDTO boardDto) {
-			int n =  sql.insert("board.add_withFile",boardDto);
-			return n;
-		}
+
+	   
 
 }

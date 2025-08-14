@@ -12,14 +12,14 @@ spring: # 주의할 점은 내용작성시 들여쓰기 내어쓰기를 반드�
       
   datasource: #DB 접속
     driver-class-name: oracle.jdbc.OracleDriver
-    url: jdbc:oracle:thin:@211.63.89.70:1521:xe      # SID 방식
+    jdbc-url: jdbc:oracle:thin:@211.63.89.70:1521:xe      # SID 방식
     #url: jdbc:oracle:thin:@//127.0.0.1:1521/xe  # oracle 12c 이후부터 PDB 사용시는 이렇게 하라고 함.
     username: final_orauser3
     password: seven
     type: com.zaxxer.hikari.HikariDataSource
     hikari: #커넥션풀 
       #driver-class-name: oracle.jdbc.OracleDriver
-      #jdbc-url: jdbc:oracle:thin:@127.0.0.1:1521:xe
+      #jdbc-url: jdbc:oracle:thin:@211.63.89.70:1521:xe
       #username: jspbegin_user
       #password: gclass
       minimum-idle: 5        # 최소 유휴(쓰지 않고 놀리는 것) 커넥션 (5개)

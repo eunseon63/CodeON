@@ -1,11 +1,15 @@
 package com.spring.app.board.model;
 
+import java.util.List;
+import java.util.Map;
+
 import com.spring.app.board.domain.BoardDTO;
 
 public interface BoardDAO {
 	
-	// 파일첨부가 없는 글쓰기
-	int add(BoardDTO boardDto);
-	//글쓰기(파일첨부가 있는 글쓰기)
-	int add_withFile(BoardDTO boardDto);
+	void insertBoard(BoardDTO boardDto);
+
+   
+
+	List<BoardDTO> selectBoardList(Map<String, String> paramMap);
 }

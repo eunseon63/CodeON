@@ -78,7 +78,7 @@
     </a>
 
     <nav>
-      <a href="#">게시판</a>
+      <a href="<%= ctxPath %>/board/list">게시판</a>
       <a href="#">메일</a>
       <a href="#">일정</a>
       <a href="<%= ctxPath %>/member/work">근태관리</a>
@@ -92,5 +92,6 @@
   <form action="<%= ctxPath %>/login/logout" method="get">
     <button type="submit" class="logout-btn">로그아웃</button>
   </form>
+  	
 </header>
->>>>>>> refs/heads/main
+

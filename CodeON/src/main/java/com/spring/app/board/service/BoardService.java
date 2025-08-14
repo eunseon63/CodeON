@@ -2,10 +2,12 @@ package com.spring.app.board.service;
 
 import com.spring.app.board.domain.BoardDTO;
 
+import java.util.List;
+import java.util.Map;
+
 public interface BoardService {
-	// 파일첨부가 없는 글쓰기
-	int add(BoardDTO boardDto);
-	
-	 //글쓰기(파일첨부가 있는 글쓰기)
-	int add_withFile(BoardDTO boardDto);
+    void add(BoardDTO boardDto) throws Exception;
+
+   
+	List<BoardDTO> selectBoardList(Map<String, String> paramMap);
 }
