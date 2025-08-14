@@ -25,7 +25,7 @@ public class MemberRestController {
 	private final MemberService memberService;
 
 	// 직원등록
-	@PostMapping("register")
+	@PostMapping({"register", "update"})
 	public Map<String, Member> register(MemberDTO mbrDto) {
 		
 		Member member = Member.builder()
@@ -47,27 +47,6 @@ public class MemberRestController {
 		map.put("member", mbr);
 		
 		return map;
-	}
-	
-	// 모든 회원 조회
-	@GetMapping("allMember")
-	public List<MemberDTO> allMember() {
-		return memberService.getAllMember();
-	}
-	
-	// 검색 회원 조회
-	@GetMapping("searchMember")
-	public List<MemberDTO> searchMember(@RequestParam(name="searchType", defaultValue="")  String searchType,
- 		   								@RequestParam(name="searchWord", defaultValue="")  String searchWord,
- 		   								@RequestParam(name="gender", defaultValue="") String gender) {
-
-		Map<String, String> paraMap = new HashMap<>();
-		paraMap.put("searchType", searchType);
-		paraMap.put("searchWord", searchWord);
-		paraMap.put("gender", gender);
-
-		// ==> !!! 동적 조건으로 분기 처리해주는 QueryDSL 전용의 SQL 조건 표현 객체인 BooleanExpression 사용하여 처리하기 !!! <==
-		return memberService.searchMember(paraMap);
 	}
 	
 	// 회원 삭제
