@@ -42,6 +42,15 @@ $(function() {
 		$("input#searchWord").val("${requestScope.searchWord}");
 		$("select#gender").val("${requestScope.gender}");
 	}
+	
+	// === Excel 파일로 다운받기 시작 === //
+	$('button#btnExcel').click(function() {
+		const frm = document.searchFrm;
+		
+		frm.method = "POST";
+		frm.action = "<%=ctxPath%>/member/downloadExcelFile";
+		frm.submit();
+	}); // end of $('button#btnExcel').click(function() {})---------------
 		
 });
 
@@ -64,8 +73,9 @@ function goDelete(memberSeq) {
             success: function(json) {
                 if (json.n == 1) {
                     alert("삭제가 완료되었습니다.");
-                    allMember();
+                    location.reload();
                 }
+
             },
             error: function(request, status, error){
                 alert("code: "+request.status+"\nmessage: "+request.responseText+"\nerror: "+error);
@@ -74,26 +84,6 @@ function goDelete(memberSeq) {
     }
 }
 
-//회원 수정
-function goUpdate(memberSeq) {
-    if (confirm("정말로 삭제하시겠습니까?")) {
-        $.ajax({
-            url: "<%= ctxPath%>/memberInfo/update",
-            type: "delete",
-            data: { "memberSeq": memberSeq },
-            dataType: "json",
-            success: function(json) {
-                if (json.n == 1) {
-                    alert("삭제가 완료되었습니다.");
-                    allMember();
-                }
-            },
-            error: function(request, status, error){
-                alert("code: "+request.status+"\nmessage: "+request.responseText+"\nerror: "+error);
-            } 
-        });
-    }
-}
 </script>
 
 <br><br>
@@ -124,6 +114,8 @@ function goUpdate(memberSeq) {
                 </div>
                 <button type="button" class="btn btn-danger" onclick="goSearch()">검색</button>
             </form>
+            
+            <button type="button" class="btn btn-success btn-sm" id="btnExcel">Excel파일로저장</button> 
         </div>
     </div>
 
@@ -176,7 +168,7 @@ function goUpdate(memberSeq) {
 					                <td>${item.memberName}</td>
 					                <td>${item.memberEmail}</td>
 					                <td>
-					                    <button class="btn btn-sm btn-success mr-2" onclick="goUpdate('${item.memberSeq}')">수정</button>
+					                    <button class="btn btn-sm btn-success mr-2" onclick="javascript:window.location.href='<%= ctxPath%>/member/update?memberSeq=${item.memberSeq}'">수정</button>
 					                    <button class="btn btn-sm btn-danger" onclick="goDelete('${item.memberSeq}')">삭제</button>
 					                </td>
 					            </tr>

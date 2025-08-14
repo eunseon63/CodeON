@@ -1,12 +1,15 @@
 package com.spring.app.controller;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
@@ -126,9 +129,35 @@ public class MemberController {
 		return "member/list";
 	}
 	
-	
+	// 직원 수정
+	@GetMapping("update")
+	public String update(@RequestParam("memberSeq") String memberSeq, Model model) {
 
+	    MemberDTO mbrDto = memberService.getMemberOne(memberSeq);
+	    System.out.println(mbrDto);
+	    model.addAttribute("mbrDto", mbrDto);
+
+	    return "member/update";
+	}
 	
-	
+	@PostMapping("downloadExcelFile")
+	public String downloadExcelFile(
+	        @RequestParam(name="searchType", defaultValue="") String searchType,
+	        @RequestParam(name="searchWord", defaultValue="") String searchWord,
+	        @RequestParam(name="gender", defaultValue="") String gender,
+	        Model model) {
+
+	    Map<String, String> paraMap = new HashMap<>();
+
+	    if (!searchType.isEmpty()) paraMap.put("searchType", searchType);
+	    if (!searchWord.isEmpty()) paraMap.put("searchWord", searchWord);
+	    if (!gender.isEmpty()) paraMap.put("gender", gender);
+
+	    // 서비스에서 paraMap 기반으로 회원 목록 조회 후 Excel로 변환
+	    memberService.memberList_to_Excel(paraMap, model);
+
+	    return "excelDownloadView"; // ExcelView 구현체
+	}
+
 	
 }

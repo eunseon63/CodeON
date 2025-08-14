@@ -1,11 +1,9 @@
 package com.spring.app.controller;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -25,7 +23,7 @@ public class MemberRestController {
 	private final MemberService memberService;
 
 	// 직원등록
-	@PostMapping({"register", "update"})
+	@PostMapping("register")
 	public Map<String, Member> register(MemberDTO mbrDto) {
 		
 		Member member = Member.builder()
@@ -49,6 +47,32 @@ public class MemberRestController {
 		return map;
 	}
 	
+	// 직원수정
+	@PostMapping("update")
+	public Map<String, Member> update(MemberDTO mbrDto) {
+		
+		Member member = Member.builder()
+							  .memberSeq(mbrDto.getMemberSeq())
+							  .memberName(mbrDto.getMemberName())
+							  .memberUserid(mbrDto.getMemberUserid())
+							  .memberPwd(mbrDto.getMemberPwd())
+							  .memberEmail(mbrDto.getMemberEmail())
+							  .memberMobile(mbrDto.getMemberMobile())
+							  .fkGradeSeq(mbrDto.getFkGradeSeq())
+							  .fkDepartmentSeq(mbrDto.getFkDepartmentSeq())
+							  .memberBirthday(mbrDto.getMemberBirthday())
+							  .memberHiredate(mbrDto.getMemberHiredate())
+							  .memberGender(mbrDto.getMemberGender())
+							  .build();
+		
+		Member mbr = memberService.updateMember(member);
+		
+		Map<String, Member> map = new HashMap<>();
+		map.put("member", mbr);
+		
+		return map;
+	}
+	
 	// 회원 삭제
 	@DeleteMapping("delete")
 	public Map<String, Integer> delete(@RequestParam(name="memberSeq") String memberSeq) {
@@ -62,5 +86,6 @@ public class MemberRestController {
 		
 		return map;
 	}
+	
 	
 }

@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.springframework.data.domain.Page;
+import org.springframework.ui.Model;
 
 import com.spring.app.domain.MemberDTO;
 import com.spring.app.entity.Member;
@@ -20,6 +21,18 @@ public interface MemberService {
 
 	// 회원 삭제
 	public int delete(int memberSeq);
+
+	// 직원 찾기
+	public MemberDTO getMemberOne(String memberSeq);
+
+	// 직원 수정
+	public Member updateMember(Member member);
+	
+	// 검색 회원 조회
+	public List<MemberDTO> searchMember(Map<String, String> paraMap);
+
+	// Excel 파일로 다운
+	public void memberList_to_Excel(Map<String, String> paraMap, Model model);
 	
 }
 
