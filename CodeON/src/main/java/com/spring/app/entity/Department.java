@@ -10,9 +10,6 @@ public class Department {
 
     @Id
     @Column(name = "department_seq", nullable = false)
-
-//    private int departmentSeq;
-
     private Long departmentSeq;         
 
     @Column(name = "department_name", nullable = false, length = 30)
