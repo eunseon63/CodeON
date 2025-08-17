@@ -6,7 +6,10 @@ import com.spring.app.domain.MemberDTO;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -62,6 +65,11 @@ public class Member {
 
     @Column(name = "stamp_image", length = 50)
     private String stampImage;
+    
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "fk_department_seq", referencedColumnName = "department_seq",
+                insertable = false, updatable = false)   // ✅ 읽기 전용
+    private Department department;
     
     // Entity를 DTO로 변환하기
     public MemberDTO toDTO() {

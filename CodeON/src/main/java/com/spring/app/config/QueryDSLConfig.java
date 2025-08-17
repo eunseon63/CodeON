@@ -2,6 +2,7 @@ package com.spring.app.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 import com.querydsl.jpa.impl.JPAQueryFactory;
 
@@ -10,6 +11,7 @@ import lombok.RequiredArgsConstructor;
 
 @Configuration
 @RequiredArgsConstructor
+@EnableTransactionManagement // 스프링 부트에서 Transaction 처리를 위한 용도
 public class QueryDSLConfig {
 
 	private final EntityManager em;

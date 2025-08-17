@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="attendance">
+
+  <resultMap id="AttendanceMap" type="com.spring.app.attendance.domain.AttendanceRecord">
+    <id     column="ATTENDANCE_SEQ" property="attendanceSeq"/>
+    <result column="FK_MEMBER_SEQ"  property="memberSeq"/>
+    <result column="WORK_DATE"      property="workDate"/>
+    <result column="START_TIME"     property="startTime"/>
+    <result column="END_TIME"       property="endTime"/>
+    <result column="OVERTIME"       property="overtime"/>
+  </resultMap>
+
+  <select id="selectByMemberAndDate" resultMap="AttendanceMap">
+    SELECT ATTENDANCE_SEQ, FK_MEMBER_SEQ, WORK_DATE, START_TIME, END_TIME, OVERTIME
+      FROM TBL_ATTENDANCE
+     WHERE FK_MEMBER_SEQ = #{memberSeq}
+       AND WORK_DATE     = #{workDate}
+  </select>
+
+  <insert id="insertStart">
+    INSERT INTO TBL_ATTENDANCE
+      (ATTENDANCE_SEQ, FK_MEMBER_SEQ, WORK_DATE, START_TIME)
+    VALUES
+      (SEQ_ATTENDANCE.NEXTVAL, #{memberSeq}, #{workDate}, SYSTIMESTAMP)
+  </insert>
+
+  <update id="updateStartIfNull">
+    UPDATE TBL_ATTENDANCE
+       SET START_TIME = COALESCE(START_TIME, SYSTIMESTAMP)
+     WHERE FK_MEMBER_SEQ = #{memberSeq}
+       AND WORK_DATE     = #{workDate}
+  </update>
+
+  <update id="updateEnd">
+    UPDATE TBL_ATTENDANCE
+       SET END_TIME = #{endTime},
+           OVERTIME = #{overtime}
+     WHERE FK_MEMBER_SEQ = #{memberSeq}
+       AND WORK_DATE     = #{workDate}
+  </update>
+
+  <select id="selectMonthly" resultMap="AttendanceMap">
+    SELECT ATTENDANCE_SEQ, FK_MEMBER_SEQ, WORK_DATE, START_TIME, END_TIME, OVERTIME
+      FROM TBL_ATTENDANCE
+     WHERE FK_MEMBER_SEQ = #{memberSeq}
+       AND WORK_DATE BETWEEN #{start} AND #{end}
+     ORDER BY WORK_DATE ASC
+  </select>
+  
+  <select id="selectMonthlySummary" parameterType="map" resultType="map">
+	  SELECT
+	    NVL(SUM(
+	      CASE
+	        WHEN START_TIME IS NOT NULL AND END_TIME IS NOT NULL
+	        THEN ROUND( (CAST(END_TIME AS DATE) - CAST(START_TIME AS DATE)) * 24 * 60 )
+	        ELSE 0
+	      END
+	    ), 0) AS TOTAL_MINUTES,
+	
+	    NVL(SUM(
+	      CASE WHEN START_TIME IS NOT NULL AND END_TIME IS NOT NULL THEN 1 ELSE 0 END
+	    ), 0) AS WORK_DAYS,
+	
+	    NVL(SUM(NVL(OVERTIME, 0)), 0) AS TOTAL_OVERTIME
+	  FROM TBL_ATTENDANCE
+	  WHERE FK_MEMBER_SEQ = #{memberSeq}
+	  AND WORK_DATE BETWEEN #{start} AND #{end}
+	</select>
+
+</mapper>
