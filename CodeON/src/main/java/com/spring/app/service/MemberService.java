@@ -3,6 +3,9 @@ package com.spring.app.service;
 import java.util.List;
 import java.util.Map;
 
+import org.springframework.data.domain.Page;
+import org.springframework.ui.Model;
+
 import com.spring.app.domain.MemberDTO;
 import com.spring.app.entity.Member;
 
@@ -14,14 +17,19 @@ public interface MemberService {
 	// 직원등록
 	Member registerMember(Member member);
 
-	// 모든 회원 조회
-	List<MemberDTO> getAllMember();
-
-	// 검색 회원 조회
-	public List<MemberDTO> searchMember(Map<String, String> paraMap);
+	public Page<Member> getPageMember(String searchType, String searchWord, String gender, int currentShowPageNo, int sizePerPage) throws Exception;
 
 	// 회원 삭제
 	public int delete(int memberSeq);
+
+	// 직원 찾기
+	public MemberDTO getMemberOne(String memberSeq);
+
+	// 직원 수정
+	public Member updateMember(Member member);
+	
+	// 검색 회원 조회
+	public List<MemberDTO> searchMember(Map<String, String> paraMap);
 	
 }
 
