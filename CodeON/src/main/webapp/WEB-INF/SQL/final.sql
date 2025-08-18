@@ -3,7 +3,7 @@ select * from tbl_member;
 select * from TBL_GRADE;
 SELECT sequence_name
 FROM user_sequences;
-
+desc tbl_member;
 ----- ==== *** 휴지통 조회하기 *** ==== -----
 select * 
 from user_recyclebin;
@@ -41,3 +41,39 @@ CREATE SEQUENCE MEMBER_SEQ_GENERATOR
 /
 
 commit;
+
+WITH
+A AS
+(SELECT department_name
+      , COUNT(*) AS cnt
+ FROM tbl_member E LEFT JOIN tbl_department D
+ ON E.fk_department_seq = D.department_seq
+ GROUP BY D.department_name)
+,
+B AS
+(SELECT COUNT(*) AS totalcnt
+ FROM tbl_member)
+SELECT NVL(department_name, '부서없음') AS department_name, 
+       cnt, 
+       ROUND((cnt/totalcnt)*100, 2) AS percentage
+FROM A CROSS JOIN B 
+ORDER BY cnt DESC, A.department_name ASC;
+
+with
+A as
+(
+select member_gender as gender, count(*) as cnt
+from tbl_member
+group by member_gender
+)
+,
+B as
+(
+select count(*) as totalcnt
+from tbl_member
+)
+select gender,
+    cnt,
+    ROUND((cnt/totalcnt)*100, 2) AS percentage
+FROM A CROSS JOIN B
+order by cnt desc;

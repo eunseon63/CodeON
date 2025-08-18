@@ -34,5 +34,5 @@
   <a href="<%= request.getContextPath() %>/member/register">직원 등록 하기</a>
   <a href="<%= request.getContextPath() %>/member/list">직원 목록 보기</a>
   <a href="#">전사 근태 관리</a>
-  <a href="#">통계보기</a>
+  <a href="<%= request.getContextPath() %>/member/chart">통계보기</a>
 </div>
