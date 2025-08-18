@@ -2,8 +2,6 @@ package com.spring.app.entity;
 
 import java.time.LocalDateTime;
 
-import com.spring.app.domain.SignDTO;
-
 import jakarta.persistence.*;
 import lombok.*;
 

@@ -31,7 +31,7 @@
 </style>
 
 <div class="sidebar">
-  <a href="#">결재 양식 작성</a>
+  <a href="<%= request.getContextPath() %>/sign/add">결재 양식 작성</a>
   <a href="#">결재하기</a>
   <a href="#">문서함</a>
   <a href="#">결재함</a>

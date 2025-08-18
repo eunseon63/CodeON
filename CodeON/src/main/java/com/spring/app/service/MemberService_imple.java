@@ -160,7 +160,21 @@ public class MemberService_imple implements MemberService {
 	    return n;
 	}
 
-	
+    public List<Member> getAllMembersOrderByDept() {
+    	return memberRepository.findAllByOrderByFkDepartmentSeqAsc();
+    }
+
+    // 결재라인에 추가할 수 있는 직원(사원 제외 전부)
+    @Override
+	public List<MemberDTO> getSignlineMember() {
+		List<MemberDTO> memberDtoList = new ArrayList<>();
+		
+		List<Member> members = memberRepository.getSignlineMember();
+		
+		memberDtoList = members.stream().map(Member::toDTO).collect(Collectors.toList());
+		
+		return memberDtoList;
+	}
     
 }
 

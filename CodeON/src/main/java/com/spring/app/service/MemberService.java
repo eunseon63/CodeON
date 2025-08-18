@@ -23,5 +23,10 @@ public interface MemberService {
 	// 회원 삭제
 	public int delete(int memberSeq);
 	
+	// 부서별 회원
+	public List<Member> getAllMembersOrderByDept();
+
+	// 결재라인에 추가할 수 있는 직원(사원 제외 전부)
+	public List<MemberDTO> getSignlineMember();
 }
 

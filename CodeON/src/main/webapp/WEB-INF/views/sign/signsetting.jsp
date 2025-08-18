@@ -1,467 +1,597 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8"
-    pageEncoding="UTF-8"%>
+	pageEncoding="UTF-8"%>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
+<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions"%>
 
 <%
-    String ctxPath = request.getContextPath();
-    //     /myspring
-%> 
+String ctxPath = request.getContextPath();
+%>
+
+<!-- jQuery -->
+<script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
 
 <jsp:include page="../header/header.jsp" />
 <jsp:include page="signsidebar.jsp" />
 
 <style>
-    body, html {
-        margin: 0; padding: 0; height: 100%; background: #f5f7fa; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    }
+:root {
+	--header-h: 70px;
+	--sidebar-w: 220px;
+	--bg: #f6f7fb;
+	--card: #fff;
+	--text: #111;
+	--muted: #6b7280;
+	--line: #e5e7eb;
+	--brand: #2563eb;
+	--brand-100: #e8eefc;
+	--danger: #ef4444;
+	--radius: 16px;
+}
 
-    #maininfo {
-        margin-left: 220px; /* 사이드바 */
-        margin-top: 70px; /* 헤더 */
-        padding: 40px 50px;
-        min-height: calc(100vh - 70px - 60px);
-        box-sizing: border-box;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-    }
+.main-content {
+	margin-left: var(--sidebar-w);
+	padding: 20px 28px 64px;
+	min-height: 100vh;
+	box-sizing: border-box;
+}
 
-    .section-container {
-        background: white;
-        max-width: 720px;
-        width: 100%;
-        margin-bottom: 60px;
-        padding: 30px 40px;
-        border-radius: 12px;
-        box-shadow: 0 8px 20px rgba(0,0,0,0.1);
-        transition: box-shadow 0.3s ease;
-    }
-    .section-container:hover {
-        box-shadow: 0 12px 30px rgba(0,0,0,0.15);
-    }
+.grid-1 {
+	display: grid;
+	grid-template-columns: 1fr;
+	gap: 18px;
+}
 
-    h2.section-title {
-        font-weight: 900;
-        color: #1a3e72;
-        border-bottom: 4px solid #1a3e72;
-        padding-bottom: 10px;
-        margin-bottom: 30px;
-        text-align: center;
-        letter-spacing: 1.2px;
-    }
+.card {
+	background: var(--card);
+	border: 1px solid var(--line);
+	border-radius: var(--radius);
+	box-shadow: 0 1px 3px rgba(0, 0, 0, .04);
+}
 
-    /* 도장 업로드 flex 정렬 */
-    .stamp-upload-wrap {
-        display: flex;
-        align-items: center;
-        gap: 40px;
-        flex-wrap: wrap;
-        justify-content: center;
-    }
+.card-head, .card-foot {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	padding: 14px 16px;
+	border-bottom: 1px solid var(--line);
+}
 
-    .image-dropzone {
-        width: 160px;
-        height: 160px;
-        border-radius: 12px;
-        border: 3px dashed #1a3e72;
-        background-color: #e9f0ff;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        flex-direction: column;
-        cursor: pointer;
-        overflow: hidden;
-        position: relative;
-        transition: background-color 0.25s ease, border-color 0.25s ease;
-    }
-    .image-dropzone:hover {
-        background-color: #d4e3ff;
-        border-color: #14315a;
-    }
-    .image-dropzone.dragover {
-        background-color: #bfd4ff;
-        border-color: #0f2649;
-    }
+.card-foot {
+	border-top: 1px solid var(--line);
+	border-bottom: none;
+}
 
-    #previewImg {
-        max-width: 100%;
-        max-height: 100%;
-        border-radius: 12px;
-        display: none;
-        box-shadow: 0 4px 15px rgba(26,62,114,0.3);
-    }
+.card h2 {
+	font-size: 16px;
+	margin: 0;
+}
 
-    .upload-controls {
-        flex: 1 1 250px;
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-    }
-    #fileName {
-        width: 100%;
-        font-weight: 600;
-        padding: 10px 15px;
-        margin-bottom: 20px;
-        border-radius: 8px;
-        border: 1.8px solid #c4c9d9;
-        background-color: #f5f7fa;
-        color: #555;
-        user-select: none;
-    }
+/* ===== 도장 업로더 ===== */
+.stamp-wrap {
+	background: #fff;
+	border: 1px solid var(--line);
+	border-radius: 12px;
+}
 
-    .upload-buttons {
-        display: flex;
-        gap: 20px;
-        flex-wrap: wrap;
-    }
+.stamp-head {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	padding: 14px 16px;
+	border-bottom: 1px solid var(--line);
+}
 
-    .btn-primary {
-        background-color: #1a3e72;
-        border: none;
-        padding: 12px 28px;
-        font-weight: 700;
-        border-radius: 10px;
-        transition: background-color 0.3s ease;
-        flex-grow: 1;
-        min-width: 140px;
-    }
-    .btn-primary:hover {
-        background-color: #142c51;
-    }
+.stamp-body {
+	display: flex;
+	gap: 24px;
+	padding: 16px;
+	align-items: flex-start;
+	flex-wrap: wrap;
+}
 
-    .btn-danger {
-        background-color: #c0392b;
-        border: none;
-        padding: 12px 28px;
-        font-weight: 700;
-        border-radius: 10px;
-        transition: background-color 0.3s ease;
-        flex-grow: 1;
-        min-width: 140px;
-    }
-    .btn-danger:hover {
-        background-color: #8e251e;
-    }
+.stamp-foot {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	padding: 12px 16px;
+	border-top: 1px solid var(--line);
+}
 
-    /* 결재라인 리스트 */
-    #savedApprovalLines ul.list-group {
-        max-height: 250px;
-        overflow-y: auto;
-        border-radius: 8px;
-        box-shadow: inset 0 0 10px rgba(0,0,0,0.05);
-        margin-bottom: 25px;
-    }
+#stampDrop {
+	flex: 1;
+	min-width: 320px;
+	height: 220px;
+	border: 2px dashed var(--line);
+	border-radius: 10px;
+	background: #fafafa;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	text-align: center;
+	cursor: pointer;
+	position: relative;
+	padding: 10px;
+	transition: background-color .2s, border-color .2s;
+}
 
-    #savedApprovalLines li.list-group-item {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        font-weight: 600;
-        font-size: 1rem;
-        padding: 12px 20px;
-        border: none;
-        border-bottom: 1px solid #eee;
-        transition: background-color 0.2s ease;
-        cursor: default;
-    }
-    #savedApprovalLines li.list-group-item:last-child {
-        border-bottom: none;
-    }
-    #savedApprovalLines li.list-group-item:hover {
-        background-color: #f0f6ff;
-    }
+#stampDrop.dragover {
+	background: var(--brand-100);
+	border-color: var(--brand);
+}
 
-    #savedApprovalLines .badge-primary {
-        background-color: #1a3e72;
-        font-weight: 700;
-        font-size: 0.9rem;
-        padding: 7px 14px;
-        border-radius: 12px;
-    }
+#stampPreview {
+	max-width: 100%;
+	max-height: 100%;
+	object-fit: contain;
+	display: none;
+	margin-top: 8px;
+}
 
-    #savedApprovalLines p.text-muted {
-        font-style: italic;
-        text-align: center;
-        color: #999;
-        font-weight: 600;
-        margin-bottom: 25px;
-    }
+.stamp-hint {
+	color: #6b7280;
+	font-size: 14px;
+}
 
-    /* 결재라인 입력폼 */
-    form[name='approvalLineFrm'] .form-group {
-        max-width: 400px;
-        margin: 0 auto 20px;
-    }
-    form[name='approvalLineFrm'] label {
-        font-weight: 700;
-        margin-bottom: 8px;
-        display: block;
-        color: #1a3e72;
-    }
-    form[name='approvalLineFrm'] input.form-control,
-    form[name='approvalLineFrm'] select.form-control {
-        padding: 10px 15px;
-        font-size: 1rem;
-        border-radius: 8px;
-        border: 1.8px solid #c4c9d9;
-        transition: border-color 0.3s ease;
-    }
-    form[name='approvalLineFrm'] input.form-control:focus,
-    form[name='approvalLineFrm'] select.form-control:focus {
-        outline: none;
-        border-color: #1a3e72;
-        box-shadow: 0 0 8px rgba(26,62,114,0.3);
-    }
+.stamp-right {
+	min-width: 260px;
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+}
 
-    /* 에러메시지 */
-    span.error {
-        color: #c0392b;
-        font-weight: 700;
-        font-size: 0.9rem;
-        margin-top: 6px;
-        display: none;
-        text-align: center;
-    }
+.stamp-right .btn {
+	height: 38px;
+}
 
-    /* 동적 결재자 이름 입력폼 */
-    #approverFields .form-group {
-        max-width: 400px;
-        margin: 10px auto 15px;
-    }
+.btn-primary {
+	background: #2563eb;
+	color: #fff;
+	border: 1px solid #2563eb;
+	border-radius: 8px;
+	cursor: pointer;
+	width: 150px;
+	height: 30px;
+}
 
-    /* 버튼 정렬 */
-    .text-center {
-        display: flex;
-        justify-content: center;
-        gap: 20px;
-        flex-wrap: wrap;
-        margin-top: 30px;
-    }
+.btn-outline {
+	background: #fff;
+	color: #2563eb;
+	border: 1px solid #2563eb;
+	border-radius: 8px;
+	cursor: pointer;
+	width: 120px;
+	height: 30px;
+}
 
-    @media(max-width: 640px) {
-        .stamp-upload-wrap {
-            flex-direction: column;
-        }
-        .upload-buttons {
-            flex-direction: column;
-        }
-        .btn-primary, .btn-danger {
-            min-width: 100%;
-        }
-    }
+.stamp-input {
+	height: 38px;
+	padding: 0 10px;
+	border: 1px solid var(--line);
+	border-radius: 8px;
+}
+
+/* ===== 결재라인: 카드/목록 ===== */
+.line-actions {
+	display: flex;
+	gap: 8px;
+	align-items: center;
+}
+
+.saved-lines {
+	padding: 16px;
+}
+
+.line-card {
+	border: 1px solid var(--line);
+	border-radius: 12px;
+	background: #fff;
+	margin-bottom: 10px;
+	overflow: hidden;
+}
+
+.line-card .h {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	padding: 10px 12px;
+	background: #f9fafb;
+	border-bottom: 1px solid var(--line);
+}
+
+.line-card .b {
+	padding: 10px 12px;
+	display: flex;
+	flex-wrap: wrap;
+	gap: 8px;
+	color: var(--muted);
+}
+
+.badge {
+	border: 1px solid var(--line);
+	border-radius: 999px;
+	padding: 4px 10px;
+	font-size: 12px;
+	background: #fff;
+}
+
+.btn {
+	height: 38px;
+	padding: 0 14px;
+	border-radius: 10px;
+	border: 1px solid var(--line);
+	background: #fff;
+	cursor: pointer;
+}
+
+.btn.small {
+	height: 30px;
+	padding: 0 10px;
+	font-size: 12px;
+}
+
+.btn.icon {
+	width: 30px;
+	height: 30px;
+	padding: 0;
+}
+
+.btn.danger {
+	border-color: var(--danger);
+	color: #fff;
+	background: var(--danger);
+}
 </style>
 
 <script>
-$(function () {
-    function updatePreviewAndFileName(file) {
-        if (!(file.type === "image/jpeg" || file.type === "image/png")) {
-            alert("jpg 또는 png 파일만 가능합니다.");
-            return;
-        }
-        if (file.size >= 10 * 1024 * 1024) {
-            alert("10MB 이상인 이미지는 업로드 불가합니다.");
-            return;
-        }
-        const fileReader = new FileReader();
-        fileReader.readAsDataURL(file);
-        fileReader.onload = function () {
-            $("#previewImg").attr("src", fileReader.result).fadeIn(300);
-            $("strong").hide();
-        };
-        $("#fileName").val(file.name);
-        const dataTransfer = new DataTransfer();
-        dataTransfer.items.add(file);
-        $("input[name='stamp_image']")[0].files = dataTransfer.files;
-    }
 
-    $("input[name='stamp_image']").on("change", function (e) {
-        const file = e.target.files[0];
-        if (file) updatePreviewAndFileName(file);
-    });
-
-    $("#fileDrop")
-        .on("dragenter dragover", function (e) {
-            e.preventDefault();
-            e.stopPropagation();
-            $(this).addClass("dragover");
-        })
-        .on("dragleave drop", function (e) {
-            e.preventDefault();
-            e.stopPropagation();
-            $(this).removeClass("dragover");
-        })
-        .on("drop", function (e) {
-            const files = e.originalEvent.dataTransfer.files;
-            if (files && files.length > 0) updatePreviewAndFileName(files[0]);
-        })
-        .on("click", function (e) {
-            if (!$(e.target).is("input")) {
-                $("input[name='stamp_image']").trigger("click");
-            }
-        });
-
-    $("select[name='approver_count']").on("change", function () {
-        const count = parseInt($(this).val());
-        const container = $("#approverFields");
-        container.empty();
-        if (!isNaN(count)) {
-            for (let i = 1; i <= count; i++) {
-                container.append(`
-                    <div class="form-group">
-                        <label>결재자 ${i} 이름<span class="text-danger">*</span></label>
-                        <input type="text" name="approver_name_${i}" class="form-control infoData" />
-                        <span class="error">필수입력</span>
-                    </div>
-                `);
-            }
-        }
-    });
-
-    $("form[name='stampFrm'], form[name='approvalLineFrm']").on("submit", function (e) {
-        $("span.error").hide();
-        let isValid = true;
-
-        $(this).find(".infoData").each(function () {
-            if ($(this).val().trim() === "") {
-                $(this).next(".error").show();
-                isValid = false;
-            }
-        });
-
-        if (!isValid) {
-            e.preventDefault();
-        }
-    });
-
-    $("form[name='stampFrm'] input[type='reset']").on("click", function () {
-        $("span.error").hide();
-        $("#previewImg").fadeOut(200).attr("src", "");
-        $("#fileName").val("");
-        $("strong").show();
-    });
-
-    $("form[name='approvalLineFrm'] input[type='reset']").on("click", function () {
-        $("span.error").hide();
-        $("#approverFields").empty();
-        $("select[name='approver_count']").val("");
-        $("input.infoData").val("");
-    });
+window.esc = window.esc || function(s){
+	  return String(s ?? '')
+	    .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+	    .replace(/>/g,'&gt;').replace(/"/g,'&quot;')
+	    .replace(/'/g,'&#39;');
+	};
+	
+/* =========================
+   전역: CSRF 헤더 자동 세팅(있으면)
+   ========================= */
+$(function(){
+  const token = $('meta[name="_csrf"]').attr('content');
+  const header= $('meta[name="_csrf_header"]').attr('content');
+  if(token && header){
+    $(document).ajaxSend(function(e, xhr){ xhr.setRequestHeader(header, token); });
+  }
 });
 
-function stampImageSave() {
-    const fileInput = $('input[name="stamp_image"]')[0];
-    if (!fileInput.files.length) {
-        alert("이미지를 선택하세요.");
-        return;
-    }
+/* ====== 도장 업로더 ====== */
+let total_fileSize = 0;
+let file_arr_copy = [];
 
-    const file = fileInput.files[0];
+function stampUpdatePreviewAndFileName(file){
+  if(!(file.type === "image/jpeg" || file.type === "image/png")){
+    alert("jpg 또는 png 파일만 가능합니다."); return;
+  }
+  if(file.size >= 10 * 1024 * 1024){
+    alert("10MB 이상인 이미지는 업로드 불가합니다."); return;
+  }
+
+  file_arr_copy = [file];
+  total_fileSize = file.size;
+
+  const fr = new FileReader();
+  fr.readAsDataURL(file);
+  fr.onload = function(){
+    $("#stampPreview").attr("src", fr.result).show().css("display","block");
+    $("#stampDrop .stamp-hint").hide();
+  };
+  $("#filename").val(file.name);
+
+  const dt = new DataTransfer();
+  dt.items.add(file);
+  $("#stampFile")[0].files = dt.files;
+}
+
+// 문서 전체 기본 드래그 동작 차단
+$(document).on("dragover drop", function(e){ e.preventDefault(); e.stopPropagation(); });
+
+$(function(){
+  $("#stampFile").on("change", function(e){
+    const f = e.target.files && e.target.files[0];
+    if(f) stampUpdatePreviewAndFileName(f);
+  });
+
+  $("#stampDrop")
+    .on("dragenter dragover", function(e){
+      e.preventDefault(); e.stopPropagation();
+      $(this).addClass("dragover");
+    })
+    .on("dragleave", function(e){
+      e.preventDefault(); e.stopPropagation();
+      $(this).removeClass("dragover");
+    })
+    .on("drop", function(e){
+      e.preventDefault(); e.stopPropagation();
+      $(this).removeClass("dragover");
+      const oe = e.originalEvent || e;
+      const dt = oe.dataTransfer || e.dataTransfer;
+      const files = dt && dt.files ? dt.files : null;
+      if(files && files.length > 0){
+        stampUpdatePreviewAndFileName(files[0]);
+      }
+    })
+    .on("click", function(e){
+      if (!$(e.target).is("#stampFile")){
+        $("#stampFile").trigger("click");
+      }
+    });
+
+  $("#btnStampPick").on("click", function(){
+    $("#stampFile").trigger("click");
+  });
+
+  // 초기화(서버 삭제 + 화면 리셋)
+  $("#btnStampReset").on("click", function(){
+    if(!confirm("정말 초기화하시겠습니까? 기존 도장 이미지가 삭제됩니다.")) return;
 
     $.ajax({
-        url: "<%= ctxPath %>/sign/stampImageSave",
-        type: "POST",
-        data: file,
-        processData: false,
-        contentType: "application/octet-stream",
-        headers: {
-            "file-name": encodeURIComponent(file.name)
-        },
-        success: function (res) {
-            if (res.result === "success") {
-                alert("저장이 완료되었습니다.");
-                $("#previewImg").attr("src", res.url);
-            } else {
-                alert("저장에 실패하였습니다.");
-            }
-        },
-        error: function (xhr, status, error) {
-            console.error(error);
+      url: "<%=ctxPath%>/sign/stampImageDelete",
+      type: "POST",
+      success: function(res){
+        const ok = res && (res.result === "success" || res.success === true);
+        if(ok){
+          file_arr_copy = [];
+          total_fileSize = 0;
+          $("#stampPreview").attr("src","").hide();
+          $("#stampDrop .stamp-hint").show();
+          $("#filename").val("");
+          $("#stampFile").val("");
+
+          $("#stampDrop")
+            .removeData("stamp-url").removeAttr("data-stamp-url")
+            .removeData("stamp-fn").removeAttr("data-stamp-fn");
+
+          alert("도장 이미지가 삭제되었습니다.");
+        }else{
+          alert("삭제에 실패했습니다.");
         }
+      },
+      error: function(xhr, status, error){
+        console.error(error);
+        alert("삭제 중 오류가 발생했습니다: " + (xhr.responseText || status));
+      }
     });
+  });
+});
+
+// 업로드 저장
+function stampImageSave(){
+  const input = $("#stampFile")[0];
+  if(!input.files || input.files.length === 0){
+    alert("업로드할 도장 이미지를 선택하세요.");
+    return;
+  }
+  const file = input.files[0];
+
+  $.ajax({
+    url: "<%=ctxPath%>/sign/stampImageSave",
+    type: "POST",
+    data: file,
+    processData: false,
+    contentType: "application/octet-stream",
+    headers: { "file-name": encodeURIComponent(file.name) },
+    success: function(res){
+      const ok = res && (res.result === "success" || res.success === true);
+      if(ok){
+        alert("저장이 완료되었습니다.");
+        if(res.url){
+          $("#stampPreview").attr("src", res.url).show().css("display","block");
+          $("#stampDrop .stamp-hint").hide();
+        }
+        $("#filename").val(file.name);
+      }else{
+        alert("저장에 실패하였습니다.");
+      }
+    },
+    error: function(xhr, status, error){
+      console.error(error);
+      alert("업로드 중 오류가 발생했습니다: " + (xhr.responseText || status));
+    }
+  });
+}
+
+// 초기 미리보기 로드
+(function initStampPreviewFromServer(){
+  const $drop = $("#stampDrop");
+  const urlFromServer = $drop.data("stamp-url");
+  const fnFromServer  = $drop.data("stamp-fn");
+  const ctxPath = "<%=ctxPath%>";
+
+  let url = urlFromServer;
+  if (!url && fnFromServer) {
+    url = ctxPath + "/resources/stamp_upload/" + encodeURIComponent(fnFromServer);
+  }
+  if (!url) return;
+
+  url += (url.includes("?") ? "&" : "?") + "v=" + Date.now();
+  $("#stampPreview").attr("src", url).show().css("display","block");
+  $("#stampDrop .stamp-hint").hide();
+})();
+
+/* =========================
+   결재라인: 목록 + 팝업 열기
+   ========================= */
+
+// 팝업 열기 유틸
+function openLinePopup(id){
+  const w = 1000, h = 700;
+
+  // 현재 브라우저 창의 화면 좌표(멀티모니터 대응)
+  const dualLeft = (window.screenLeft ?? window.screenX ?? 0);
+  const dualTop  = (window.screenTop  ?? window.screenY  ?? 0);
+
+  // 브라우저 바깥 크기(툴바 포함) 우선 사용
+  const viewportW = window.outerWidth  || document.documentElement.clientWidth  || screen.width;
+  const viewportH = window.outerHeight || document.documentElement.clientHeight || screen.height;
+
+  const left = Math.max(0, Math.round(dualLeft + (viewportW - w) / 2));
+  const top  = Math.max(0, Math.round(dualTop  + (viewportH - h) / 2));
+
+  const url = id
+    ? "<%=ctxPath%>/sign/setting/line?id=" + encodeURIComponent(id)
+    : "<%=ctxPath%>/sign/setting/line";
+
+  // features 문자열은 공백 없이!
+  const features = [
+    `width=${w}`, `height=${h}`,
+    `left=${left}`, `top=${top}`,
+    'resizable=yes','scrollbars=yes',
+    'toolbar=no','location=no','status=no','menubar=no'
+  ].join(',');
+
+  const win = window.open(url, 'linePopup', features);
+
+  // 같은 이름의 창 재사용 시 크기/위치 보정
+  if (win) {
+    try {
+      win.focus();
+      win.resizeTo(w, h);
+      win.moveTo(left, top);
+    } catch (_) { /* same-origin이 아닐 때 접근 제한될 수 있음 */ }
+  }
 }
 
 
+// 이벤트 바인딩
+$(function(){
+  $("#btnOpenLinePopup").on("click", function(){ openLinePopup(null); });
+  $("#btnReloadLines").on("click", loadSavedLines);
+  loadSavedLines(); // 초기 목록
+});
+
+// 저장된 라인 목록 로드/렌더
+function loadSavedLines(){
+  $("#savedLines").html('<div class="sel-cap" style="padding:8px 12px;">불러오는 중...</div>');
+
+  $.ajax({
+    url: "<%=ctxPath%>/sign/lines",   // ★ JSON 반환하는 엔드포인트
+    type: "GET",
+    dataType: "json",                  // JSON만 기대
+    cache: false,                      // 캐시 방지 (_=타임스탬프 자동 추가)
+    headers: { "Accept": "application/json" },
+    success: function(list){
+      if (!Array.isArray(list) || list.length === 0) {
+        $("#savedLines").html('<div class="sel-cap" style="padding:8px 12px;">저장된 결재라인이 없습니다.</div>');
+        return;
+      }
+      renderSavedLines(list);
+    },
+    error: function(xhr, status, err){
+      console.error("loadSavedLines error:", status, err, xhr);
+      $("#savedLines").html('<div class="sel-cap" style="padding:8px 12px;">불러오기 실패</div>');
+    }
+  });
+}
+
+function renderSavedLines(list){
+	  if (!Array.isArray(list) || list.length === 0){
+	    $("#savedLines").html('<div class="sel-cap" style="padding:8px 12px;">저장된 결재라인이 없습니다.</div>');
+	    return;
+	  }
+
+	  var html = '';
+	  list.forEach(function(item){
+	    var id   = item.signlineSeq;
+	    var name = esc(item.signlineName || '이름 없음');
+	    // DTO에 members가 없을 수도 있으니 안전하게
+	    var memberCount = Array.isArray(item.members) ? item.members.length : (item.memberCount || 0);
+
+	    // 날짜 보정 (yyyy-MM-dd HH:mm:ss 또는 ISO 둘 다 대응)
+	    var reg = item.regdate ? String(item.regdate).replace('T',' ').slice(0,19) : '';
+
+	    html +=
+	      '<div class="line-card">'
+	    + '  <div class="h">'
+	    + '    <strong>'+ name +'</strong>'
+	    + '    <div class="line-actions">'
+	    + '      <button type="button" class="btn small" onclick="openLinePopup('+ id +')">편집</button>'
+	    + '    </div>'
+	    + '  </div>'
+	    + '  <div class="b">'
+	    + '    <span class="badge">결재자 ' + memberCount + '명</span>'
+	    + (reg ? '<span class="badge">등록일 ' + esc(reg) + '</span>' : '')
+	    + '  </div>'
+	    + '</div>';
+	  });
+
+	  $("#savedLines").html(html);
+	}
+
 </script>
 
-<div id="maininfo">
+<div class="header-spacer"></div>
 
-    <!-- 도장 이미지 업로드 -->
-    <section class="section-container">
-        <h2 class="section-title">도장 이미지 업로드</h2>
-        <form name="stampFrm" enctype="multipart/form-data" method="post" action="stampRegister.go">
-            <div class="stamp-upload-wrap">
-                <div id="fileDrop" class="image-dropzone" title="도장 이미지를 클릭하거나 드래그하세요">
-				    <c:choose>
-				        <c:when test="${not empty loginuser.stampImage}">
-				            <img id="previewImg" alt="미리보기 이미지" src="/resources/stamp_upload/${loginuser.stampImage}" />
-				        </c:when>
-				        <c:otherwise>
-				            <strong>도장 이미지를 드래그하거나 클릭하여 선택하세요</strong>
-				            <img id="previewImg" alt="미리보기 이미지" style="display:none;" />
-				        </c:otherwise>
-				    </c:choose>
-				    <input type="file" name="stamp_image" class="infoData" accept="image/jpeg,image/png" style="display:none;" />
+<main class="main-content">
+	<section class="grid-1">
+		<!-- ===== 1) 도장 업로드 ===== -->
+		<article class="stamp-wrap">
+			<div class="stamp-head">
+				<h2 style="margin: 0; font-size: 16px;">승인 도장 이미지 업로드</h2>
+				<button type="button" id="btnStampSave" class="btn-primary"
+					onclick="stampImageSave()">도장 저장</button>
+			</div>
+
+			<div class="stamp-body">
+				<!-- 드래그&드롭 박스 -->
+				<div id="stampDrop" title="도장 이미지를 드래그하거나 클릭하여 선택"
+					data-stamp-fn="${fn:escapeXml(stampFilename)}"
+					data-stamp-url="${fn:escapeXml(stampUrl)}">
+					<div class="stamp-hint">
+						여기로 드래그해서 업로드<br>(또는 클릭)
+					</div>
+					<img id="stampPreview" alt="도장 미리보기" /> <input type="file"
+						name="stamp_image" id="stampFile" accept="image/jpeg,image/png"
+						style="display: none;">
 				</div>
 
-                <div class="upload-controls">
-                    <input type="text" id="fileName" class="form-control" readonly placeholder="선택된 이미지 파일 이름" />
-                    <div class="upload-buttons">
-                        <input type="button" onclick="stampImageSave()" value="도장 이미지 저장" class="btn btn-primary" />
-                        <input type="reset" value="취소" class="btn btn-danger" />
-                    </div>
-                </div>
-            </div>
-        </form>
-    </section>
+				<!-- 우측 정보/버튼 -->
+				<div class="stamp-right">
+					<input type="text" id="filename" class="stamp-input"
+						placeholder="선택된 파일 없음" readonly>
+					<div style="display: flex; gap: 8px;">
+						<button type="button" id="btnStampPick" class="btn-outline"
+							style="flex: 1;">파일첨부</button>
+						<button type="button" id="btnStampReset" class="btn-outline"
+							style="flex: 1;">초기화</button>
+					</div>
+					<div class="stamp-hint">PNG/JPG · 10MB 이하 권장 · 투명 배경 추천</div>
+				</div>
+			</div>
 
-    <!-- 결재라인 관리 -->
-    <section class="section-container">
-        <h2 class="section-title">결재라인 관리</h2>
+			<div class="stamp-foot">
+				<span class="stamp-hint">업로드 후 <b>도장 저장</b> 버튼을 누르면 적용됩니다.
+				</span>
+			</div>
+		</article>
 
-        <div id="savedApprovalLines" class="mb-4">
-            <c:choose>
-                <c:when test="${not empty approvalLines}">
-                    <ul class="list-group">
-                        <c:forEach var="line" items="${approvalLines}">
-                            <li class="list-group-item">
-                                ${line.line_name}
-                                <span class="badge badge-primary badge-pill">${line.approver_count}명</span>
-                            </li>
-                        </c:forEach>
-                    </ul>
-                </c:when>
-                <c:otherwise>
-                    <p class="text-muted">저장된 결재라인이 없습니다.</p>
-                </c:otherwise>
-            </c:choose>
-        </div>
+		<!-- ===== 2) 결재라인 설정 ===== -->
+		<article class="card">
+			<header class="card-head">
+				<h2>결재라인 설정</h2>
+				<div class="line-actions">
+					<button type="button" class="btn small" id="btnOpenLinePopup">결재라인
+						추가</button>
+					<button type="button" class="btn small" id="btnReloadLines">새로고침</button>
+				</div>
+			</header>
 
-        <form name="approvalLineFrm" method="post" action="approvalLineRegister.go">
-            <div class="form-group">
-                <label>결재라인 이름<span class="text-danger">*</span></label>
-                <input type="text" name="line_name" class="form-control infoData" />
-                <span class="error">필수입력</span>
-            </div>
-            <div class="form-group">
-                <label>결재 인원<span class="text-danger">*</span></label>
-                <select name="approver_count" class="form-control infoData">
-                    <option value="">:::선택하세요:::</option>
-                    <option value="1">1명</option>
-                    <option value="2">2명</option>
-                    <option value="3">3명</option>
-                </select>
-                <span class="error">필수입력</span>
-            </div>
-
-            <div id="approverFields"></div>
-
-            <div class="text-center">
-                <input type="submit" value="결재라인 저장" class="btn btn-primary" />
-                <input type="reset" value="취소" class="btn btn-danger" />
-            </div>
-        </form>
-    </section>
-
-</div>
+			<!-- 저장된 라인 목록 -->
+			<div id="savedLines" class="saved-lines">
+				<!-- JS 렌더링 -->
+			</div>
+		</article>
+	</section>
+</main>
 
 <jsp:include page="../footer/footer.jsp" />
+
+
