@@ -12,6 +12,11 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.springframework.dao.EmptyResultDataAccessException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -80,20 +85,105 @@ public class MemberService_imple implements MemberService {
 
         return memberRepository.save(member);
     }
+    
+    // 직원수정
+    @Override
+    @Transactional
+    public Member updateMember(Member member) {
 
-    // 모든 회원 조회
+        member.setMemberEmail(member.getMemberEmail() + "@CodeON.com");
+
+        return memberRepository.save(member);
+    }
+
 	@Override
-	public List<MemberDTO> getAllMember() {
+	public Page<Member> getPageMember(String searchType, String searchWord, String gender, int currentShowPageNo, int sizePerPage) throws Exception {
 		
-		List<MemberDTO> memberDtoList = new ArrayList<>();
+		Page<Member> page = Page.empty();
 		
-		List<Member> members = memberRepository.findAll();
+		try {
+
+			Pageable pageable = PageRequest.of(currentShowPageNo - 1, sizePerPage, Sort.by(Sort.Direction.DESC, "memberHiredate"));
+			
+	         BooleanExpression condition = Expressions.TRUE; 
+	         
+	 		if ("fkDepartmentSeq".equals(searchType) && (searchWord != null && !searchWord.trim().isEmpty())) {
+			    // 부서명으로 조건 걸기 (조인)
+			    condition = condition.and(department.departmentName.contains(searchWord));
+			
+			} else if ("memberName".equals(searchType) && (searchWord != null && !searchWord.trim().isEmpty())) {
+			    
+				condition = condition.and(member.memberName.contains(searchWord));
+			
+			} else if ("fkGradeSeq".equals(searchType) && (searchWord != null && !searchWord.trim().isEmpty())) {
+				
+		        condition = condition.and(grade.gradeName.contains(searchWord));
+		    }
+			
+			if ("0".equals(gender) || "1".equals(gender)) {
+			    
+				condition = condition.and(member.memberGender.eq(Integer.parseInt(gender)));
+			
+			}
+
+			List<Member> members = jPAQueryFactory
+			                        .selectFrom(member)
+			                        .join(member.department, department)
+			                        .join(member.grade, grade) // 조인
+			                        .where(condition)
+			   	                 	.offset(pageable.getOffset())
+			   	                 	.limit(pageable.getPageSize())
+			   	                 	.orderBy(member.memberHiredate.desc())
+			                        .fetch();     
+			
+		    Long total = jPAQueryFactory
+		                 .select(member.count())
+		                 .from(member)
+	                     .join(member.department, department)
+	                     .join(member.grade, grade)
+		                 .where(condition)
+		                 .fetchOne();
+
+	         page = new PageImpl<>(members, pageable, total != null ? total : 0);
+
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 		
-		memberDtoList = members.stream().map(Member::toDTO).collect(Collectors.toList());
-		
-		return memberDtoList;
+		return page;
 	}
 
+	// 회원 삭제
+	@Override
+	public int delete(int memberSeq) {
+	    int n = 0;
+	    try {
+	        memberRepository.deleteById(memberSeq);
+	        n = 1;
+	    } catch (EmptyResultDataAccessException e) {
+	        e.printStackTrace();
+	    }
+	    return n;
+	}
+
+	// 직원 찾기
+	@Override
+	public MemberDTO getMemberOne(String memberSeq) {
+		
+		int seq = Integer.parseInt(memberSeq);
+		
+		BooleanExpression condition = Expressions.TRUE;
+		
+		condition = member.memberSeq.eq(seq);
+		
+	    Member mbr = jPAQueryFactory
+	                .selectFrom(member)
+	                .where(condition)
+	                .fetchOne();
+        
+	    return mbr.toDTO();
+	}
+	
 	// 검색 회원 조회
 	@Override
 	public List<MemberDTO> searchMember(Map<String, String> paraMap) {
@@ -147,18 +237,6 @@ public class MemberService_imple implements MemberService {
 		return memberDtoList;
 	}
 
-	// 회원 삭제
-	@Override
-	public int delete(int memberSeq) {
-	    int n = 0;
-	    try {
-	        memberRepository.deleteById(memberSeq);
-	        n = 1;
-	    } catch (EmptyResultDataAccessException e) {
-	        e.printStackTrace();
-	    }
-	    return n;
-	}
 
     public List<Member> getAllMembersOrderByDept() {
     	return memberRepository.findAllByOrderByFkDepartmentSeqAsc();

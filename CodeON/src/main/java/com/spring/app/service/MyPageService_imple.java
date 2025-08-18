@@ -1,0 +1,94 @@
+package com.spring.app.service;
+
+import java.time.format.DateTimeFormatter;
+import java.util.List;
+import java.util.Objects;
+
+import org.springframework.data.domain.Sort;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import com.spring.app.domain.MemberProfileDTO;
+import com.spring.app.entity.Department;
+import com.spring.app.entity.Member;
+import com.spring.app.model.DepartmentRepository;
+import com.spring.app.model.MemberRepository;
+
+import lombok.RequiredArgsConstructor;
+
+@Service
+@RequiredArgsConstructor
+@Transactional(readOnly = true)
+public class MyPageService_imple implements MyPageService {
+
+    private final MemberRepository memberRepository;
+    private final DepartmentRepository departmentRepository;
+
+    @Override
+    public MemberProfileDTO getProfile(Integer memberSeq) {
+        return memberRepository.findProfileDtoByMemberSeq(memberSeq)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 회원입니다."));
+    }
+
+    @Override
+    public List<Department> getDepartments() {
+        return departmentRepository.findAll(Sort.by(Sort.Order.asc("departmentSeq")));
+    }
+
+    @Override
+    @Transactional
+    public void updateProfile(Integer loginMemberSeq, MemberProfileDTO form) {
+        if (!loginMemberSeq.equals(form.getMemberSeq()))
+            throw new IllegalStateException("본인 정보만 수정할 수 있습니다.");
+
+        // 최소 검증 (필요하면 유틸로 빼도 됨)
+        assertNotBlank(form.getName(), "이름은 필수입니다.");
+        assertRegex(form.getMobile(), "^\\d{2,3}-\\d{3,4}-\\d{4}$", "휴대폰 형식은 010-1234-5678 입니다.");
+        assertRegex(form.getEmail(), "^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$", "이메일 형식이 올바르지 않습니다.");
+
+        if (memberRepository.existsByMemberEmailAndMemberSeqNot(form.getEmail(), form.getMemberSeq()))
+            throw new IllegalArgumentException("이미 사용 중인 이메일입니다.");
+
+        Member m = memberRepository.findById(form.getMemberSeq())
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 회원입니다."));
+
+        m.setMemberName(form.getName());
+        m.setMemberEmail(form.getEmail());
+        m.setMemberMobile(form.getMobile());
+    }
+    
+    @Override
+    @Transactional
+    public void changePassword(Integer memberSeq, String currentPwd, String newPwd) {
+        // 최소 유효성 검사
+        assertNotBlank(currentPwd, "현재 비밀번호를 입력하세요.");
+        assertNotBlank(newPwd, "새 비밀번호를 입력하세요.");
+        if (newPwd.length() < 8 || newPwd.length() > 30)
+            throw new IllegalArgumentException("새 비밀번호는 8~30자여야 합니다.");
+        if (!newPwd.matches(".*[A-Za-z].*") || !newPwd.matches(".*\\d.*"))
+            throw new IllegalArgumentException("새 비밀번호는 영문과 숫자를 조합해야 합니다.");
+
+        Member m = memberRepository.findById(memberSeq)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 회원입니다."));
+
+        // 평문 비교(현재 구조 기준). 해싱 사용 시 BCrypt로 대체.
+        if (!currentPwd.equals(m.getMemberPwd())) {
+            throw new IllegalArgumentException("현재 비밀번호가 일치하지 않습니다.");
+        }
+        if (currentPwd.equals(newPwd)) {
+            throw new IllegalArgumentException("현재 비밀번호와 다른 비밀번호를 사용하세요.");
+        }
+
+        // TODO: 보안 향상 - BCrypt 적용 시
+        // String encoded = passwordEncoder.encode(newPwd);
+        // m.setMemberPwd(encoded);
+
+        m.setMemberPwd(newPwd);
+        // 트랜잭션 종료 시 flush
+    }
+
+    private static void assertNotBlank(String v, String msg){ if (v == null || v.trim().isEmpty()) throw new IllegalArgumentException(msg); }
+    private static void assertRegex(String v, String regex, String msg){ if (v == null || !v.matches(regex)) throw new IllegalArgumentException(msg); }
+    
+    
+}
