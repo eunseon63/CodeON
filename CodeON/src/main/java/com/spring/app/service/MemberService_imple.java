@@ -4,6 +4,8 @@ import static com.spring.app.entity.QDepartment.department;
 import static com.spring.app.entity.QGrade.grade;
 import static com.spring.app.entity.QMember.member;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -41,6 +43,7 @@ import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.spring.app.domain.MemberDTO;
 import com.spring.app.entity.Member;
+import com.spring.app.model.MemberDAO;
 import com.spring.app.model.MemberRepository;
 
 import jakarta.persistence.EntityManager;
@@ -52,6 +55,7 @@ import lombok.RequiredArgsConstructor;
 public class MemberService_imple implements MemberService {
 
     private final MemberRepository memberRepository;
+    private final MemberDAO mbrdao;
     private final JPAQueryFactory jPAQueryFactory;
 
     @PersistenceContext
@@ -349,7 +353,74 @@ public class MemberService_imple implements MemberService {
 	    model.addAttribute("workbook", workbook);
 	}
 
+	// Excel 파일에 insert
+	@Override
+	public int add_memberList(List<Map<String, String>> paraMapList) {
+		
+		System.out.println("~~~~~~ paraMapList : " + paraMapList);
 
+		int n = 0;
+		
+		try {
+			
+			for (Map<String, String> paraMap : paraMapList) {
+				
+				Member member = new Member();
+				DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMdd");
+
+				member.setMemberName(paraMap.get("memberName"));
+	            member.setFkDepartmentSeq(Integer.parseInt(paraMap.get("fkDepartmentSeq")));
+	            member.setFkGradeSeq(Integer.parseInt(paraMap.get("fkGradeSeq")));
+	            member.setMemberMobile(paraMap.get("memberMobile"));
+	            member.setMemberBirthday(paraMap.get("memberBirthday"));
+	            member.setMemberGender(Integer.parseInt(paraMap.get("memberGender")));
+	            member.setMemberSalary(Long.parseLong(paraMap.get("memberSalary")) != 0 ?Long.parseLong(paraMap.get("memberSalary")) : 0);
+	            member.setMemberHiredate(LocalDate.parse(paraMap.get("memberHiredate"), formatter));
+	            member.setStampImage(paraMap.get("stampImage") != null ? paraMap.get("stampImage") : "");
+	            
+	            // 회원번호, 아이디, 비밀번호, 이메일 생성
+	            String yearStr = String.valueOf(member.getMemberHiredate().getYear());
+	            String deptStr = String.format("%02d", member.getFkDepartmentSeq());
+	
+	            Integer seq = ((Number) em.createNativeQuery("SELECT MEMBER_SEQ_GENERATOR.NEXTVAL FROM DUAL")
+	                    .getSingleResult()).intValue();
+	            String seqStr = String.format("%03d", seq);
+	
+	            String memberSeqStr = yearStr + deptStr + seqStr;
+	            int memberSeqInt = Integer.parseInt(memberSeqStr);
+	
+	            member.setMemberSeq(memberSeqInt);
+	            member.setMemberUserid(memberSeqStr);
+	            member.setMemberPwd(memberSeqStr);
+	            member.setMemberEmail(paraMap.get("memberEmail") + memberSeqStr + "@CodeON.com");
+	            
+	            System.out.println("~~~~~~~~~~~~~~~~~~~~~~ 확인용" + member);
+	
+	            // DB 저장
+	            memberRepository.save(member);
+	            n++;
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		
+		return n;
+	}
+
+	// tbl_member 테이블에서 부서명별 인원수 및 퍼센티지 가져오기 
+	@Override
+	public List<Map<String, String>> memberCntByDeptname() {
+		List<Map<String, String>> deptnamePercentageList = mbrdao.memberCntByDeptname();
+		return deptnamePercentageList;
+	}
+
+	// tbl_member 테이블에서 성별별 인원수 및 퍼센티지 가져오기 
+	@Override
+	public List<Map<String, String>> memberCntByGender() {
+		List<Map<String, String>> genderPercentageList = mbrdao.memberCntByGender();
+		return genderPercentageList;
+	}
+	
 	
 	
     

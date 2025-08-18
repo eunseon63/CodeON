@@ -33,6 +33,15 @@ public interface MemberService {
 
 	// Excel 파일로 다운
 	public void memberList_to_Excel(Map<String, String> paraMap, Model model);
+
+	// Excel 파일에 insert
+	public int add_memberList(List<Map<String, String>> paraMapList);
+
+	// tbl_member 테이블에서 부서명별 인원수 및 퍼센티지 가져오기 
+	public List<Map<String, String>> memberCntByDeptname();
+
+	// tbl_member 테이블에서 성별별 인원수 및 퍼센티지 가져오기 
+	public List<Map<String, String>> memberCntByGender();
 	
 }
 

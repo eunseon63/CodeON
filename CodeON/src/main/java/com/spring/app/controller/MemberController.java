@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.spring.app.domain.MemberDTO;
 import com.spring.app.entity.Member;
@@ -71,10 +72,13 @@ public class MemberController {
 
 			model.addAttribute("MemberDtoList", MemberDtoList);
 			
-			if (!"".equals(searchType) && !"".equals(searchWord) && !"".equals(gender)) {
+			if (!"".equals(searchType) && !"".equals(searchWord)) {
 				model.addAttribute("searchType", searchType); // view 단 페이지에서 검색타입 유지
 				model.addAttribute("searchWord", searchWord); // view 단 페이지에서 검색어 유지
-				model.addAttribute("gender", gender);
+			}
+			
+			if (!"".equals(gender)) {
+			    model.addAttribute("gender", gender);
 			}
 			
 			// === 페이지바 만들기 시작 === //
@@ -140,6 +144,7 @@ public class MemberController {
 	    return "member/update";
 	}
 	
+	// Excel 파일 다운
 	@PostMapping("downloadExcelFile")
 	public String downloadExcelFile(
 	        @RequestParam(name="searchType", defaultValue="") String searchType,
@@ -158,6 +163,9 @@ public class MemberController {
 
 	    return "excelDownloadView"; // ExcelView 구현체
 	}
-
 	
+	@GetMapping("chart")
+	public String chart() {
+		return "member/chart";
+	}
 }
