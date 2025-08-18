@@ -22,5 +22,6 @@ public class AddressDTO {
     private String  email;       // 이메일(MEMBER_EMAIL)
     private String  mobile;      // 휴대폰(MEMBER_MOBILE)
     private String  userId;      // 아이디(MEMBER_USERID)
+    private String  gradeName;   // 직급명 
     
 }

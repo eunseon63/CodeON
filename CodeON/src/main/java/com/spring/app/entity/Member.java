@@ -1,4 +1,22 @@
+
 package com.spring.app.entity;
+
+import java.time.LocalDate;
+
+import com.spring.app.domain.MemberDTO;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.time.LocalDate;
 
@@ -71,6 +89,11 @@ public class Member {
                 insertable = false, updatable = false)   // ✅ 읽기 전용
     private Department department;
     
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "fk_grade_seq", referencedColumnName = "grade_seq",
+                insertable = false, updatable = false)  // 읽기 전용
+    private Grade grade;
+    
     // Entity를 DTO로 변환하기
     public MemberDTO toDTO() {
     	return MemberDTO.builder()
@@ -90,4 +113,5 @@ public class Member {
     			.build();
     }
 }
+
 
