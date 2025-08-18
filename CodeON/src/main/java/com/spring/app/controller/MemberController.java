@@ -158,6 +158,8 @@ public class MemberController {
 	    if (!searchWord.isEmpty()) paraMap.put("searchWord", searchWord);
 	    if (!gender.isEmpty()) paraMap.put("gender", gender);
 
+	    // 서비스에서 paraMap 기반으로 회원 목록 조회 후 Excel로 변환
+	    memberService.memberList_to_Excel(paraMap, model);
 
 	    return "excelDownloadView"; // ExcelView 구현체
 	}
