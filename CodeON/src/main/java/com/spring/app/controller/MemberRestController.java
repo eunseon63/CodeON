@@ -28,7 +28,7 @@ import org.springframework.web.multipart.MultipartHttpServletRequest;
 import com.spring.app.domain.MemberDTO;
 import com.spring.app.entity.Member;
 import com.spring.app.service.MemberService;
-import com.spring.app.service.MemberService_imple;
+
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 
@@ -36,8 +36,6 @@ import lombok.RequiredArgsConstructor;
 @RequestMapping("/memberInfo/")
 @RequiredArgsConstructor
 public class MemberRestController {
-
-    private final MemberService_imple memberService_imple;
 	
 	private final MemberService memberService;
 
