@@ -71,6 +71,11 @@ public class Member {
                 insertable = false, updatable = false)   // ✅ 읽기 전용
     private Department department;
     
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "fk_grade_seq", referencedColumnName = "grade_seq",
+                insertable = false, updatable = false)  // 읽기 전용
+    private Grade grade;
+    
     // Entity를 DTO로 변환하기
     public MemberDTO toDTO() {
     	return MemberDTO.builder()

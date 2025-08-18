@@ -96,6 +96,12 @@
                     <c:otherwise>-</c:otherwise>
                   </c:choose>
                 </td>
+                <td>
+			      <c:choose>
+			        <c:when test="${not empty it.gradeName}">${it.gradeName}</c:when>
+			        <c:otherwise>-</c:otherwise>
+			      </c:choose>
+			    </td> 
               </tr>
             </c:forEach>
           </c:when>

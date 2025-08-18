@@ -30,8 +30,8 @@ public class AddressController {
         var result = addressService.search(dept, kw, page, PAGE_SIZE);
 
         model.addAttribute("departments", departments);
-        model.addAttribute("selectedDept", dept);
-        model.addAttribute("keyword", kw);
+        model.addAttribute("selectedDept", dept);	
+        model.addAttribute("keyword", kw);	
 
         model.addAttribute("items", result.getContent());
         model.addAttribute("page", result.getNumber() + 1); // 1-based

@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import com.spring.app.domain.AddressDTO;
+import com.spring.app.domain.MemberProfileDTO;
 import com.spring.app.entity.Member;
 
 import jakarta.transaction.Transactional;
@@ -27,10 +28,12 @@ public interface MemberRepository extends JpaRepository<Member, Integer> {
 	@Query("""
 			  select new com.spring.app.domain.AddressDTO(
 			    d.departmentSeq, d.departmentName,
-			    m.memberSeq, m.memberName, m.memberEmail, m.memberMobile, m.memberUserid
+			    m.memberSeq, m.memberName, m.memberEmail, m.memberMobile, m.memberUserid,
+			    g.gradeName
 			  )
 			  from Member m
 			  join m.department d
+			  left join m.grade g
 			  where (:dept is null or d.departmentSeq = :dept)
 			    and (
 			      :kw is null or :kw = '' or
@@ -44,4 +47,21 @@ public interface MemberRepository extends JpaRepository<Member, Integer> {
 			Page<AddressDTO> searchAddress(@Param("dept") Long dept,
 			                               @Param("kw")   String kw,
 			                               Pageable pageable);
+	
+	@Query("""
+		      select new com.spring.app.domain.MemberProfileDTO(
+		        m.memberSeq, m.memberName, m.memberEmail, m.memberMobile, m.memberUserid,
+		        cast(m.fkDepartmentSeq as long), d.departmentName,
+		        cast(m.fkGradeSeq as long), g.gradeName,
+		        to_char(m.memberHiredate, 'YYYY-MM-DD')
+		      )
+		      from Member m
+		      left join m.department d
+		      left join m.grade g
+		      where m.memberSeq = :memberSeq
+		    """)
+		    Optional<MemberProfileDTO> findProfileDtoByMemberSeq(@Param("memberSeq") Integer memberSeq);
+
+		    boolean existsByMemberEmailAndMemberSeqNot(String email, Integer memberSeq);
+
 }
