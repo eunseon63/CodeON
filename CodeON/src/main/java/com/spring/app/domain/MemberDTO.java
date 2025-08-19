@@ -4,6 +4,8 @@ import java.time.LocalDate;
 
 import org.springframework.format.annotation.DateTimeFormat;
 
+import com.spring.app.entity.Department;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -32,4 +34,6 @@ public class MemberDTO {
     private String memberBirthday;
     private int memberGender;
     private String stampImage;
+    
+    private Department department;
 }
