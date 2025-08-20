@@ -213,6 +213,13 @@ main {
 }
 
 </style>
+
+<!-- CSRF 메타 추가 -->
+  <c:if test="${_csrf != null}">
+    <meta name="_csrf" content="${_csrf.token}">
+    <meta name="_csrf_header" content="${_csrf.headerName}">
+    <meta name="_csrf_parameter" content="${_csrf.parameterName}">
+  </c:if>
 </head>
 
 <script>

@@ -33,7 +33,7 @@ public class Signline {
     private String signlineName;
 
     @Column(name = "regdate")
-    private Date regdate;
+    private LocalDateTime regdate;
 
     @OneToMany(mappedBy = "signline", cascade = CascadeType.ALL, orphanRemoval = true)
     @OrderBy("lineOrder ASC")
@@ -41,8 +41,13 @@ public class Signline {
     private List<SignlineMember> members = new ArrayList<>();
 
     public void addMember(SignlineMember m) {
-        m.setSignline(this);
-        this.members.add(m);
+    	m.setSignline(this); 
+    	this.members.add(m);
+	}
+    
+    @PrePersist
+    public void prePersist() {
+      if (this.regdate == null) this.regdate = LocalDateTime.now();
     }
     
 	public SignlineDTO toDTO() {
@@ -51,9 +56,7 @@ public class Signline {
 				.signlineSeq(this.signlineSeq)
 				.fkMemberSeq(this.fkMemberSeq)
 				.signlineName(this.signlineName)
-				.regdate(this.regdate == null
-                ? null
-                : LocalDateTime.ofInstant(this.regdate.toInstant(), ZoneId.systemDefault()))
+				.regdate(this.regdate)
 				.build();
 		
 	}
