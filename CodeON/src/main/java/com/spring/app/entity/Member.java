@@ -5,12 +5,14 @@ import java.time.LocalDate;
 
 import com.spring.app.domain.MemberDTO;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -78,6 +80,9 @@ public class Member {
     @JoinColumn(name = "fk_grade_seq", referencedColumnName = "grade_seq",
                 insertable = false, updatable = false)  // 읽기 전용
     private Grade grade;
+    
+    @OneToOne(mappedBy = "member", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    private AnnualLeave annualLeave;
     
     // Entity를 DTO로 변환하기
     public MemberDTO toDTO() {

@@ -3,6 +3,8 @@ package com.spring.app.model;
 import java.util.List;
 import java.util.Optional;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -14,14 +16,10 @@ import com.spring.app.entity.Member;
 
 import jakarta.transaction.Transactional;
 
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.repository.Query;
-
 public interface MemberRepository extends JpaRepository<Member, Integer> {
 	
 	@Query("SELECT m FROM Member m JOIN FETCH m.department WHERE m.memberUserid = :memberUserid")
-	Optional<Member> findByMemberUserid(String memberUserid);
+	Optional<Member> findByMemberUserid(@Param("memberUserid") String memberUserid);
 
 	@Modifying
 	@Transactional
