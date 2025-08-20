@@ -157,7 +157,7 @@ function goDetail(memberSeq) {
 </script>
 
 <body class="bg-light" >
-<div class="container py-5" style="transform: translateX(3rem) !important;"> 
+<div class="container py-5" style="transform: translateX(3rem) translateY(-5rem) !important;"> 
     <div class="card shadow-sm" style="margin: 5% 0 0 5%;">
         <div class="card-body p-4">
 

@@ -17,7 +17,7 @@
 }
 
 .attendance-container {
-  margin: 110px auto 56px;
+  margin: 40px auto 56px;
   max-width: 1200px;
   font-family: 'Pretendard','맑은 고딕', system-ui, -apple-system, sans-serif;
   color: var(--text);

@@ -21,7 +21,7 @@ import org.springframework.data.jpa.repository.Query;
 public interface MemberRepository extends JpaRepository<Member, Integer> {
 	
 	@Query("SELECT m FROM Member m JOIN FETCH m.department WHERE m.memberUserid = :memberUserid")
-	Optional<Member> findByMemberUserid(String memberUserid);
+	Optional<Member> findByMemberUserid(@Param("memberUserid") String memberUserid);
 
 	@Modifying
 	@Transactional

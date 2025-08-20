@@ -10,7 +10,7 @@
 :root{
   --bg:#f7f8fb; --card:#fff; --text:#111827; --muted:#6b7280; --line:#e5e7eb; --brand:#2563eb;
 }
-.hr-wrap{ max-width:1200px; margin:110px auto 60px; color:var(--text); font-family:'Pretendard','맑은 고딕',sans-serif; }
+.hr-wrap{ max-width:1200px; margin:50px auto 60px; color:var(--text); font-family:'Pretendard','맑은 고딕',sans-serif; }
 .hr-grid{ display:grid; grid-template-columns: 240px 1fr; gap:24px; }
 
 /* 메인 카드 */
