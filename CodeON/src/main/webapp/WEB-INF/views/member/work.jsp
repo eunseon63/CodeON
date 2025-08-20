@@ -226,15 +226,17 @@ tbody tr:last-child td{ border-bottom: none; }
 	   </div>
 	
 	   <div class="summary-item">
-	     <div class="summary-label">사용연차 / 잔여연차</div>
-	     <div class="summary-value">- / -</div> <%-- 연차 구현 전 임시 표시 --%>
-	     <%-- 구현 후엔 예:
-	     <div class="summary-value">
-	       <c:out value="${summary.usedLeave != null ? summary.usedLeave : '-'}"/> /
-	       <c:out value="${summary.leftLeave != null ? summary.leftLeave : '-'}"/>
-	     </div>
-	     --%>
-	   </div>
+		  <div class="summary-label">사용연차 / 잔여연차</div>
+		  <div class="summary-value">
+		    <c:choose>
+		      <c:when test="${not empty leave}">
+		        <c:out value="${leave.usedLeave}" /> /
+		        <c:out value="${leave.remainingLeave}" />
+		      </c:when>
+		      <c:otherwise>- / -</c:otherwise>
+		    </c:choose>
+		  </div>
+		</div>
 
   <div class="summary-item">
     <div class="summary-label">연장근무</div>

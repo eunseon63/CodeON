@@ -68,5 +68,25 @@
 	  WHERE FK_MEMBER_SEQ = #{memberSeq}
 	  AND WORK_DATE BETWEEN #{start} AND #{end}
 	</select>
+	
+	<resultMap id="AnnualLeaveDtoMap" type="com.spring.app.domain.AnnualLeaveDTO">
+    <result column="MEMBER_SEQ"       property="memberSeq"/>
+    <result column="TOTAL_LEAVE"      property="totalLeave"/>
+    <result column="USED_LEAVE"       property="usedLeave"/>
+    <result column="REMAINING_LEAVE"  property="remainingLeave"/>
+  	</resultMap>
 
+	  <!-- ✅ 연차 단건 조회 -->
+	  <select id="selectAnnualLeaveByMemberSeq"
+	          parameterType="int"
+	          resultMap="AnnualLeaveDtoMap">
+	    SELECT
+	      MEMBER_SEQ,
+	      NVL(TOTAL_LEAVE, 0)      AS TOTAL_LEAVE,
+	      NVL(USED_LEAVE, 0)       AS USED_LEAVE,
+	      NVL(REMAINING_LEAVE, 0)  AS REMAINING_LEAVE
+	    FROM TBL_ANNUAL_LEAVE
+	    WHERE MEMBER_SEQ = #{memberSeq}
+	  </select>
+	
 </mapper>

@@ -3,6 +3,8 @@ package com.spring.app.attendance.service;
 import com.spring.app.attendance.domain.AttendanceRecord;
 import com.spring.app.attendance.domain.WorkSummary;
 import com.spring.app.attendance.model.AttendanceDAO;
+import com.spring.app.domain.AnnualLeaveDTO;
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -112,6 +114,18 @@ public class AttendanceService_imple implements AttendanceService {
         if (v == null) return 0;
         if (v instanceof Number) return ((Number) v).intValue();
         try { return Integer.parseInt(String.valueOf(v)); } catch (Exception e) { return 0; }
+    }
+
+    @Override
+    public AnnualLeaveDTO getAnnualLeave(int memberSeq) {
+        AnnualLeaveDTO dto = attendanceDAO.selectAnnualLeaveByMemberSeq(memberSeq);
+        if (dto == null) {
+            dto = AnnualLeaveDTO.builder()
+                    .memberSeq(memberSeq)
+                    .totalLeave(0).usedLeave(0).remainingLeave(0)
+                    .build();
+        }
+        return dto;
     }
 
 
