@@ -130,7 +130,7 @@ $(function() {
 
 <body>
 <br><br><br>
-<div class="container my-5">
+<div class="container my-5" style="transform: translateX(2.5rem) !important;">
     <div class="card shadow-sm">
         <div class="card-header bg-primary text-white text-center">
             <h4 class="mb-0">사원 등록</h4>

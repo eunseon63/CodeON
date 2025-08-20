@@ -102,7 +102,7 @@
       <a href="<%= ctxPath %>/sign/main">전자결재</a>
       <a href="<%= ctxPath %>/address">주소록</a>
       <a href="<%= ctxPath %>/mypage">마이페이지</a>
-      <a href="<%= ctxPath %>/admin">인사(인사팀만)</a>
+      <a href="<%= ctxPath %>/member/register">인사(인사팀만)</a>
     </nav>
   </div>
 
