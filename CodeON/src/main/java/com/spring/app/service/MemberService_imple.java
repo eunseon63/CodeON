@@ -34,6 +34,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
 
@@ -41,7 +42,9 @@ import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.spring.app.domain.MemberDTO;
+import com.spring.app.entity.AnnualLeave;
 import com.spring.app.entity.Member;
+import com.spring.app.model.AnnualLeaveRepository;
 import com.spring.app.model.MemberDAO;
 import com.spring.app.model.MemberRepository;
 
@@ -54,6 +57,7 @@ import lombok.RequiredArgsConstructor;
 public class MemberService_imple implements MemberService {
 
     private final MemberRepository memberRepository;
+    private final AnnualLeaveRepository annualLeaveRepository;
     private final MemberDAO mbrdao;
     private final JPAQueryFactory jPAQueryFactory;
 
@@ -81,29 +85,47 @@ public class MemberService_imple implements MemberService {
 
     // 직원등록
     @Override
-    @Transactional
+    @Transactional(isolation = Isolation.SERIALIZABLE)
     public Member registerMember(Member member) {
 
+        // === 1. 사번 생성 === //
         String yearStr = String.valueOf(member.getMemberHiredate().getYear());
         String deptStr = String.format("%02d", member.getFkDepartmentSeq());
 
         // 시퀀스에서 다음 값 가져오기
         Integer seq = ((Number) em.createNativeQuery("SELECT MEMBER_SEQ_GENERATOR.NEXTVAL FROM DUAL")
-            .getSingleResult()).intValue();
+                .getSingleResult()).intValue();
 
-        // 3자리 포맷
         String seqStr = String.format("%03d", seq);
-
         String memberSeqStr = yearStr + deptStr + seqStr;
         int memberSeqInt = Integer.parseInt(memberSeqStr);
 
         member.setMemberSeq(memberSeqInt);
         member.setMemberUserid(member.getMemberUserid() + memberSeqStr);
         member.setMemberPwd(member.getMemberPwd() + memberSeqStr);
-        member.setMemberEmail(member.getMemberEmail() + memberSeqStr + "@CodeON.com");
+        member.setMemberEmail(member.getMemberEmail() + "@CodeON.com");
 
+        // === 2. 연차 생성 === //
+        LocalDate now = LocalDate.now();
+        LocalDate hire = member.getMemberHiredate();
+        int totalMonth = (now.getYear() - hire.getYear()) * 12 + (now.getMonthValue() - hire.getMonthValue());
+
+        AnnualLeave annualLeave = AnnualLeave.builder()
+                .totalLeave(totalMonth)
+                .usedLeave(0)
+                .remainingLeave(totalMonth)
+                .member(member) // 연차 -> Member 연관 설정
+                .build();
+
+        // === 3. Member에 AnnualLeave 매핑 === //
+        member.setAnnualLeave(annualLeave); // Member -> 연차 매핑
+
+        // === 4. Member 저장 (Cascade로 AnnualLeave도 함께 저장) === //
         return memberRepository.save(member);
     }
+
+
+
     
     // 직원수정
     @Override

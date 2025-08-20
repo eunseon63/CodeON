@@ -17,6 +17,10 @@ CREATE SEQUENCE seq_department
 START WITH 10
 INCREMENT BY 10
 NOCACHE;
+select * from TBL_DEPARTMENT;
+
+delete from TBL_DEPARTMENT
+where department_seq = '60';
 
 insert into TBL_DEPARTMENT values(SEQ_DEPARTMENT.nextval, '인사팀');
 insert into TBL_DEPARTMENT values(SEQ_DEPARTMENT.nextval, '개발팀');
@@ -41,6 +45,14 @@ CREATE SEQUENCE MEMBER_SEQ_GENERATOR
 /
 
 commit;
+
+create table tbl_member_1
+as
+select * from tbl_member;
+
+
+INSERT INTO tbl_member
+SELECT * FROM tbl_member_1;
 
 WITH
 A AS

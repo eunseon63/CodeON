@@ -98,6 +98,7 @@ function goDelete(memberSeq) {
             data: { "memberSeq": memberSeq },
             dataType: "json",
             success: function(json) {
+            	console.log(JSON.stringify(json));
                 if (json.n == 1) {
                     alert("삭제가 완료되었습니다.");
                     location.reload();
