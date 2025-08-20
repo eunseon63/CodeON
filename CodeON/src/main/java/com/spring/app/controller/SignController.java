@@ -20,6 +20,7 @@ import com.spring.app.domain.MemberDTO;
 import com.spring.app.domain.SignlineDTO;
 import com.spring.app.entity.Signline;
 import com.spring.app.entity.SignlineMember;
+import com.spring.app.model.DraftRepository;
 import com.spring.app.model.MemberRepository;
 import com.spring.app.model.SignlineRepository;
 import com.spring.app.service.MemberService;
@@ -38,6 +39,7 @@ public class SignController {
     private final FileManager fileManager;
     private final MemberRepository memberRepository;
     private final SignlineRepository signlineRepository;
+    private final DraftRepository draftRepository;
     
     private final SignlineService signlineService;
     private final MemberService memberService;
@@ -48,8 +50,11 @@ public class SignController {
     }
     
     @GetMapping("add")
-    public String signadd() {
+    public String signadd(HttpServletRequest request) {
 
+    	Long previewNo = draftRepository.peekNextDraftNo(); // 미리보기용
+    	request.setAttribute("previewNo", previewNo);
+    	
         return "/sign/signadd";
     }
 
