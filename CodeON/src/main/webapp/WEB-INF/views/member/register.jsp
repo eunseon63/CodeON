@@ -10,7 +10,7 @@
 
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<title>사원 등록</title>
+<title>직원 등록</title>
 
 <script src="<%= ctxPath %>/js/jquery-3.7.1.min.js"></script>
 
