@@ -4,5 +4,6 @@
 <configuration>
     <typeAliases>
         <typeAlias type="com.spring.app.calendar.domain.CalendarDTO" alias="CalendarDTO" />
+        <typeAlias type="com.spring.app.calendar.domain.CalendarAjaxDTO" alias="CalendarAjaxDTO" />
     </typeAliases>
 </configuration>

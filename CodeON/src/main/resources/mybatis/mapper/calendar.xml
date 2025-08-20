@@ -6,48 +6,108 @@
 <!-- ==== 루트 엘리먼트 & 네임스페이스 설정(프로젝트 전체내에서 유일해야 한다.) ==== -->
 <mapper namespace="calendar">
 
-<insert id="addCalendarEvent" parameterType="Map">
-  INSERT INTO TBL_CALENDAR (
-    calendar_seq,
-    fk_member_seq,
-    fk_big_category_seq,
-    fk_small_category_seq,
-    calendar_start,
-    calendar_end,
-    calendar_name,
-    calendar_content,
-    calendar_color,
-    calendar_location,
-    calendar_user
-  ) VALUES (
-    SEQ_TBL_CALENDAR.nextval,
-   #{memberSeq, jdbcType=NUMERIC},
-    #{bigCategorySeq, jdbcType=NUMERIC},
-    #{smallCategorySeq, jdbcType=NUMERIC},
-    #{calendarStart, jdbcType=TIMESTAMP},
-    #{calendarEnd, jdbcType=TIMESTAMP},
-    #{calendarName, jdbcType=VARCHAR},
-    #{calendarContent, jdbcType=VARCHAR},
-    #{calendarColor, jdbcType=VARCHAR},
-    #{calendarLocation, jdbcType=VARCHAR},
-    #{calendarUser, jdbcType=VARCHAR}
-  )
-</insert>
+
+    <!-- ==== 대분류 전체 조회 ==== -->
+    <select id="selectAllBigCategories" resultType="com.spring.app.calendar.domain.BigCategoryDTO">
+        SELECT 
+            big_category_seq AS bigCategorySeq,
+            big_category_name AS bigCategoryName
+        FROM tbl_calendar_big_category
+        ORDER BY big_category_seq
+    </select>
+
+    <!-- ==== 소분류 전체 조회 ==== -->
+    <select id="selectAllSmallCategories" resultType="com.spring.app.calendar.domain.SmallCategoryDTO">
+        SELECT
+            small_category_seq AS smallCategorySeq,
+            fk_big_category_seq AS fkBigCategorySeq,
+            fk_member_seq AS fkMemberSeq,
+            small_category_name AS smallCategoryName
+        FROM tbl_calendar_small_category
+        ORDER BY small_category_seq
+    </select>
+
+    <!-- 일정 등록 -->
+    <insert id="addCalendarEvent" parameterType="map">
+        INSERT INTO TBL_CALENDAR (
+            calendar_seq,
+            fk_member_seq,
+            fk_big_category_seq,
+            fk_small_category_seq,
+            calendar_start,
+            calendar_end,
+            calendar_name,
+            calendar_content,
+            calendar_color,
+            calendar_location,
+            calendar_user
+        )
+        VALUES (
+            SEQ_TBL_CALENDAR.nextval,
+            #{memberSeq, jdbcType=NUMERIC},
+            #{bigCategorySeq, jdbcType=NUMERIC},
+            #{smallCategorySeq, jdbcType=NUMERIC},
+            #{calendarStart, jdbcType=TIMESTAMP},
+            #{calendarEnd, jdbcType=TIMESTAMP},
+            #{title, jdbcType=VARCHAR},
+            #{content, jdbcType=VARCHAR},
+            #{calendarType, jdbcType=VARCHAR},
+            #{shareTargets, jdbcType=VARCHAR},
+            #{memberSeq, jdbcType=NUMERIC}  <!-- calendar_user: 등록자 -->
+        )
+    </insert>
 
 
+    <!-- ==== 대분류 추가 ==== -->
+    <insert id="insertBigCategory" parameterType="com.spring.app.calendar.domain.BigCategoryDTO">
+        INSERT INTO tbl_calendar_big_category (
+            big_category_seq,
+            big_category_name
+        ) VALUES (
+            SEQ_TBL_BIG_CATEGORY.nextval,
+            #{bigCategoryName, jdbcType=VARCHAR}
+        )
+    </insert>
 
-
-
-
-
-
-
-
-
-
-
-
-
-
+    <!-- ==== 소분류 추가 ==== -->
+    <insert id="insertSmallCategory" parameterType="com.spring.app.calendar.domain.SmallCategoryDTO">
+        INSERT INTO tbl_calendar_small_category (
+            small_category_seq,
+            fk_big_category_seq,
+            fk_member_seq,
+            small_category_name
+        ) VALUES (
+            SEQ_TBL_SMALL_CATEGORY.nextval,
+            #{fkBigCategorySeq, jdbcType=NUMERIC},
+            #{fkMemberSeq, jdbcType=NUMERIC},
+            #{smallCategoryName, jdbcType=VARCHAR}
+        )
+    </insert>
+	
+	<select id="selectCalendar" 
+        parameterType="string" 
+        resultType="com.spring.app.calendar.domain.CalendarAjaxDTO">
+				
+	    SELECT 
+	           c.calendar_seq       AS calendarSeq,
+	           c.calendar_name      AS calendarName,
+	           TO_CHAR(CALENDAR_START, 'YYYY-MM-DD"T"HH24:MI:SS') AS calendarStart,
+	           TO_CHAR(CALENDAR_END, 'YYYY-MM-DD"T"HH24:MI:SS') AS calendarEnd,
+	           c.calendar_color     AS calendarColor,
+	           bc.big_category_name AS calendarType,     -- 대분류 이름 → calendarType
+	           sc.small_category_name AS calendarLocation, -- 소분류 이름 → calendarLocation
+	           c.calendar_content   AS calendarContent,
+	           c.calendar_user      AS calendarUser
+	    FROM tbl_calendar c
+	    JOIN tbl_calendar_big_category bc 
+	      ON c.fk_big_category_seq = bc.big_category_seq
+	    JOIN tbl_calendar_small_category sc 
+	      ON c.fk_small_category_seq = sc.small_category_seq
+	    WHERE c.calendar_user = #{fk_userid, jdbcType=VARCHAR}
+	    ORDER BY c.calendar_start ASC
+	</select>
+	
+	
 
 </mapper>
+
