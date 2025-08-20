@@ -168,4 +168,9 @@ public class MemberController {
 	public String chart() {
 		return "member/chart";
 	}
+	
+	@GetMapping("attend")
+	public String attend() {
+		return "member/attend";
+	}
 }
