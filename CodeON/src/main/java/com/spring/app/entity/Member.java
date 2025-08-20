@@ -83,7 +83,7 @@ public class Member {
     @Column(name = "member_gender", nullable = false, length = 10)
     private int memberGender;
 
-    @Column(name = "stamp_image", length = 50)
+    @Column(name = "stamp_image", length = 120)
     private String stampImage;
     
     @ManyToOne(fetch = FetchType.LAZY)
@@ -112,6 +112,7 @@ public class Member {
     			.memberMobile(this.memberMobile)
     			.memberGender(this.memberGender)
     			.stampImage(this.stampImage)
+    			.department(this.getDepartment())
     			.build();
     }
 }

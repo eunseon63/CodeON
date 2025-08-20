@@ -241,6 +241,25 @@ String ctxPath = request.getContextPath();
 	color: #fff;
 	background: var(--danger);
 }
+
+/* 결재자 칩 리스트 */
+.approver-list{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0 2px}
+.approver-chip{
+  display:flex;align-items:center;gap:8px;
+  padding:6px 10px;border:1px solid var(--line);
+  border-radius:999px;background:#f9fafb;font-size:13px
+}
+.ord-badge{
+  width:22px;height:22px;border-radius:50%;
+  display:inline-flex;align-items:center;justify-content:center;
+  border:1px solid var(--line);font-weight:700;
+  background:var(--brand-100);color:var(--brand)
+}
+.sub-tag{
+  padding:2px 6px;border:1px solid var(--line);
+  border-radius:999px;background:#fff;color:var(--muted);font-size:12px
+}
+
 </style>
 
 <script>
@@ -261,6 +280,8 @@ $(function(){
   if(token && header){
     $(document).ajaxSend(function(e, xhr){ xhr.setRequestHeader(header, token); });
   }
+  
+  initStampPreviewFromServer();
 });
 
 /* ====== 도장 업로더 ====== */
@@ -400,22 +421,36 @@ function stampImageSave(){
 }
 
 // 초기 미리보기 로드
-(function initStampPreviewFromServer(){
+function initStampPreviewFromServer(){
   const $drop = $("#stampDrop");
-  const urlFromServer = $drop.data("stamp-url");
-  const fnFromServer  = $drop.data("stamp-fn");
-  const ctxPath = "<%=ctxPath%>";
+  if(!$drop.length) return; // 가드
 
-  let url = urlFromServer;
-  if (!url && fnFromServer) {
-    url = ctxPath + "/resources/stamp_upload/" + encodeURIComponent(fnFromServer);
-  }
+  // camelCase + attr() 폴백
+  let url = $drop.data("stampUrl") || $drop.attr("data-stamp-url") || "";
+  const fn  = $drop.data("stampFn")  || $drop.attr("data-stamp-fn")  || "";
+  const ctx = "<%=ctxPath%>";
+
+  // ctxPath 보정
+  if (url && url.startsWith("/resources/") && ctx) url = ctx + url;
+  if (!url && fn) url = ctx + "/resources/stamp_upload/" + encodeURIComponent(fn);
   if (!url) return;
 
+  // 디버그 로그
+  console.log("stamp preview url:", url);
+
+  // 캐시버스터 + 로드/에러 핸들러
   url += (url.includes("?") ? "&" : "?") + "v=" + Date.now();
-  $("#stampPreview").attr("src", url).show().css("display","block");
-  $("#stampDrop .stamp-hint").hide();
-})();
+
+  $("<img/>")
+    .on("load", function(){
+      $("#stampPreview").attr("src", url).show();
+      $("#stampDrop .stamp-hint").hide();
+    })
+    .on("error", function(){
+      console.warn("stamp preview load failed:", url);
+    })
+    .attr("src", url);
+}
 
 /* =========================
    결재라인: 목록 + 팝업 열기
@@ -498,33 +533,43 @@ function renderSavedLines(list){
 	    return;
 	  }
 
-	  var html = '';
-	  list.forEach(function(item){
-	    var id   = item.signlineSeq;
-	    var name = esc(item.signlineName || '이름 없음');
-	    // DTO에 members가 없을 수도 있으니 안전하게
-	    var memberCount = Array.isArray(item.members) ? item.members.length : (item.memberCount || 0);
+	  let html = '';
+	  list.forEach(item => {
+	    const id   = item.signlineSeq;
+	    const name = esc(item.signlineName || '이름 없음');
+	    const members = Array.isArray(item.members) ? item.members : [];
+	    const reg = item.regdate ? String(item.regdate).replace('T',' ').slice(0,19) : '';
 
-	    // 날짜 보정 (yyyy-MM-dd HH:mm:ss 또는 ISO 둘 다 대응)
-	    var reg = item.regdate ? String(item.regdate).replace('T',' ').slice(0,19) : '';
+	    const chips = members.map(m =>
+	        '<li class="approver-chip">'
+	      +   '<span class="ord-badge">' + (m.lineOrder ?? '') + '</span>'
+	      +   '<strong>' + esc(m.memberName || '') + '</strong>'
+	      +   (m.title    ? '<span class="sub-tag">' + esc(m.title)    + '</span>' : '')
+	      +   (m.deptName ? '<span class="sub-tag">' + esc(m.deptName) + '</span>' : '')
+	      + '</li>'
+	    ).join('');
 
 	    html +=
-	      '<div class="line-card">'
-	    + '  <div class="h">'
-	    + '    <strong>'+ name +'</strong>'
-	    + '    <div class="line-actions">'
-	    + '      <button type="button" class="btn small" onclick="openLinePopup('+ id +')">편집</button>'
-	    + '    </div>'
-	    + '  </div>'
-	    + '  <div class="b">'
-	    + '    <span class="badge">결재자 ' + memberCount + '명</span>'
-	    + (reg ? '<span class="badge">등록일 ' + esc(reg) + '</span>' : '')
-	    + '  </div>'
-	    + '</div>';
+	        '<div class="line-card">'
+	      +   '<div class="h">'
+	      +     '<strong>' + name + '</strong>'
+	      +     '<div class="line-actions">'
+	      +       '<button type="button" class="btn small" onclick="openLinePopup(' + id + ')">편집</button>'
+	      +     '</div>'
+	      +   '</div>'
+	      +   '<div class="b">'
+	      +     '<span class="badge">결재자 ' + members.length + '명</span>'
+	      +   '</div>'
+	      +   '<ul class="approver-list">'
+	      +     (chips || '<li class="cap">결재자 없음</li>')
+	      +   '</ul>'
+	      + '</div>';
 	  });
 
 	  $("#savedLines").html(html);
 	}
+
+
 
 </script>
 

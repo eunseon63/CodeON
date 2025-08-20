@@ -152,7 +152,7 @@ public class SignController {
     @GetMapping("setting/line")
     public String linePopup(@RequestParam(required = false) Long id, Model model) {
         if (id != null) {
-            model.addAttribute("signline", signlineService.findDetail(id));
+            model.addAttribute("signline", signlineService.getLinesWithMembers(id));
         }
         return "sign/signlinepopup";
     }
@@ -168,56 +168,68 @@ public class SignController {
     @Transactional
     public void saveLine(
             @RequestParam String lineName,
-            @RequestParam("approverSeq") List<Long> approverSeqs,
+            @RequestParam(value="approverSeq",  required=false) List<Long> approverSeqs,
+            @RequestParam(value="approverSeq[]",required=false) List<Long> approverSeqsAlt,
             @RequestParam(value="id", required=false) Long id,
             HttpSession session,
             HttpServletRequest request,
             HttpServletResponse response
     ) throws IOException {
 
-        MemberDTO loginuser = (MemberDTO) session.getAttribute("loginuser");
-        if (loginuser == null) { // 로그인 안됨 → 로그인 페이지로
+    	MemberDTO loginuser = (MemberDTO) session.getAttribute("loginuser");
+        if (loginuser == null) {
             response.sendRedirect(request.getContextPath() + "/login/loginStart");
             return;
         }
 
+        // 1) 파라미터 합치기 (approverSeq 또는 approverSeq[])
+        if ((approverSeqs == null || approverSeqs.isEmpty()) && approverSeqsAlt != null) {
+            approverSeqs = approverSeqsAlt;
+        }
         if (lineName == null || lineName.isBlank() || approverSeqs == null || approverSeqs.isEmpty()) {
             response.sendRedirect(request.getContextPath() + "/sign/setting");
             return;
         }
 
-        // === 저장/수정 ===
+        // 2) 신규/수정
         if (id == null) {
             // 신규
             Signline line = Signline.builder()
                     .fkMemberSeq(Long.valueOf(loginuser.getMemberSeq()))
                     .signlineName(lineName)
+                    .regdate(java.time.LocalDateTime.now())
                     .build();
 
             int order = 1;
             for (Long mseq : approverSeqs) {
+                // 자식에 부모 세팅 (addMember가 내부에서 setSignline(this) 하도록 구현되어 있어야 함)
                 line.addMember(SignlineMember.builder()
-                        .memberSeq(mseq.intValue())   // SignlineMember.memberSeq가 Integer 타입
+                        .fkMemberSeq(mseq.intValue())
                         .lineOrder(order++)
                         .build());
             }
-            signlineRepository.save(line); // cascade로 멤버도 함께 INSERT
+
+            signlineRepository.save(line); // cascade=ALL 이면 자식까지 insert
         } else {
             // 수정
             Signline line = signlineRepository.findById(id).orElseThrow();
             line.setSignlineName(lineName);
-            line.getMembers().clear();     // orphanRemoval=true라 기존 멤버 DELETE
+
+            // 기존 멤버 제거 (orphanRemoval=true 필요)
+            line.getMembers().clear();
+
             int order = 1;
             for (Long mseq : approverSeqs) {
                 line.addMember(SignlineMember.builder()
-                        .memberSeq(mseq.intValue())
+                        .fkMemberSeq(mseq.intValue())
                         .lineOrder(order++)
                         .build());
             }
-            signlineRepository.save(line); // 넣어도 되고, 더티체킹으로 생략해도 됨
+            // save 생략 가능(더티 체킹), 있어도 무방
+            signlineRepository.save(line);
         }
 
-        // === 팝업이면 부모 새로고침 후 닫기, 팝업이 아니면 설정 화면으로 이동 ===
+        // 3) 응답 (부모 새로고침)
         String ctx = request.getContextPath();
         response.setContentType("text/html; charset=UTF-8");
         try (PrintWriter out = response.getWriter()) {
@@ -238,6 +250,11 @@ public class SignController {
         MemberDTO loginuser = (MemberDTO) session.getAttribute("loginuser");
         // 로그인 사용자의 결재라인 목록 반환
         return signlineService.findAllByOwner(loginuser.getMemberSeq());
+    }
+    
+    @GetMapping("line/load")
+    public String lineLoadPopup() {
+        return "sign/signlineloadpopup";   // /WEB-INF/views/sign/signlineloadpopup.jsp
     }
     
 }

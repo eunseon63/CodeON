@@ -278,6 +278,45 @@ String ctxPath = request.getContextPath();
 
 <script type="text/javascript">
 
+function openSignlineLoadPopup(){
+    const ctx = "<%=ctxPath%>";
+    const w = 1000, h = 700;
+
+    // 현재 브라우저 창의 화면 좌표(멀티모니터 대응)
+    const dualLeft = (window.screenLeft ?? window.screenX ?? 0);
+    const dualTop  = (window.screenTop  ?? window.screenY  ?? 0);
+
+    // 브라우저 바깥 크기(툴바 포함) 우선 사용
+    const viewportW = window.outerWidth  || document.documentElement.clientWidth  || screen.width;
+    const viewportH = window.outerHeight || document.documentElement.clientHeight || screen.height;
+
+    const left = Math.max(0, Math.round(dualLeft + (viewportW - w) / 2));
+    const top  = Math.max(0, Math.round(dualTop  + (viewportH - h) / 2));
+
+    const features = [
+        `width=${w}`, `height=${h}`,
+        `left=${left}`, `top=${top}`,
+        'resizable=yes','scrollbars=yes',
+        'toolbar=no','location=no','status=no','menubar=no'
+      ].join(',');
+
+    const win = window.open(ctx + "/sign/line/load", "signlineLoadPopup", features);
+    
+    if (win) {
+        try {
+          win.focus();
+          win.resizeTo(w, h);
+          win.moveTo(left, top);
+        } catch (_) { /* same-origin이 아닐 때 접근 제한될 수 있음 */ }
+      }
+  }
+
+  $(function(){
+    // 불러오기 버튼 -> 로드 팝업
+    $("#btnPickLine").on("click", openSignlineLoadPopup);
+  });
+
+
 </script>
 
 <body>
@@ -308,7 +347,7 @@ String ctxPath = request.getContextPath();
           </div>
           <div class="row2">
             <div>소속</div>
-            <input class="input" id="dept" value="${sessionScope.loginuser.department.deptName}" readonly>
+            <input class="input" id="dept" value="${sessionScope.loginuser.department.departmentName}" readonly>
           </div>
           <div class="row2">
             <div>기안일</div>

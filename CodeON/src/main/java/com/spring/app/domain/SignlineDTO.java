@@ -23,10 +23,13 @@ public class SignlineDTO {
     private Long fkMemberSeq;     // 소유자(로그인 사용자) PK - int 쓰면 Integer
     private String signlineName;
 
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime regdate;
 
     @Singular
     private List<SignlineMemberDTO> members;
     
+    
+    // 한 결재라인에 있는 사람 수
+    private long memberCount;
 }

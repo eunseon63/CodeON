@@ -12,27 +12,36 @@ import lombok.*;
 @Builder
 public class SignlineMember {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "signlineMemberSeqGen")
-    @SequenceGenerator(name = "signlineMemberSeqGen", sequenceName = "SIGNLINE_MEMBER_SEQ", allocationSize = 1)
-    @Column(name = "signline_member_seq")
-    private Long signlineMemberSeq;
+	  @Id
+	  @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "signlineMemberSeqGen")
+	  @SequenceGenerator(name = "signlineMemberSeqGen", sequenceName = "SIGNLINE_MEMBER_SEQ", allocationSize = 1)
+	  @Column(name = "SIGNLINE_MEMBER_SEQ")
+	  private Long signlineMemberSeq;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "fk_signline_seq", nullable = false)
-    private Signline signline;
+	  // ★ 부모 FK — 반드시 "쓰기 가능"이어야 함 (insertable/updatable 기본값 true)
+	  @ManyToOne(fetch = FetchType.LAZY)
+	  @JoinColumn(name = "FK_SIGNLINE_SEQ", nullable = false)
+	  private Signline signline;
 
-    @Column(name = "fk_member_seq", nullable = false)
-    private Integer memberSeq; // 결재자(회원)
+	  // ★ 결재자 FK — 스키마 컬럼과 정확히 일치
+	  @Column(name = "FK_MEMBER_SEQ", nullable = false)
+	  private Integer fkMemberSeq;
 
-    @Column(name = "line_order", nullable = false)
-    private Integer lineOrder; // 결재 순서
+	  @Column(name = "LINE_ORDER", nullable = false)
+	  private Integer lineOrder;
+
+	  // (조회 전용) 회원 연관 — 같은 컬럼 공유하므로 읽기 전용
+	  @ManyToOne(fetch = FetchType.LAZY)
+	  @JoinColumn(name = "FK_MEMBER_SEQ", referencedColumnName = "MEMBER_SEQ",
+	              insertable = false, updatable = false)
+	  private Member member;
     
     public SignlineMember toDTO() {
         return SignlineMember.builder()
                 .signline(this.signline)
-                .memberSeq(this.memberSeq)
+                .fkMemberSeq(this.fkMemberSeq)
                 .lineOrder(this.lineOrder)
                 .build();
     }
+    
 }
