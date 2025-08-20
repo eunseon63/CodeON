@@ -55,7 +55,7 @@ public class MemberRestController {
 							  .memberHiredate(mbrDto.getMemberHiredate())
 							  .memberGender(mbrDto.getMemberGender())
 							  .build();
-		
+				
 		Member mbr = memberService.registerMember(member);
 		
 		Map<String, Member> map = new HashMap<>();
@@ -94,9 +94,9 @@ public class MemberRestController {
 	@DeleteMapping("delete")
 	public Map<String, Integer> delete(@RequestParam(name="memberSeq") String memberSeq) {
 		
-		int str_memberSeq = Integer.parseInt(memberSeq);
+		int n_memberSeq = Integer.parseInt(memberSeq);
 		
-		int n = memberService.delete(str_memberSeq);
+		int n = memberService.delete(n_memberSeq);
 		
 		Map<String, Integer> map = new HashMap<>();
 		map.put("n", n);
