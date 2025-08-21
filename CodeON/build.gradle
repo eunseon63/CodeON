@@ -25,39 +25,51 @@ repositories {
 }
 
 dependencies {
-<<<<<<< HEAD
-   implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
-   implementation 'org.springframework.boot:spring-boot-starter-web'
-   implementation 'org.mybatis.spring.boot:mybatis-spring-boot-starter:3.0.4'
-   compileOnly 'org.projectlombok:lombok'
-   developmentOnly 'org.springframework.boot:spring-boot-devtools'
-   runtimeOnly 'com.oracle.database.jdbc:ojdbc11'
-   annotationProcessor 'org.projectlombok:lombok'
-   providedRuntime 'org.springframework.boot:spring-boot-starter-tomcat'
-   testImplementation 'org.mybatis.spring.boot:mybatis-spring-boot-starter-test:3.0.4'
-   testImplementation 'org.springframework.boot:spring-boot-starter-test'
-   testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
-   // == JSTL 관련 추가 시작 ==
-   // https://mvnrepository.com/artifact/jakarta.servlet.jsp.jstl/jakarta.servlet.jsp.jstl-api
-   //implementation 'jakarta.servlet.jsp.jstl:jakarta.servlet.jsp.jstl-api'
-   implementation 'jakarta.servlet.jsp.jstl:jakarta.servlet.jsp.jstl-api:3.0.2'
-   
-   // https://mvnrepository.com/artifact/jakarta.servlet/jakarta.servlet-api
-   //compileOnly 'jakarta.servlet:jakarta.servlet-api'
-   compileOnly 'jakarta.servlet:jakarta.servlet-api:6.1.0'
-   
-   // https://mvnrepository.com/artifact/org.glassfish.web/jakarta.servlet.jsp.jstl
-   //implementation 'org.glassfish.web:jakarta.servlet.jsp.jstl'
-   implementation 'org.glassfish.web:jakarta.servlet.jsp.jstl:3.0.1'
-   // == JSTL 관련 추가 끝 ==
-   
-   // 내장 톰캣 관련(이것을 설정하지 않으면 경고 및 JSP가 실행되지 않음)
-   // https://mvnrepository.com/artifact/org.apache.tomcat.embed/tomcat-embed-jasper
-   //implementation 'org.apache.tomcat.embed:tomcat-embed-jasper'
-   implementation 'org.apache.tomcat.embed:tomcat-embed-jasper:10.1.42'
-   
-   // === Query DSL 에 필요한 것들 ===
-   // 1. SQL 쿼리를 자바코드로 생성해주는 것
+	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+	implementation 'org.springframework.boot:spring-boot-starter-web'
+	implementation 'org.mybatis.spring.boot:mybatis-spring-boot-starter:3.0.4'
+	compileOnly 'org.projectlombok:lombok'
+	developmentOnly 'org.springframework.boot:spring-boot-devtools'
+	runtimeOnly 'com.oracle.database.jdbc:ojdbc11'
+	annotationProcessor 'org.projectlombok:lombok'
+	providedRuntime 'org.springframework.boot:spring-boot-starter-tomcat'
+	testImplementation 'org.mybatis.spring.boot:mybatis-spring-boot-starter-test:3.0.4'
+	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+	testImplementation 'org.mybatis.spring.boot:mybatis-spring-boot-starter-test:3.0.4'
+	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+	
+	// JSON 관련 라이브러리 추가하기
+	// https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-starter-json
+	//implementation 'org.springframework.boot:spring-boot-starter-json'
+	implementation 'org.springframework.boot:spring-boot-starter-json:3.5.3'
+	
+	// https://mvnrepository.com/artifact/org.json/json
+	implementation 'org.json:json:20250517'
+	
+	// https://mvnrepository.com/artifact/com.googlecode.json-simple/json-simple
+	implementation 'com.googlecode.json-simple:json-simple:1.1.1'
+
+	// == JSTL 관련 추가 시작 ==
+	// https://mvnrepository.com/artifact/jakarta.servlet.jsp.jstl/jakarta.servlet.jsp.jstl-api
+	//implementation 'jakarta.servlet.jsp.jstl:jakarta.servlet.jsp.jstl-api'
+	implementation 'jakarta.servlet.jsp.jstl:jakarta.servlet.jsp.jstl-api:3.0.2'
+	
+	// https://mvnrepository.com/artifact/jakarta.servlet/jakarta.servlet-api
+	//compileOnly 'jakarta.servlet:jakarta.servlet-api'
+	compileOnly 'jakarta.servlet:jakarta.servlet-api:6.1.0'
+	
+	// https://mvnrepository.com/artifact/org.glassfish.web/jakarta.servlet.jsp.jstl
+	//implementation 'org.glassfish.web:jakarta.servlet.jsp.jstl'
+	implementation 'org.glassfish.web:jakarta.servlet.jsp.jstl:3.0.1'
+	// == JSTL 관련 추가 끝 ==
+	
+	// 내장 톰캣 관련(이것을 설정하지 않으면 경고 및 JSP가 실행되지 않음)
+	// https://mvnrepository.com/artifact/org.apache.tomcat.embed/tomcat-embed-jasper
+	//implementation 'org.apache.tomcat.embed:tomcat-embed-jasper'
+	implementation 'org.apache.tomcat.embed:tomcat-embed-jasper:10.1.42'
+	
+	// === Query DSL 에 필요한 것들 ===
+	// 1. SQL 쿼리를 자바코드로 생성해주는 것
     implementation 'com.querydsl:querydsl-jpa:5.0.0:jakarta'
     
     // 2. QClass(쿼리클래스) 를 생성해주는 것
