@@ -1,0 +1,129 @@
+package com.spring.app.controller;
+
+import java.util.List;
+
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+
+import com.spring.app.domain.MemberDTO;          // 세션에 들어있는 타입
+import com.spring.app.domain.MemberProfileDTO;   // 조회+수정 겸용 DTO
+import com.spring.app.entity.Department;
+import com.spring.app.service.MyPageService;
+
+import jakarta.servlet.http.HttpServletRequest;
+import lombok.RequiredArgsConstructor;
+
+@Controller
+@RequestMapping("/mypage")
+@RequiredArgsConstructor
+public class MyPageController {
+
+    private final MyPageService myPageService;
+
+    /** 마이페이지 조회 */
+    @GetMapping("")
+    public String main(Model model,
+                       @SessionAttribute(name = "loginuser", required = false) MemberDTO loginuser,
+                       HttpServletRequest request,
+                       RedirectAttributes ra) {
+
+        if (loginuser == null) {
+            ra.addFlashAttribute("message", "로그인이 필요합니다.");
+            return "redirect:" + request.getContextPath() + "/login/loginStart";
+        }
+
+        Integer loginMemberSeq = loginuser.getMemberSeq();
+
+        MemberProfileDTO profile = myPageService.getProfile(loginMemberSeq);
+        model.addAttribute("profile", profile);
+
+        // 화면에서 부서 드롭다운을 disabled로 표기만 한다면 생략 가능
+        List<Department> departments = myPageService.getDepartments();
+        model.addAttribute("departments", departments);
+        model.addAttribute("profileDeptName", profile.getDeptName());
+
+        return "mypage/main";
+    }
+
+    /** 개인정보 수정 (이름/이메일/휴대폰) */
+    @PostMapping("/update")
+    public String update(@ModelAttribute MemberProfileDTO form,
+                         @SessionAttribute(name = "loginuser", required = false) MemberDTO loginuser,
+                         HttpServletRequest request,
+                         RedirectAttributes ra,
+                         Model model) {
+
+        if (loginuser == null) {
+            ra.addFlashAttribute("message", "로그인이 필요합니다.");
+            return "redirect:" + request.getContextPath() + "/login/loginStart";
+        }
+
+        Integer loginMemberSeq = loginuser.getMemberSeq();
+
+        try {
+            myPageService.updateProfile(loginMemberSeq, form);
+            ra.addFlashAttribute("message", "수정 완료되었습니다.");
+            return "redirect:" + request.getContextPath() + "/mypage";
+        } catch (IllegalArgumentException | IllegalStateException ex) {
+            // 실패 시 재표시
+            MemberProfileDTO profile = myPageService.getProfile(loginMemberSeq);
+            model.addAttribute("profile", profile);
+
+            List<Department> departments = myPageService.getDepartments();
+            model.addAttribute("departments", departments);
+            model.addAttribute("profileDeptName", profile.getDeptName());
+            model.addAttribute("message", ex.getMessage());
+
+            return "mypage/main";
+        }
+    }
+    
+    @GetMapping("/password")
+    public String passwordPage(
+            @SessionAttribute(name = "loginuser", required = false) com.spring.app.domain.MemberDTO loginuser,
+            HttpServletRequest request,
+            RedirectAttributes ra) {
+
+        if (loginuser == null) {
+            ra.addFlashAttribute("message", "로그인이 필요합니다.");
+            return "redirect:" + request.getContextPath() + "/login/loginStart";
+        }
+        return "mypage/password";
+    }
+    
+    @PostMapping("/password")
+    public String changePassword(@RequestParam("currentPwd") String currentPwd,
+    							 @RequestParam("newPwd") String newPwd,
+    							 @RequestParam("newPwdConfirm") String newPwdConfirm,
+                                 @SessionAttribute(name = "loginuser", required = false) com.spring.app.domain.MemberDTO loginuser,
+                                 HttpServletRequest request,
+                                 RedirectAttributes ra) {
+
+        if (loginuser == null) {
+            ra.addFlashAttribute("message", "로그인이 필요합니다.");
+            return "redirect:" + request.getContextPath() + "/login/loginStart";
+        }
+
+        if (!newPwd.equals(newPwdConfirm)) {
+            ra.addFlashAttribute("message", "새 비밀번호와 확인이 일치하지 않습니다.");
+            ra.addFlashAttribute("error", true);
+            return "redirect:" + request.getContextPath() + "/mypage/password";
+        }
+
+        try {
+            myPageService.changePassword(loginuser.getMemberSeq(), currentPwd, newPwd);
+
+            // 선택: 보안 강화를 위해 세션 재생성(재로그인 유도)
+            request.getSession().invalidate();
+
+            ra.addFlashAttribute("message", "비밀번호가 변경되었습니다. 다시 로그인해주세요.");
+            return "redirect:" + request.getContextPath() + "/login/loginStart";
+        } catch (IllegalArgumentException | IllegalStateException ex) {
+            ra.addFlashAttribute("message", ex.getMessage());
+            ra.addFlashAttribute("error", true);
+            return "redirect:" + request.getContextPath() + "/mypage/password";
+        }
+    }
+}

@@ -31,9 +31,23 @@ public class CalendarDAO_imple implements CalendarDAO {
 
 	// 등록된 캘린더를 화면에 보여주는 거 만들자~ //
 	@Override
-	public List<CalendarAjaxDTO> selectCalendar(String fk_userid) {
-		List<CalendarAjaxDTO> calendarList = sqlsession.selectList("calendar.selectCalendar", fk_userid);
+	public List<CalendarAjaxDTO> selectCalendar(String calendarUser) {
+		List<CalendarAjaxDTO> calendarList = sqlsession.selectList("calendar.selectCalendar", calendarUser);
 		return calendarList;
+	}
+	
+	// 일정 상세보기 ㄱㄱ
+//	@Override
+//	public Map<String, String> detailCalendar(String calendarSeq) {
+//		Map<String, String> map = sqlsession.selectOne("calendar.detailCalendar" , calendarSeq);
+//		return map;
+//	}
+
+	// 일정 상세보기 ㄱㄱ
+	@Override
+	public Map<String, String> detailCalendar(int calendarSeq) {
+		Map<String, String> map = sqlsession.selectOne("calendar.detailCalendar" , calendarSeq);
+		return map;
 	}
 
 	

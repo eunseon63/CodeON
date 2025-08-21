@@ -84,28 +84,58 @@
         )
     </insert>
 	
-	<select id="selectCalendar" 
-        parameterType="string" 
-        resultType="com.spring.app.calendar.domain.CalendarAjaxDTO">
-				
-	    SELECT 
-	           c.calendar_seq       AS calendarSeq,
-	           c.calendar_name      AS calendarName,
-	           TO_CHAR(CALENDAR_START, 'YYYY-MM-DD"T"HH24:MI:SS') AS calendarStart,
-	           TO_CHAR(CALENDAR_END, 'YYYY-MM-DD"T"HH24:MI:SS') AS calendarEnd,
-	           c.calendar_color     AS calendarColor,
-	           bc.big_category_name AS calendarType,     -- 대분류 이름 → calendarType
-	           sc.small_category_name AS calendarLocation, -- 소분류 이름 → calendarLocation
-	           c.calendar_content   AS calendarContent,
-	           c.calendar_user      AS calendarUser
-	    FROM tbl_calendar c
-	    JOIN tbl_calendar_big_category bc 
-	      ON c.fk_big_category_seq = bc.big_category_seq
-	    JOIN tbl_calendar_small_category sc 
-	      ON c.fk_small_category_seq = sc.small_category_seq
-	    WHERE c.calendar_user = #{fk_userid, jdbcType=VARCHAR}
-	    ORDER BY c.calendar_start ASC
-	</select>
+	 <select id="selectCalendar" parameterType="string" resultType="com.spring.app.calendar.domain.CalendarAjaxDTO">
+        SELECT
+            c.calendar_seq          AS calendarSeq,
+            c.calendar_name         AS calendarName,
+            TO_CHAR(c.calendar_start, 'YYYY-MM-DD"T"HH24:MI:SS') AS calendarStart,
+            TO_CHAR(c.calendar_end,   'YYYY-MM-DD"T"HH24:MI:SS') AS calendarEnd,
+            c.calendar_color        AS calendarColor,
+            bc.big_category_name    AS calendarType,
+            sc.small_category_name  AS calendarLocation,
+            c.calendar_content      AS calendarContent,
+            c.calendar_user         AS calendarUser
+        FROM tbl_calendar c
+        JOIN tbl_calendar_big_category bc
+          ON c.fk_big_category_seq = bc.big_category_seq
+        JOIN tbl_calendar_small_category sc
+          ON c.fk_small_category_seq = sc.small_category_seq
+        WHERE c.calendar_user = #{calendarUser}
+        ORDER BY c.calendar_start ASC
+    </select>
+
+
+	<!-- 일정 상세보기 -->
+	<!-- <resultMap id="detailCalendar_Map" type="HashMap">
+	    <result property="calendarSeq"        column="CALENDAR_SEQ"/>
+	    <result property="calendarStart"      column="CALENDAR_START"/>
+	    <result property="calendarEnd"        column="CALENDAR_END"/>
+	    <result property="calendarName"       column="CALENDAR_NAME"/>
+	    <result property="calendarColor"      column="CALENDAR_COLOR"/>
+	    <result property="calendarLocation"   column="CALENDAR_LOCATION"/>
+	    <result property="calendarContent"    column="CALENDAR_CONTENT"/>
+	    <result property="memberName"         column="MEMBER_NAME"/>
+	</resultMap> -->
+
+	<!-- 일정 상세보기 -->
+    <select id="detailCalendar" parameterType="int" resultType="map">
+        SELECT
+            C.CALENDAR_SEQ,
+            TO_CHAR(C.CALENDAR_START, 'yyyy-mm-dd hh24:mi') AS CALENDAR_START,
+            TO_CHAR(C.CALENDAR_END, 'yyyy-mm-dd hh24:mi') AS CALENDAR_END,
+            C.CALENDAR_NAME,
+            C.CALENDAR_COLOR,
+            NVL(C.CALENDAR_LOCATION, '-') AS CALENDAR_LOCATION,
+            NVL(C.CALENDAR_CONTENT, '') AS CALENDAR_CONTENT,
+            M.MEMBER_NAME
+        FROM TBL_CALENDAR C
+        JOIN TBL_MEMBER M
+            ON C.FK_MEMBER_SEQ = M.MEMBER_SEQ
+        WHERE C.CALENDAR_SEQ = #{calendarSeq,jdbcType=INTEGER}
+    </select>
+
+
+
 	
 	
 

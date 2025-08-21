@@ -1,9 +1,16 @@
-<?xml version="1.0" encoding="UTF-8"?>
-
-<!DOCTYPE configuration PUBLIC "-//mybatis.org//DTD Config 3.0//EN" "http://mybatis.org/dtd/mybatis-3-config.dtd">
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE configuration PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-config.dtd">
 <configuration>
-    <typeAliases>
-        <typeAlias type="com.spring.app.calendar.domain.CalendarDTO" alias="CalendarDTO" />
-        <typeAlias type="com.spring.app.calendar.domain.CalendarAjaxDTO" alias="CalendarAjaxDTO" />
-    </typeAliases>
+  <settings>
+    <setting name="mapUnderscoreToCamelCase" value="true"/>
+    <setting name="jdbcTypeForNull" value="NULL"/>
+  </settings>
+  <!-- (선택) 별칭 패키지 -->
+  <typeAliases>
+    <typeAlias type="com.spring.app.calendar.domain.CalendarDTO" alias="CalendarDTO" />
+    <typeAlias type="com.spring.app.calendar.domain.CalendarAjaxDTO" alias="CalendarAjaxDTO" />
+    <package name="com.spring.app.attendance.domain"/>
+  </typeAliases>
 </configuration>
+

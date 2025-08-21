@@ -12,15 +12,14 @@ import lombok.Setter;
 //@NoArgsConstructor       // 파라미터가 없는 기본생성자를 만들어주는 것
 //@Data                    // lombok 에서 사용하는 @Data 어노테이션은 @Getter, @Setter, @ToString, @EqualsAndHashCode, @RequiredArgsConstructor 를 모두 합쳐놓은 종합선물세트인 것이다.
 public class CalendarAjaxDTO {
-    private String calendarSeq;
+	private String calendarSeq;
     private String calendarName;
     private String calendarStart;
     private String calendarEnd;
     private String calendarColor;
-    private String calendarType;
-    private String calendarLocation;
+    private String calendarType;       
+    private String calendarLocation;   
     private String calendarContent;
     private String calendarUser;
 
-    
 }

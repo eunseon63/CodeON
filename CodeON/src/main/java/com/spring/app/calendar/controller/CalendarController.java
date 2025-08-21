@@ -20,6 +20,7 @@ import com.spring.app.calendar.domain.CalendarAjaxDTO;
 import com.spring.app.calendar.domain.SmallCategoryDTO;
 import com.spring.app.calendar.service.CalendarService;
 import com.spring.app.calendar.service.CategoryService;
+import com.spring.app.common.MyUtil;
 import com.spring.app.domain.MemberDTO;
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -66,7 +67,7 @@ public class CalendarController {
         return mav;
     }
 
- // === 일정 등록 처리 ===
+    // === 일정 등록 처리하기 === // 
     @PostMapping("/addCalendarForm")
     public ModelAndView addCalendarEvent(ModelAndView mav, HttpServletRequest request) {
         HttpSession session = request.getSession();
@@ -130,44 +131,66 @@ public class CalendarController {
     }
     
    
-    
+    // 등록된 일정을 가져와 list.jsp 에 보여주기 //
     @ResponseBody
     @GetMapping(value="selectCalendar")
     public String selectCalendar(HttpServletRequest request) {
-        
-    	
-    	
-    	String fk_userid = request.getParameter("fk_userid");
-        // System.out.println("userid=" + fk_userid);
-        
-        
-        List<CalendarAjaxDTO> calendarList = service.selectCalendar(fk_userid);
+        // 요청 파라미터로 사번(calendar_user) 전달
+        String calendarUser = request.getParameter("fk_userid");
+        List<CalendarAjaxDTO> calendarList = service.selectCalendar(calendarUser);
 
         JSONArray jsArr = new JSONArray();
 
         if(calendarList != null && !calendarList.isEmpty()) {
             for(CalendarAjaxDTO svo : calendarList) {
                 JSONObject jsObj = new JSONObject();
-
                 jsObj.put("id", svo.getCalendarSeq());
                 jsObj.put("title", svo.getCalendarName());
                 jsObj.put("start", svo.getCalendarStart());
                 jsObj.put("end", svo.getCalendarEnd());
                 jsObj.put("color", svo.getCalendarColor());
-
-                jsObj.put("type", svo.getCalendarType());          // 대분류
-                jsObj.put("location", svo.getCalendarLocation());  // 소분류
+                jsObj.put("type", svo.getCalendarType());
+                jsObj.put("location", svo.getCalendarLocation());
                 jsObj.put("content", svo.getCalendarContent());
                 jsObj.put("user", svo.getCalendarUser());
-
                 jsArr.put(jsObj);
             }
         }
 
+        System.out.println("calendarUser=" + calendarUser);
+        
         return jsArr.toString();
     }
 
-    
+    // === 일정 상세보기 ===
+    @GetMapping(value="detailCalendar")
+    public ModelAndView detailCalendar(ModelAndView mav, HttpServletRequest request) {
+        
+        // 1. 요청 파라미터
+    	String calendarSeqStr = request.getParameter("calendarSeq");
+
+        // 2. 이전 페이지로 돌아가기용 URL (필요 시)
+        String listGoBackURL = request.getParameter("listGoBackURL");
+        mav.addObject("listGoBackURL", listGoBackURL);
+
+        // 3. 현재 URL 저장 (상세보기에서 수정페이지 이동 시 필요)
+        String goBackURL = MyUtil.getCurrentURL(request);
+        mav.addObject("goBackURL", goBackURL);
+
+        try {
+            int calendarSeq = Integer.parseInt(calendarSeqStr); // String → int
+
+            Map<String, String> map = service.detailCalendar(calendarSeq);
+            mav.addObject("map", map);
+
+            mav.setViewName("Calendar/detailCalendar");
+        } catch (NumberFormatException e) {
+            mav.setViewName("redirect:/calendar/calendarList");
+        }
+
+        return mav;
+    }
+
    
 
 

@@ -1,24 +1,36 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
-
 <%
     String ctxPath = request.getContextPath();
 %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 
-<!-- header.css 따로 분리 권장 -->
 <style>
-  header {
+  :root {
+    --header-height: 70px;
+  }
+  /* 전체 기본 여백 초기화 */
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+  body {
+    font-family: '맑은 고딕', sans-serif;
+    padding-top: var(--header-height); /* 헤더 높이만큼 아래로 */
+    background-color: #f8f9fb;
+  }
+  .site-header {
     display: flex;
     align-items: center;
     justify-content: space-between;
     padding: 15px 25px;
     border-bottom: 1px solid #ccc;
     background-color: white;
-    height: 70px;
-    box-sizing: border-box;
+    height: var(--header-height);
     position: fixed;
-    width: 100%;
     top: 0;
+    left: 0;
+    right: 0;
     z-index: 1000;
   }
   .left-section {
@@ -68,11 +80,16 @@
   .logout-btn:hover {
     background-color: #1C86EE;
   }
+
+  /* 본문 공통 */
+  main {
+    padding: 24px;
+    min-height: calc(100vh - var(--header-height));
+  }
 </style>
 
-<header>
+<header class="site-header">
   <div class="left-section">
-    <!-- 로고 전체 클릭 가능 -->
     <a href="<%= ctxPath %>/index" class="logo">
       <img src="<%= ctxPath %>/image/logo.png" alt="CODEON 로고" />
     </a>
@@ -80,12 +97,12 @@
     <nav>
       <a href="#">게시판</a>
       <a href="#">메일</a>
-      <a href="#">일정</a>
+      <a href="<%= ctxPath %>/Calendar/list">일정</a>
       <a href="<%= ctxPath %>/member/work">근태관리</a>
       <a href="<%= ctxPath %>/sign/main">전자결재</a>
-      <a href="#">주소록</a>
-      <a href="#">마이페이지</a>
-      <a href="<%= ctxPath %>/admin">인사(인사팀만)</a>
+      <a href="<%= ctxPath %>/address">주소록</a>
+      <a href="<%= ctxPath %>/mypage">마이페이지</a>
+      <a href="<%= ctxPath %>/member/register">인사(인사팀만)</a>
     </nav>
   </div>
 

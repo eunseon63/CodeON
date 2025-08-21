@@ -14,6 +14,8 @@ public class CategoryService_imple implements CategoryService {
 
 	 private final CategoryDAO dao;
 
+	 
+	 
 	 // 생성자 주입
     	public CategoryService_imple(CategoryDAO dao) {
     		this.dao = dao;
