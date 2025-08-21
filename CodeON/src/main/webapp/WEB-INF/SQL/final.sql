@@ -10,7 +10,7 @@ from user_recyclebin;
 
 purge recyclebin;  -- 휴지통에 있던 모든 테이블들을 영구히 삭제하는 것이다.
 -- Recyclebin이(가) 비워졌습니다.
-
+commit;
 drop sequence seq_department;
 
 CREATE SEQUENCE seq_department
@@ -89,3 +89,10 @@ select gender,
     ROUND((cnt/totalcnt)*100, 2) AS percentage
 FROM A CROSS JOIN B
 order by cnt desc;
+
+desc TBL_CALENDAR;
+desc TBL_CALENDAR_BIG_CATEGORY;
+desc TBL_CALENDAR_SMALL_CATEGORY;
+select * from tab;
+select * from TBL_CALENDAR;
+

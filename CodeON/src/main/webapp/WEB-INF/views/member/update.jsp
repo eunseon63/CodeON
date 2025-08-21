@@ -4,7 +4,9 @@
 <%
    String ctxPath = request.getContextPath();
 %>      
-<link rel="stylesheet" href="<%= ctxPath %>/bootstrap-4.6.2-dist/css/bootstrap.min.css" type="text/css"> 
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"> 
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
 <jsp:include page="../header/header.jsp" />
 <jsp:include page="../admin/adminsidebar.jsp" />
 
@@ -13,6 +15,71 @@
 <title>직원 수정</title>
 
 <script src="<%= ctxPath %>/js/jquery-3.7.1.min.js"></script>
+
+<style>
+    /* 전체 레이아웃 설정 */
+    body {
+        background-color: #f0f2f5; /* 더 부드러운 배경색 */
+        padding-top: 70px; /* 헤더 높이만큼 여백 */
+        padding-bottom: 60px; /* 푸터 높이만큼 여백 */
+    }
+    
+    .main-container {
+        display: flex;
+        justify-content: center;
+        width: 100%;
+        padding-left: 220px; /* 사이드바 너비만큼 여백 */
+        box-sizing: border-box;
+    }
+    
+    .update-card {
+        margin: 2rem;
+        max-width: 1400px;
+        width: 100%;
+        border: none; /* 카드 테두리 제거 */
+        border-radius: 12px; /* 모서리 둥글게 */
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1); /* 그림자 더 부드럽게 */
+    }
+    
+    .card-header {
+        background-color: #007bff; /* 헤더 색상을 버튼 색상과 통일 */
+        border-radius: 12px 12px 0 0;
+        padding: 1.5rem 1.25rem;
+    }
+    
+    .required-symbol {
+        color: #ff6b6b; /* 빨간색을 더 부드러운 색상으로 변경 */
+        font-weight: bold;
+    }
+
+    .btn-primary {
+        background-color: #007bff;
+        border-color: #007bff;
+        border-radius: 8px;
+        transition: all 0.2s ease;
+    }
+    
+    .btn-primary:hover {
+        background-color: #0056b3;
+        border-color: #0056b3;
+    }
+
+    .btn-outline-secondary {
+        border-radius: 8px;
+    }
+    
+    .form-control, .form-select {
+        border-radius: 8px; /* 입력 필드 모서리 둥글게 */
+    }
+
+    @media (max-width: 768px) {
+        .main-container {
+            padding-left: 0;
+            flex-direction: column;
+            align-items: center;
+        }
+    }
+</style>
 
 <script type="text/javascript">
 $(function() {
@@ -94,51 +161,47 @@ $(function() {
 
 
 <body>
-<br><br><br>
-<div class="container my-5">
-    <div class="card shadow-sm">
-        <div class="card-header bg-primary text-white text-center">
-            <h4 class="mb-0">사원 수정</h4>
+<div class="main-container">
+    <div class="card shadow-sm update-card">
+        <div class="card-header text-white text-center d-flex align-items-center justify-content-center py-3">
+            <h4 class="mb-0">직원 정보 수정</h4>
         </div>
-        <div class="card-body">
+        <div class="card-body p-4">
             <form name="updateFrm" novalidate>
-                <div class="form-row">
-                    <div class="form-group col-md-6">
-                        <label for="memberName">이름 <small class="text-danger">*</small></label>
-                        <input type="hidden" name="memberSeq" id="memberSeq" class="form-control"
-                               value="${mbrDto.memberSeq}">
-                        <input type="text" name="memberName" id="memberName" class="form-control"
-                               value="${mbrDto.memberName}" readonly>
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label for="memberName" class="form-label">이름 <span class="required-symbol">*</span></label>
+                        <input type="hidden" name="memberSeq" id="memberSeq" value="${mbrDto.memberSeq}">
+                        <input type="text" name="memberName" id="memberName" class="form-control" value="${mbrDto.memberName}" readonly>
                     </div>
-                    <div class="form-group col-md-6">
-                        <label for="memberUserid">아이디 <small class="text-danger">*</small></label>
-                        <input type="text" name="memberUserid" id="memberUserid" class="form-control"
-                               value="${mbrDto.memberUserid}">
+                    <div class="col-md-6">
+                        <label for="memberUserid" class="form-label">아이디 <span class="required-symbol">*</span></label>
+                        <input type="text" name="memberUserid" id="memberUserid" class="form-control" value="${mbrDto.memberUserid}">
                     </div>
                 </div>
 
-                <div class="form-row">
-                    <div class="form-group col-md-6">
-                        <label for="memberPwd">비밀번호<small class="text-danger">*</small></label>
-                        <input type="password" name="memberPwd" id="memberPwd" class="form-control">
+                <div class="row g-3 mt-3">
+                    <div class="col-md-6">
+                        <label for="memberPwd" class="form-label">비밀번호 <span class="required-symbol">*</span></label>
+                        <input type="password" name="memberPwd" id="memberPwd" class="form-control" placeholder="비밀번호를 입력하세요">
                     </div>
-                    <div class="form-group col-md-6">
-                        <label for="memberEmail">이메일 <small class="text-danger">*</small></label>
-                        <input type="email" name="memberEmail" id="memberEmail" class="form-control"
-                               value="${fn:substringBefore(mbrDto.memberEmail, '@')}">
+                    <div class="col-md-6">
+                        <label for="memberEmail" class="form-label">이메일 <span class="required-symbol">*</span></label>
+                        <input type="email" name="memberEmail" id="memberEmail" class="form-control" value="${mbrDto.memberEmail}" placeholder="example@domain.com">
                     </div>
                 </div>
 
-                <div class="form-group">
-                    <label for="memberMobile">전화번호<small class="text-danger">*</small></label>
-                    <input type="tel" name="memberMobile" id="memberMobile" class="form-control"
-                           value="${mbrDto.memberMobile}">
+                <div class="row g-3 mt-3">
+                    <div class="col-12">
+                        <label for="memberMobile" class="form-label">전화번호 <span class="required-symbol">*</span></label>
+                        <input type="tel" name="memberMobile" id="memberMobile" class="form-control" value="${mbrDto.memberMobile}" placeholder="010-1234-5678">
+                    </div>
                 </div>
 
-                <div class="form-row">
-                    <div class="form-group col-md-6">
-                        <label for="fkDepartmentSeq">부서 <small class="text-danger">*</small></label>
-                        <select name="fkDepartmentSeq" id="fkDepartmentSeq" class="form-control" required>
+                <div class="row g-3 mt-3">
+                    <div class="col-md-6">
+                        <label for="fkDepartmentSeq" class="form-label">부서 <span class="required-symbol">*</span></label>
+                        <select name="fkDepartmentSeq" id="fkDepartmentSeq" class="form-select" required>
                             <option value="" disabled>선택하세요</option>
                             <option value="10" ${mbrDto.fkDepartmentSeq == 10 ? "selected" : ""}>인사팀</option>
                             <option value="20" ${mbrDto.fkDepartmentSeq == 20 ? "selected" : ""}>개발팀</option>
@@ -147,10 +210,10 @@ $(function() {
                             <option value="50" ${mbrDto.fkDepartmentSeq == 50 ? "selected" : ""}>고객지원팀</option>
                         </select>
                     </div>
-                    <div class="form-group col-md-6">
-                        <label for="fkGradeSeq">직급 <small class="text-danger">*</small></label>
-                        <select name="fkGradeSeq" id="fkGradeSeq" class="form-control" required>
-                            <option value="">선택하세요</option>
+                    <div class="col-md-6">
+                        <label for="fkGradeSeq" class="form-label">직급 <span class="required-symbol">*</span></label>
+                        <select name="fkGradeSeq" id="fkGradeSeq" class="form-select" required>
+                            <option value="" disabled>선택하세요</option>
                             <option value="1" ${mbrDto.fkGradeSeq == 1 ? "selected" : ""}>사원</option>
                             <option value="2" ${mbrDto.fkGradeSeq == 2 ? "selected" : ""}>대리</option>
                             <option value="3" ${mbrDto.fkGradeSeq == 3 ? "selected" : ""}>과장</option>
@@ -160,35 +223,43 @@ $(function() {
                     </div>
                 </div>
 
-                <div class="form-row">
-                    <div class="form-group col-md-4">
-                        <label for="memberBirthday">생년월일<small class="text-danger">*</small></label>
-                        <input type="text" name="memberBirthday" id="memberBirthday" class="form-control" placeholder="YYYYMMDD"
-                               value="${mbrDto.memberBirthday}">
+                <div class="row g-3 mt-3 align-items-end">
+                    <div class="col-md-4">
+                        <label for="memberBirthday" class="form-label">생년월일 <span class="required-symbol">*</span></label>
+                        <input type="text" name="memberBirthday" id="memberBirthday" class="form-control" value="${fn:substring(mbrDto.memberBirthday, 0, 8)}" placeholder="YYYYMMDD">
                     </div>
-                    <div class="form-group col-md-4">
-                        <label for="memberHiredate">입사일자<small class="text-danger">*</small></label>
-                        <input type="date" name="memberHiredate" id="memberHiredate" class="form-control"
-                               value="${mbrDto.memberHiredate}">
+                    <div class="col-md-4">
+                        <label for="memberHiredate" class="form-label">입사일자 <span class="required-symbol">*</span></label>
+                        <input type="date" name="memberHiredate" id="memberHiredate" class="form-control" value="${fn:substring(mbrDto.memberHiredate, 0, 10)}">
                     </div>
-                    <div class="form-group col-md-4">
-                        <label class="d-block">성별<small class="text-danger">*</small></label>
-                        <div class="form-check form-check-inline">
-                            <input class="form-check-input" type="radio" name="memberGender" id="genderMale" value="0"
-                                   ${mbrDto.memberGender == 0 ? "checked" : ""} required>
-                            <label class="form-check-label" for="genderMale">남성</label>
-                        </div>
-                        <div class="form-check form-check-inline">
-                            <input class="form-check-input" type="radio" name="memberGender" id="genderFemale" value="1"
-                                   ${mbrDto.memberGender == 1 ? "checked" : ""} required>
-                            <label class="form-check-label" for="genderFemale">여성</label>
+                    <div class="col-md-4 d-flex flex-column justify-content-center">
+                        <label class="form-label">성별 <span class="required-symbol">*</span></label>
+                        <div class="d-flex align-items-center">
+                            <div class="form-check me-3">
+                                <input class="form-check-input" type="radio" name="memberGender" id="genderMale" value="0" ${mbrDto.memberGender == 0 ? "checked" : ""} required>
+                                <label class="form-check-label" for="genderMale">남성</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="memberGender" id="genderFemale" value="1" ${mbrDto.memberGender == 1 ? "checked" : ""} required>
+                                <label class="form-check-label" for="genderFemale">여성</label>
+                            </div>
                         </div>
                     </div>
                 </div>
 
-                <div class="text-center mt-4">
-                    <button type="button" id="btnUpdate" class="btn btn-primary px-5 me-2">수정</button>
-                    <button type="reset" class="btn btn-outline-secondary px-5">초기화</button>
+                <div class="d-flex justify-content-center mt-4">
+                    <button type="button" id="btnUpdate" class="btn btn-primary px-5 me-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-pencil-square me-1" viewBox="0 0 16 16">
+                            <path d="M15.502 1.94a.5.5 0 0 1 0 .706L14.459 3.69l-2-2L13.502.646a.5.5 0 0 1 .707 0l1.293 1.293zm-1.75 2.456-2-2L4.939 9.21a.5.5 0 0 0-.121.196l-.805 2.414a.25.25 0 0 0 .316.316l2.414-.805a.5.5 0 0 0 .196-.121L12.43 12.43a.5.5 0 0 1-.707.707L10.207 10.414 9.569 9.776l-2.389 2.389a.25.25 0 0 0 .316.316l2.414-.805a.5.5 0 0 0 .196-.121l6.124-6.124a.5.5 0 0 1 .707 0z"/>
+                        </svg>
+                        수정
+                    </button>
+                    <button type="reset" class="btn btn-outline-secondary px-5">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-counterclockwise me-1" viewBox="0 0 16 16">
+                            <path fill-rule="evenodd" d="M8 3a5 5 0 1 1-4.57 7.5l-.5-.87A4 4 0 1 0 8 4a4 4 0 0 0-4 4v.5a.5.5 0 0 1-1 0V8a5 5 0 0 1 10 0v1.5a.5.5 0 0 1-.5.5z"/>
+                        </svg>
+                        초기화
+                    </button>
                 </div>
             </form>
         </div>
