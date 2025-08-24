@@ -44,32 +44,46 @@ public class AttendanceService_imple implements AttendanceService {
     @Override
     public void endWork(int memberSeq) {
         LocalDate today = LocalDate.now(ZONE);
-        // 오늘 날짜와 해당 직원 번호로 근태 테이블 조회.
+
         var rec = attendanceDAO.selectByMemberAndDate(memberSeq, today);
         if (rec == null || rec.getStartTime() == null) {
-            throw new IllegalStateException("출근 기록이 없습니다.");	// 롤백 예외 발생
+            throw new IllegalStateException("출근 기록이 없습니다.");
         }
-        // 출근 기록이 있으면 퇴근 기록
-        LocalDateTime now = LocalDateTime.now(ZONE);	// 퇴근시간으로 현재 시간을 저장
-        // 출근 시간(rec.getStartTime())과 현재 시간(now) 사이의 분 단위 근무 시간 계산
-        long worked = ChronoUnit.MINUTES.between(rec.getStartTime(), now);
-        // 초과근무 계산. STANDARD_MIN = 480분(8시간) 기준.
-        // 실제 근무 시간 worked가 기준보다 많으면 그 차이를 초과근무 시간으로 설정.
-        // 음수가 되지 않도록 Math.max(0, …) 사용.
-        int overtime = (int) Math.max(0, worked - STANDARD_MIN);
+        if (rec.getEndTime() != null) {
+            // 이미 퇴근 처리되어 있으면 재계산/저장 불필요
+            return;
+        }
+
+        LocalDateTime now = LocalDateTime.now(ZONE);
+
+        // 원시 총 근무분
+        long total = Duration.between(rec.getStartTime(), now).toMinutes();
+        if (total < 0) total = 0;
+
+        // 4시간 초과 시 60분 차감
+        long adjusted = (total > 240 ? total - 60 : total);
+        if (adjusted < 0) adjusted = 0;
+
+        // 연장근무 = (조정근무분 - 480) 이상만
+        int overtime = (int) Math.max(0, adjusted - 480);
+
+        // 저장: Mapper에서 END_TIME이 NULL인 경우에만 세팅하도록 방지 조건도 함께 추가
         attendanceDAO.updateEnd(memberSeq, today, now, overtime);
     }
+
 
     @Override
     public List<AttendanceRecord> getMonthly(int memberSeq, YearMonth ym) {
         List<AttendanceRecord> list = attendanceDAO.selectMonthly(memberSeq, ym);
         for (AttendanceRecord att : list) {
             if (att.getStartTime() != null && att.getEndTime() != null) {
-                long minutes = ChronoUnit.MINUTES.between(att.getStartTime(), att.getEndTime());
-                att.setWorkedMinutes((int) minutes);
+                long minutes = Duration.between(att.getStartTime(), att.getEndTime()).toMinutes();
+                if (minutes < 0) minutes = 0;
+                long adjusted = (minutes > 240 ? minutes - 60 : minutes); // ★ 4h 초과 60분 차감
+                att.setWorkedMinutes((int) adjusted);
 
-                long h = minutes / 60;
-                long m = minutes % 60;
+                long h = adjusted / 60;
+                long m = adjusted % 60;
                 att.setWorkedTimeStr(String.format("%02d:%02d", h, m));
             } else {
                 att.setWorkedMinutes(null);
@@ -119,7 +133,7 @@ public class AttendanceService_imple implements AttendanceService {
     @Override
     public AnnualLeaveDTO getAnnualLeave(int memberSeq) {
         AnnualLeaveDTO dto = attendanceDAO.selectAnnualLeaveByMemberSeq(memberSeq);
-        if (dto == null) {
+        if (dto == null) {	// 새입사자나 기록이 없는 사람도 기본값(0,0,0)으로 새 DTO를 만들어 반환해야 오류없이 페이지를 보여줌
             dto = AnnualLeaveDTO.builder()
                     .memberSeq(memberSeq)
                     .totalLeave(0).usedLeave(0).remainingLeave(0)
