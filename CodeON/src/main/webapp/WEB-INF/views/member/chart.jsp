@@ -354,6 +354,8 @@ function func_choice(searchTypeVal) {
 	   			});
 	   			
 	   			 break;
+	   			 
+	   			
 	   }
 }
 </script>

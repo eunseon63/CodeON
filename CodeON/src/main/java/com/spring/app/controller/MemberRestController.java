@@ -2,6 +2,7 @@ package com.spring.app.controller;
 
 import java.io.File;
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -296,5 +297,4 @@ public class MemberRestController {
 		return genderPercentageList;
 	}
 	
-
 }
