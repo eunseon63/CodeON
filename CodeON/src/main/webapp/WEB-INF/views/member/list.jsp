@@ -17,14 +17,64 @@
 <script src="<%= ctxPath %>/js/jquery-3.7.1.min.js"></script>
 
 <style>
-    /* Bootstrap 5에서는 align-middle 클래스로 대체 가능 */
+    /* 기본적인 레이아웃 설정 */
+    body {
+        background-color: #f8f9fa; /* 부드러운 배경색 */
+        padding-top: 70px; /* 헤더 높이만큼 여백 */
+        padding-bottom: 60px; /* 푸터 높이만큼 여백 */
+    }
+    
+    .main-container {
+        display: flex;
+        justify-content: center;
+        width: 100%;
+        padding-left: 220px; /* 사이드바 너비만큼 여백 */
+        box-sizing: border-box;
+    }
+
+    /* 카드 스타일 */
+    .employee-card {
+        margin: 2rem;
+        max-width: 1400px;
+        width: 100%;
+    }
+
+    /* 테이블 스타일 */
+    .table-hover tbody tr:hover {
+        background-color: #e9ecef;
+        cursor: pointer;
+    }
     table th, table td {
-        vertical-align: middle !important;
+        vertical-align: middle;
         text-align: center;
     }
-    .table-hover tbody tr:hover {
-        background-color: #f9f9f9;
-        cursor: pointer;
+    
+    /* 검색 폼 및 버튼 그룹 스타일 */
+    .search-form-group {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+    .action-buttons {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+    
+    @media (max-width: 768px) {
+        .main-container {
+            padding-left: 0;
+            flex-direction: column;
+            align-items: center;
+        }
+        .sidebar {
+            position: relative;
+            width: 100%;
+            height: auto;
+            border-right: none;
+            border-bottom: 1px solid #ccc;
+            top: 0;
+        }
     }
 </style>
 
@@ -185,21 +235,29 @@ function goDetail(memberSeq) {
 
                 <div class="d-flex flex-wrap align-items-center mb-2">
                     <button type="button" class="btn btn-success btn-sm me-2 mb-2" id="btnExcel">
+
+<body class="bg-light">
+    <div class="main-container">
+        <div class="card shadow-sm employee-card">
+            <div class="card-header bg-white d-flex flex-wrap justify-content-between align-items-center py-3">
+                <h5 class="card-title fw-bold mb-0">
+                    &nbsp;직원 목록
+                </h5>
+                <div class="action-buttons">
+                    <button type="button" class="btn btn-success btn-sm" id="btnExcel">
                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-file-earmark-excel-fill" viewBox="0 0 16 16">
                             <path d="M9.293 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V4.707A1 1 0 0 0 13.707 4L10 .293A1 1 0 0 0 9.707 0H9.293zM5.884 6.68L8 9.882l2.116-3.202a.5.5 0 1 1 .768.64L8.651 10l2.233 3.442a.5.5 0 1 1-.768.64L8 11.318l-2.116 3.202a.5.5 0 1 1-.768-.64L7.349 10 5.116 6.68a.5.5 0 1 1 .768-.64z"/>
                         </svg>
                         Excel 다운로드
                     </button>
-
-                    <button type="button" class="btn btn-info btn-sm me-2 mb-2" id="btn_upload_excel">
+                    <button type="button" class="btn btn-info btn-sm" id="btn_upload_excel">
                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-upload" viewBox="0 0 16 16">
                             <path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 .5-.5V5a.5.5 0 0 1-.5-.5H14a.5.5 0 0 1-.5.5v2H2v-2a.5.5 0 0 1-.5-.5H.5v4.9z"/>
                             <path d="M7.646 1.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1-.708.708L8.5 2.707V11.5a.5.5 0 0 1-1 0V2.707L4.354 4.854a.5.5 0 1 1-.708-.708l3-3z"/>
                         </svg>
                         Excel 업로드
                     </button>
-
-                    <a href="<%=ctxPath%>/resources/excel/sample.xlsx" class="btn btn-warning btn-sm mb-2" download>
+                    <a href="<%=ctxPath%>/resources/excel/sample.xlsx" class="btn btn-warning btn-sm" download>
                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-file-earmark-arrow-down-fill" viewBox="0 0 16 16">
                             <path d="M9.293 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V4.707A1 1 0 0 0 13.707 4L10 .293A1 1 0 0 0 9.707 0H9.293zm-3.9 6.7a.5.5 0 0 0-.708.708l2 2a.5.5 0 0 0 .708 0l2-2a.5.5 0 0 0-.708-.708L8.5 8.293V5.5a.5.5 0 0 0-1 0v2.793L6.293 6.7z"/>
                         </svg>
@@ -207,138 +265,156 @@ function goDetail(memberSeq) {
                     </a>
                 </div>
             </div>
-
+            
             <form name="excel_upload_frm" style="display: none;">
                 <input type="file" id="upload_excel_file" name="excel_file"
                        accept=".csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel" />
             </form>
-
-            <h5 class="card-title mb-3 text-primary fw-bold">사원 목록</h5>
-            <div class="table-responsive">
-                <table class="table table-hover table-bordered align-middle text-center">
-                    <thead class="table-light">
-                        <tr>
-                            <th>입사일</th>
-                            <th>사원번호</th>
-                            <th>부서</th>
-                            <th>직급</th>
-                            <th>이름</th>
-                            <th>이메일</th>
-                            <th>관리</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <c:choose>
-                            <c:when test="${empty MemberDtoList}">
-                                <tr>
-                                    <td colspan="7">가입된 회원이 없습니다.</td>
-                                </tr>
-                            </c:when>
-                            <c:otherwise>
-                                <c:forEach var="item" items="${MemberDtoList}">
-                                    <tr onclick="goDetail(${item.memberSeq})">
-                                        <td>${item.memberHiredate}</td>
-                                        <td>${item.memberSeq}</td>
-                                        <td>
-                                            <c:choose>
-                                                <c:when test="${item.fkDepartmentSeq == 10}">인사팀</c:when>
-                                                <c:when test="${item.fkDepartmentSeq == 20}">개발팀</c:when>
-                                                <c:when test="${item.fkDepartmentSeq == 30}">기획팀</c:when>
-                                                <c:when test="${item.fkDepartmentSeq == 40}">영업팀</c:when>
-                                                <c:when test="${item.fkDepartmentSeq == 50}">고객지원팀</c:when>
-                                            </c:choose>
-                                        </td>
-                                        <td>
-                                            <c:choose>
-                                                <c:when test="${item.fkGradeSeq == 1}">사원</c:when>
-                                                <c:when test="${item.fkGradeSeq == 2}">대리</c:when>
-                                                <c:when test="${item.fkGradeSeq == 3}">과장</c:when>
-                                                <c:when test="${item.fkGradeSeq == 4}">부장</c:when>
-                                                <c:when test="${item.fkGradeSeq == 5}">사장</c:when>
-                                            </c:choose>
-                                        </td>
-                                        <td>${item.memberName}</td>
-                                        <td>${item.memberEmail}</td>
-                                        <td onclick="event.stopPropagation();">
-                                            <div class="d-flex justify-content-center">
-                                                <button class="btn btn-sm btn-outline-primary me-1"
-                                                        onclick="window.location.href='<%= ctxPath%>/member/update?memberSeq=${item.memberSeq}'">
-                                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-pencil-square" viewBox="0 0 16 16">
-                                                        <path d="M15.502 1.94a.5.5 0 0 1 0 .706L14.459 3.69l-2-2L13.502.646a.5.5 0 0 1 .707 0l1.293 1.293zm-1.75 2.456-2-2L4.939 9.21a.5.5 0 0 0-.121.196l-.805 2.414a.25.25 0 0 0 .316.316l2.414-.805a.5.5 0 0 0 .196-.121L12.43 12.43a.5.5 0 0 1-.707.707L10.207 10.414 9.569 9.776l-2.389 2.389a.25.25 0 0 0 .316.316l2.414-.805a.5.5 0 0 0 .196-.121l6.124-6.124a.5.5 0 0 1 .707 0z"/>
-                                                    </svg>
-                                                    수정
-                                                </button>
-                                                <button class="btn btn-sm btn-outline-danger" onclick="goDelete('${item.memberSeq}')">
-                                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash-fill" viewBox="0 0 16 16">
-                                                        <path d="M2.5 1a1 1 0 0 0-1 1v1a1 1 0 0 0 1 1H3v9a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V4h.5a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H2.5zM3 4h10v9a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V4z"/>
-                                                    </svg>
-                                                    삭제
-                                                </button>
-                                            </div>
-                                        </td>
+            
+            <div class="card-body p-4">
+				<form name="searchFrm" class="d-flex align-items-center mb-4">
+				    <select class="form-select me-2" id="searchType" name="searchType" style="flex-shrink: 0; width: 140px;">
+				        <option value="">검색 기준</option>
+				        <option value="fkDepartmentSeq">부서</option>
+				        <option value="fkGradeSeq">직급</option>
+				        <option value="memberName">이름</option>
+				    </select>
+				    <input type="text" class="form-control me-2" id="searchWord" name="searchWord" placeholder="검색어 입력" style="flex-grow: 1;">
+				    <select class="form-select me-2" id="gender" name="gender" style="flex-shrink: 0; width: 90px;">
+				        <option value="">성별</option>
+				        <option value="0">남</option>
+				        <option value="1">여</option>
+				    </select>
+				    <button type="button" class="btn btn-primary" onclick="goSearch()">
+				        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-search" viewBox="0 0 16 16">
+				            <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/>
+				        </svg>
+				    </button>
+				</form>
+				
+                <div class="table-responsive">
+                    <table class="table table-hover table-bordered align-middle">
+                        <thead class="table-light">
+                            <tr>
+                                <th>입사일</th>
+                                <th>사원번호</th>
+                                <th>부서</th>
+                                <th>직급</th>
+                                <th>이름</th>
+                                <th>이메일</th>
+                                <th>관리</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <c:choose>
+                                <c:when test="${empty MemberDtoList}">
+                                    <tr>
+                                        <td colspan="7">가입된 회원이 없습니다.</td>
                                     </tr>
-                                </c:forEach>
-                            </c:otherwise>
-                        </c:choose>
-                    </tbody>
-                </table>
+                                </c:when>
+                                <c:otherwise>
+                                    <c:forEach var="item" items="${MemberDtoList}">
+                                        <tr onclick="goDetail(${item.memberSeq})">
+                                            <td>${item.memberHiredate}</td>
+                                            <td>${item.memberSeq}</td>
+                                            <td>
+                                                <c:choose>
+                                                    <c:when test="${item.fkDepartmentSeq == 10}">인사팀</c:when>
+                                                    <c:when test="${item.fkDepartmentSeq == 20}">개발팀</c:when>
+                                                    <c:when test="${item.fkDepartmentSeq == 30}">기획팀</c:when>
+                                                    <c:when test="${item.fkDepartmentSeq == 40}">영업팀</c:when>
+                                                    <c:when test="${item.fkDepartmentSeq == 50}">고객지원팀</c:when>
+                                                </c:choose>
+                                            </td>
+                                            <td>
+                                                <c:choose>
+                                                    <c:when test="${item.fkGradeSeq == 1}">사원</c:when>
+                                                    <c:when test="${item.fkGradeSeq == 2}">대리</c:when>
+                                                    <c:when test="${item.fkGradeSeq == 3}">과장</c:when>
+                                                    <c:when test="${item.fkGradeSeq == 4}">부장</c:when>
+                                                    <c:when test="${item.fkGradeSeq == 5}">사장</c:when>
+                                                </c:choose>
+                                            </td>
+                                            <td>${item.memberName}</td>
+                                            <td>${item.memberEmail}</td>
+                                            <td onclick="event.stopPropagation();">
+                                                <div class="d-flex justify-content-center">
+                                                    <button class="btn btn-sm btn-outline-primary me-1"
+                                                            onclick="window.location.href='<%= ctxPath%>/member/update?memberSeq=${item.memberSeq}'">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-pencil-square" viewBox="0 0 16 16">
+                                                            <path d="M15.502 1.94a.5.5 0 0 1 0 .706L14.459 3.69l-2-2L13.502.646a.5.5 0 0 1 .707 0l1.293 1.293zm-1.75 2.456-2-2L4.939 9.21a.5.5 0 0 0-.121.196l-.805 2.414a.25.25 0 0 0 .316.316l2.414-.805a.5.5 0 0 0 .196-.121L12.43 12.43a.5.5 0 0 1-.707.707L10.207 10.414 9.569 9.776l-2.389 2.389a.25.25 0 0 0 .316.316l2.414-.805a.5.5 0 0 0 .196-.121l6.124-6.124a.5.5 0 0 1 .707 0z"/>
+                                                        </svg>
+                                                        수정
+                                                    </button>
+                                                    <button class="btn btn-sm btn-outline-danger" onclick="goDelete('${item.memberSeq}')">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash-fill" viewBox="0 0 16 16">
+                                                            <path d="M2.5 1a1 1 0 0 0-1 1v1a1 1 0 0 0 1 1H3v9a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V4h.5a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H2.5zM3 4h10v9a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V4z"/>
+                                                        </svg>
+                                                        삭제
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    </c:forEach>
+                                </c:otherwise>
+                            </c:choose>
+                        </tbody>
+                    </table>
+                </div>
 
                 <div class="text-center mt-4">
                     ${requestScope.pageBar}
                 </div>
             </div>
-
         </div>
     </div>
-</div>
 
-<div class="modal fade" id="memberDetailModal" tabindex="-1" aria-labelledby="memberDetailModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="memberDetailModalLabel">직원 상세 정보</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <div class="row mb-2">
-                    <div class="col-4 fw-bold">이름</div>
-                    <div class="col-8" id="detailMemberName"></div>
+    <div class="modal fade" id="memberDetailModal" tabindex="-1" aria-labelledby="memberDetailModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="memberDetailModalLabel">직원 상세 정보</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-                <div class="row mb-2">
-                    <div class="col-4 fw-bold">사원번호</div>
-                    <div class="col-8" id="detailMemberSeq"></div>
+                <div class="modal-body">
+                    <div class="row mb-2">
+                        <div class="col-4 fw-bold">이름</div>
+                        <div class="col-8" id="detailMemberName"></div>
+                    </div>
+                    <div class="row mb-2">
+                        <div class="col-4 fw-bold">사원번호</div>
+                        <div class="col-8" id="detailMemberSeq"></div>
+                    </div>
+                    <div class="row mb-2">
+                        <div class="col-4 fw-bold">부서</div>
+                        <div class="col-8" id="detailDepartment"></div>
+                    </div>
+                    <div class="row mb-2">
+                        <div class="col-4 fw-bold">직급</div>
+                        <div class="col-8" id="detailGrade"></div>
+                    </div>
+                    <div class="row mb-2">
+                        <div class="col-4 fw-bold">입사일</div>
+                        <div class="col-8" id="detailMemberHiredate"></div>
+                    </div>
+                    <div class="row mb-2">
+                        <div class="col-4 fw-bold">성별</div>
+                        <div class="col-8" id="detailMemberGender"></div>
+                    </div>
+                    <div class="row mb-2">
+                        <div class="col-4 fw-bold">이메일</div>
+                        <div class="col-8" id="detailMemberEmail"></div>
+                    </div>
+                    <div class="row mb-2">
+                        <div class="col-4 fw-bold">연락처</div>
+                        <div class="col-8" id="detailMemberMobile"></div>
+                    </div>
                 </div>
-                <div class="row mb-2">
-                    <div class="col-4 fw-bold">부서</div>
-                    <div class="col-8" id="detailDepartment"></div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">닫기</button>
                 </div>
-                <div class="row mb-2">
-                    <div class="col-4 fw-bold">직급</div>
-                    <div class="col-8" id="detailGrade"></div>
-                </div>
-                <div class="row mb-2">
-                    <div class="col-4 fw-bold">입사일</div>
-                    <div class="col-8" id="detailMemberHiredate"></div>
-                </div>
-                <div class="row mb-2">
-                    <div class="col-4 fw-bold">성별</div>
-                    <div class="col-8" id="detailMemberGender"></div>
-                </div>
-                <div class="row mb-2">
-                    <div class="col-4 fw-bold">이메일</div>
-                    <div class="col-8" id="detailMemberEmail"></div>
-                </div>
-                <div class="row mb-2">
-                    <div class="col-4 fw-bold">연락처</div>
-                    <div class="col-8" id="detailMemberMobile"></div>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">닫기</button>
             </div>
         </div>
     </div>
-</div>
-
-<jsp:include page="../footer/footer.jsp" />
 </body>
+</html>

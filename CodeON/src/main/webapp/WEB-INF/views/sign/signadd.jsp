@@ -355,7 +355,7 @@ function openSignlineLoadPopup(){
           </div>
           <div class="row2">
             <div>문서번호</div>
-            <input class="input" id="docNo" placeholder="자동발급 (저장 후 생성)" readonly>
+            <input class="input" id="docNo" value="${requestScope.previewNo}" readonly>
           </div>
         </div>
       </section>
@@ -438,8 +438,8 @@ function openSignlineLoadPopup(){
 
           <!-- 지출 결의서 -->
           <section id="pane-expense" class="form f-expense">
-            <div class="row2"><div>제목</div><input class="input" id="e-title" placeholder="예) 8월 팀 운영비 결의"></div>
-            <div class="row2" style="margin-top:8px"><div>지출 사유</div><input class="input" id="e-reason" placeholder="지출 사유를 입력하세요."></div>
+            <div class="row2"><div>제목</div><input class="input" id="e-title"></div>
+            <div class="row2" style="margin-top:8px"><div>지출 사유</div><input class="input" id="e-reason"></div>
 
             <div style="margin-top:12px">
               <div style="display:flex;justify-content:space-between;align-items:center">
@@ -452,22 +452,14 @@ function openSignlineLoadPopup(){
               <table class="exp-table" id="expTable">
                 <thead>
                   <tr>
-                    <th style="width:40px"><input type="checkbox" id="chkAll"></th>
                     <th style="width:140px">지출일자</th>
-                    <th style="width:140px">분류</th>
                     <th>사용처</th>
                     <th style="width:160px">금액</th>
                   </tr>
                 </thead>
                 <tbody>
                   <tr>
-                    <td class="center"><input type="checkbox" class="row-chk"></td>
                     <td><input type="date" class="date"></td>
-                    <td>
-                      <select class="select">
-                        <option>식대</option><option>교통비</option><option>소모품</option><option>숙박</option><option>기타</option>
-                      </select>
-                    </td>
                     <td><input class="input" placeholder="사용처 입력"></td>
                     <td><input type="number" class="number money" min="0" step="100" placeholder="0"></td>
                   </tr>

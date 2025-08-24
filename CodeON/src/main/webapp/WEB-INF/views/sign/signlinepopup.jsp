@@ -61,9 +61,9 @@ main {
 }
 
 .tree {
-	padding: 8px 12px;
-	overflow: auto;
-	height: 100%;
+  padding: 16px 18px;
+  overflow: auto;
+  max-height: calc(100vh - 140px);
 }
 
 .group {

@@ -37,6 +37,17 @@ dependencies {
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testImplementation 'org.mybatis.spring.boot:mybatis-spring-boot-starter-test:3.0.4'
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+	
+	// JSON 관련 라이브러리 추가하기
+	// https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-starter-json
+	//implementation 'org.springframework.boot:spring-boot-starter-json'
+	implementation 'org.springframework.boot:spring-boot-starter-json:3.5.3'
+	
+	// https://mvnrepository.com/artifact/org.json/json
+	implementation 'org.json:json:20250517'
+	
+	// https://mvnrepository.com/artifact/com.googlecode.json-simple/json-simple
+	implementation 'com.googlecode.json-simple:json-simple:1.1.1'
 
 	// == JSTL 관련 추가 시작 ==
 	// https://mvnrepository.com/artifact/jakarta.servlet.jsp.jstl/jakarta.servlet.jsp.jstl-api

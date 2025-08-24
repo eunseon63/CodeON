@@ -99,6 +99,97 @@
   #table_container table { width: 100% }
   #table_container th, #table_container td { border: 1px solid gray; text-align: center; } 
   #table_container th { background-color: #595959; color: white; } 
+<style>
+    body {
+        background-color: #f8f9fa;
+        padding-top: 70px;
+        padding-bottom: 60px;
+    }
+    
+    .main-container {
+        display: flex;
+        justify-content: center;
+        width: 100%;
+        padding-left: 220px;
+        box-sizing: border-box;
+    }
+
+    .stat-card {
+        margin: 2rem;
+        max-width: 1400px;
+        width: 100%;
+    }
+    
+    .highcharts-figure,
+    .highcharts-data-table table {
+        min-width: 320px;
+        max-width: 800px;
+        margin: 1em auto;
+    }
+    
+    div#chart_container {
+        height: 400px;
+    }
+    
+    .highcharts-data-table table {
+        font-family: Verdana, sans-serif;
+        border-collapse: collapse;
+        border: 1px solid #ebebeb;
+        margin: 10px auto;
+        text-align: center;
+        width: 100%;
+        max-width: 500px;
+    }
+    
+    .highcharts-data-table caption {
+        padding: 1em 0;
+        font-size: 1.2em;
+        color: #555;
+    }
+    
+    .highcharts-data-table th {
+        font-weight: 600;
+        padding: 0.5em;
+    }
+    
+    .highcharts-data-table td,
+    .highcharts-data-table th,
+    .highcharts-data-table caption {
+        padding: 0.5em;
+    }
+    
+    .highcharts-data-table thead tr,
+    .highcharts-data-table tr:nth-child(even) {
+        background: #f8f8f8;
+    }
+    
+    .highcharts-data-table tr:hover {
+        background: #f1f7ff;
+    }
+    
+    input[type="number"] {
+        min-width: 50px;
+    }
+    
+    div#table_container table {width: 100%}
+    div#table_container th, div#table_container td {border: solid 1px gray; text-align: center;} 
+    div#table_container th {background-color: #595959; color: white;} 
+    
+    @media (max-width: 768px) {
+        .main-container {
+            padding-left: 0;
+            flex-direction: column;
+            align-items: center;
+        }
+        .sidebar {
+            position: relative;
+            width: 100%;
+            height: auto;
+            border-right: none;
+            border-bottom: 1px solid #ccc;
+            top: 0;
+        }
+    }
 </style>
 
 <script src="<%= ctxPath%>/Highcharts-10.3.1/code/highcharts.js"></script>
@@ -192,8 +283,7 @@ function func_choice(searchTypeVal) {
 	   		    			
 	   		    			resultArr.push(obj); // 배열속에 객체넣기
 	   		    		}
-	   		    		
-	   		    		// ============================================ //
+	   		    	
 	   		    		
 	   		    		Highcharts.chart('chart_container', {
 	   		   			    chart: {
@@ -278,12 +368,12 @@ function func_choice(searchTypeVal) {
 	   		    			let obj;
 	   		    			
 	   		    			if(i == 0) {
-	   		    				obj = {name : json[i].department_name,
+	   		    				obj = {name : json[i].gender,
 	   		    						y : Number(json[i].percentage),
 	   		    						sliced: true,
 	   		    						selected: true};
 	   		    			} else {
-	   		    				obj = {name : json[i].department_name,
+	   		    				obj = {name : json[i].gender,
 	   		    						y : Number(json[i].percentage)};
 	   		    			} 
 	   		    			
@@ -340,7 +430,7 @@ function func_choice(searchTypeVal) {
 			    			v_html += `<tr>
 			    							<td>\${item.gender}</td>
 			    							<td>\${item.cnt}</td>
-			    							<td>\${item.percentage}</td>
+			    							<td>\${item.percentage} %</td>
 			    					   </tr>`;
 			    		});
 			    						
@@ -357,3 +447,5 @@ function func_choice(searchTypeVal) {
 	   }
 }
 </script>
+
+<jsp:include page="../footer/footer.jsp" />
