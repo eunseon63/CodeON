@@ -11,5 +11,6 @@ public interface MemberDAO {
 	List<Map<String, String>> memberCntByDeptname();
 
 	List<Map<String, String>> memberCntByGender();
+	
 
 }

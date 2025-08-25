@@ -459,5 +459,7 @@ public class MemberService_imple implements MemberService {
 		List<Map<String, String>> genderPercentageList = mbrdao.memberCntByGender();
 		return genderPercentageList;
 	}
+
+	
 }
 
