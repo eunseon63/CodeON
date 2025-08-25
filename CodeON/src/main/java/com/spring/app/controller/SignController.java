@@ -10,6 +10,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -260,6 +261,12 @@ public class SignController {
     @GetMapping("line/load")
     public String lineLoadPopup() {
         return "sign/signlineloadpopup";   // /WEB-INF/views/sign/signlineloadpopup.jsp
+    }
+    
+    @GetMapping("lines/{id}")
+    @ResponseBody
+    public Signline lineDetail(@PathVariable Long id) {
+        return signlineService.getLineWithMembers(id);
     }
     
 }
