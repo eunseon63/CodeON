@@ -4,8 +4,17 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
+import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
@@ -14,16 +23,30 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.spring.app.common.FileManager;
 import com.spring.app.domain.MemberDTO;
 import com.spring.app.domain.SignlineDTO;
+import com.spring.app.entity.Business;
+import com.spring.app.entity.Draft;
+import com.spring.app.entity.DraftLine;
+import com.spring.app.entity.DraftType;
+import com.spring.app.entity.Member;
 import com.spring.app.entity.Signline;
 import com.spring.app.entity.SignlineMember;
+import com.spring.app.entity.Vacation;
+import com.spring.app.model.BusinessConformRepository;
+import com.spring.app.model.BusinessRepository;
+import com.spring.app.model.DraftLineRepository;
 import com.spring.app.model.DraftRepository;
 import com.spring.app.model.MemberRepository;
+import com.spring.app.model.PaymentListRepository;
+import com.spring.app.model.PaymentRepository;
 import com.spring.app.model.SignlineRepository;
+import com.spring.app.model.VacationRepository;
 import com.spring.app.service.MemberService;
 import com.spring.app.service.SignlineService;
 
@@ -41,6 +64,15 @@ public class SignController {
     private final MemberRepository memberRepository;
     private final SignlineRepository signlineRepository;
     private final DraftRepository draftRepository;
+    private final DraftLineRepository draftLineRepository;
+    private final VacationRepository vacationRepository;
+    private final BusinessRepository businessRepository;
+    private final BusinessConformRepository businessConformRepository;
+    private final PaymentRepository paymentRepository;
+    private final PaymentListRepository paymentListRepository;
+    
+    @jakarta.persistence.PersistenceContext
+    private jakarta.persistence.EntityManager em;
     
     private final SignlineService signlineService;
     private final MemberService memberService;
@@ -268,5 +300,423 @@ public class SignController {
     public Signline lineDetail(@PathVariable Long id) {
         return signlineService.getLineWithMembers(id);
     }
+    
+
+    /* ===== Console helpers ===== */
+    private void pout(String fmt, Object... args) {
+        System.out.println(String.format(fmt, args));
+    }
+
+    private void dumpParams(HttpServletRequest req) {
+        req.getParameterMap().forEach((k, v) ->
+            System.out.println(String.format("[REQ] %s = %s", k, Arrays.toString(v)))
+        );
+    }
+
+    private void dumpApprovalLine(List<Long> approverSeq, List<Integer> lineOrder) {
+        if (approverSeq == null || approverSeq.isEmpty()) {
+            System.out.println("[APPR] (empty)");
+            return;
+        }
+        for (int i = 0; i < approverSeq.size(); i++) {
+            Long seq = approverSeq.get(i);
+            Integer ord = (lineOrder != null && i < lineOrder.size()) ? lineOrder.get(i) : (i + 1);
+            System.out.println(String.format("[APPR] idx=%d memberSeq=%s lineOrder=%s", i, String.valueOf(seq), String.valueOf(ord)));
+        }
+    }
+
+    // =============== 품의(업무품의서) ===============
+    @Transactional
+    @PostMapping(value="/draft/proposal", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public String submitProposal(
+        @RequestParam Integer fk_draft_type_seq, // 3
+        @RequestParam Long fk_member_seq,
+        @RequestParam(name="is_emergency", defaultValue="0") Integer isEmergency,
+        @RequestParam String conform_title,
+        @RequestParam String conform_content,
+        @RequestPart(required=false) List<MultipartFile> files,
+        @RequestParam List<Long> approverSeq,
+        @RequestParam List<Integer> lineOrder,
+        @RequestParam(required=false) String draft_title,
+        @RequestParam(required=false) String draft_content,
+        HttpServletRequest request
+    ){
+        // 1) TBL_DRAFT
+        com.spring.app.entity.Draft draft = com.spring.app.entity.Draft.builder()
+                .draftType(em.getReference(com.spring.app.entity.DraftType.class, fk_draft_type_seq.longValue()))
+                .member(em.getReference(com.spring.app.entity.Member.class, fk_member_seq))
+                .draftTitle((draft_title != null && !draft_title.isBlank()) ? draft_title : conform_title)
+                .draftContent((draft_content != null && !draft_content.isBlank()) ? draft_content : conform_content)
+                .draftStatus(0)
+                .isEmergency(isEmergency)
+                .build();
+        draft = draftRepository.save(draft);
+
+        // 2) TBL_BUSINESS_CONFORM
+        businessConformRepository.save(
+                com.spring.app.entity.BusinessConform.builder()
+                        .draftSeq(draft.getDraftSeq())
+                        .conformTitle(conform_title)
+                        .conformContent(conform_content)
+                        .build()
+        );
+
+        // 3) 결재라인
+        saveApprovalLine(draft, approverSeq, lineOrder);
+
+        // (첨부파일 저장 필요하면 여기서 처리)
+
+        return "redirect:/sign/main";
+    }
+
+
+    // =============== 휴가 ===============
+    @Transactional
+    @PostMapping("/draft/vacation")
+    public String submitVacation(
+        @RequestParam Integer fk_draft_type_seq,
+        @RequestParam Long fk_member_seq,
+        @RequestParam(name="is_emergency", defaultValue="0") Integer isEmergency,
+        @RequestParam String vacation_title,
+        @RequestParam @DateTimeFormat(iso=DateTimeFormat.ISO.DATE) LocalDate vacation_start,
+        @RequestParam @DateTimeFormat(iso=DateTimeFormat.ISO.DATE) LocalDate vacation_end,
+        @RequestParam String vacation_content,
+        @RequestParam String vacation_type, // ★ "ANNUAL" | "HALF"
+        @RequestParam List<Long> approverSeq,
+        @RequestParam List<Integer> lineOrder,
+        @RequestParam(required=false) String draft_title,
+        @RequestParam(required=false) String draft_content
+    ){
+        // 1) DRAFT 저장
+        Draft draft = Draft.builder()
+            .draftType(em.getReference(DraftType.class, fk_draft_type_seq.longValue()))
+            .member(em.getReference(Member.class, fk_member_seq))
+            .draftTitle((draft_title != null && !draft_title.isBlank()) ? draft_title : vacation_title)
+            .draftContent((draft_content != null && !draft_content.isBlank()) ? draft_content : vacation_content)
+            .draftStatus(0)
+            .isEmergency(isEmergency)
+            .build();
+        draft = draftRepository.save(draft);
+
+        // 2) VACATION 저장 (종류는 그대로 저장)
+        vacationRepository.save(
+            Vacation.builder()
+                .draftSeq(draft.getDraftSeq())
+                .vacationTitle(vacation_title)
+                .vacationType(vacation_type)    // ★ "ANNUAL" 또는 "HALF"
+                .vacationStart(vacation_start)
+                .vacationEnd(vacation_end)
+                .vacationContent(vacation_content)
+                .build()
+        );
+
+        // 3) 결재라인 저장
+        saveApprovalLine(draft, approverSeq, lineOrder);
+
+        // 4) 연차 차감 (원하면 적용)
+        //    HALF = 0.5일, ANNUAL = (종일) 종료일 포함 일수
+        //    (남은/사용 칼럼이 소수 지원(NUMBER(12,1) 등)이어야 함)
+        java.math.BigDecimal useDays =
+            "HALF".equals(vacation_type)
+                ? new java.math.BigDecimal("0.5")
+                : new java.math.BigDecimal(java.time.temporal.ChronoUnit.DAYS.between(vacation_start, vacation_end) + 1);
+
+        // 필요 시 사용 (소수 허용 컬럼이어야 함)
+        // em.createNativeQuery(
+        //     "UPDATE TBL_ANNUAL_LEAVE " +
+        //     "   SET USED_LEAVE = USED_LEAVE + :d, " +
+        //     "       REMAINING_LEAVE = REMAINING_LEAVE - :d " +
+        //     " WHERE MEMBER_SEQ = :m")
+        //     .setParameter("d", useDays)
+        //     .setParameter("m", fk_member_seq)
+        //     .executeUpdate();
+
+        return "redirect:/sign/main";
+    }
+
+    // =============== 지출 ===============
+    @Transactional
+    @PostMapping("/draft/expense")
+    public String submitExpense(
+        @RequestParam Integer fk_draft_type_seq, // 4
+        @RequestParam Long fk_member_seq,
+        @RequestParam(name="is_emergency", defaultValue="0") Integer isEmergency,
+        @RequestParam String payment_title,
+        @RequestParam String payment_content,
+        @RequestParam("payment_list_regdate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) List<LocalDate> payment_list_regdate,
+        @RequestParam(name="payment_list_content") List<String> uses,
+        @RequestParam(name="payment_list_price[]") List<Long> prices,
+        @RequestParam(defaultValue="0") Long total_amount,
+        @RequestParam List<Long> approverSeq,
+        @RequestParam List<Integer> lineOrder,
+        @RequestParam(required=false) String draft_title,
+        @RequestParam(required=false) String draft_content,
+        HttpServletRequest request
+    ){
+        com.spring.app.entity.Draft draft = com.spring.app.entity.Draft.builder()
+                .draftType(em.getReference(com.spring.app.entity.DraftType.class, fk_draft_type_seq.longValue()))
+                .member(em.getReference(com.spring.app.entity.Member.class, fk_member_seq))
+                .draftTitle((draft_title != null && !draft_title.isBlank()) ? draft_title : payment_title)
+                .draftContent((draft_content != null && !draft_content.isBlank()) ? draft_content : payment_content)
+                .draftStatus(0)
+                .isEmergency(isEmergency)
+                .build();
+        draft = draftRepository.save(draft);
+
+        // 헤더
+        paymentRepository.save(
+            com.spring.app.entity.Payment.builder()
+                .draftSeq(draft.getDraftSeq())
+                .paymentTitle(payment_title)
+                .paymentContent(payment_content)
+                .totalAmount(total_amount == null ? 0L : total_amount)
+                .build()
+        );
+
+        // 내역 N건
+        int n = Math.max(payment_list_regdate.size(), Math.max(uses.size(), prices.size()));
+        java.util.ArrayList<com.spring.app.entity.PaymentList> rows = new java.util.ArrayList<>();
+        for (int i = 0; i < n; i++) {
+            LocalDate d = i < payment_list_regdate.size() ? payment_list_regdate.get(i) : null;
+            String    u = i < uses.size() ? uses.get(i) : null;
+            Long      p = i < prices.size() ? prices.get(i) : 0L;
+
+            if (d == null && (u == null || u.isBlank()) && (p == null || p == 0L)) continue;
+
+            rows.add(
+                com.spring.app.entity.PaymentList.builder()
+                    .fkDraftSeq(draft.getDraftSeq())
+                    .regdate(d == null ? LocalDate.now() : d)
+                    .content(u)
+                    .price(p == null ? 0L : p)
+                    .build()
+            );
+        }
+        if (!rows.isEmpty()) paymentListRepository.saveAll(rows);
+
+        saveApprovalLine(draft, approverSeq, lineOrder);
+
+        return "redirect:/sign/main";
+    }
+
+
+    // =============== 출장 ===============
+    @Transactional
+    @PostMapping("/draft/trip")
+    public String submitTrip(
+        @RequestParam Integer fk_draft_type_seq, // 2
+        @RequestParam Long fk_member_seq,
+        @RequestParam(name="is_emergency", defaultValue="0") Integer isEmergency,
+        @RequestParam String business_title,
+        @RequestParam String business_content,
+        @RequestParam @DateTimeFormat(iso=DateTimeFormat.ISO.DATE) LocalDate business_start,
+        @RequestParam @DateTimeFormat(iso=DateTimeFormat.ISO.DATE) LocalDate business_end,
+        @RequestParam String business_location,
+        @RequestParam String business_result,
+        @RequestParam List<Long> approverSeq,
+        @RequestParam List<Integer> lineOrder,
+        @RequestParam(required=false) String draft_title,
+        @RequestParam(required=false) String draft_content,
+        HttpServletRequest request
+    ){
+        com.spring.app.entity.Draft draft = com.spring.app.entity.Draft.builder()
+                .draftType(em.getReference(com.spring.app.entity.DraftType.class, fk_draft_type_seq.longValue()))
+                .member(em.getReference(com.spring.app.entity.Member.class, fk_member_seq))
+                .draftTitle((draft_title != null && !draft_title.isBlank()) ? draft_title : business_title)
+                .draftContent((draft_content != null && !draft_content.isBlank()) ? draft_content : business_result)
+                .draftStatus(0)
+                .isEmergency(isEmergency)
+                .build();
+        draft = draftRepository.save(draft);
+
+        businessRepository.save(
+            Business.builder()
+                .draftSeq(draft.getDraftSeq())
+                .businessTitle(business_title)
+                .businessContent(business_content)
+                .businessStart(business_start)
+                .businessEnd(business_end)
+                .businessLocation(business_location)
+                .businessResult(business_result)
+                .build()
+        );
+
+        saveApprovalLine(draft, approverSeq, lineOrder);
+
+        return "redirect:/sign/main";
+    }
+
+    
+    private void saveApprovalLine(Draft draft, List<Long> approverSeq, List<Integer> lineOrder) {
+
+        if (approverSeq == null || approverSeq.isEmpty()) {
+            throw new IllegalArgumentException("결재라인이 비어 있습니다.");
+        }
+
+        var lines = new java.util.ArrayList<DraftLine>();
+
+        for (int i = 0; i < approverSeq.size(); i++) {
+            Long approverId = approverSeq.get(i);
+
+            Integer ord = (lineOrder != null && i < lineOrder.size() && lineOrder.get(i) != null)
+                            ? lineOrder.get(i)
+                            : (i + 1); // ★ 폼이 안 보내도 보정 (NULL 방지)
+
+            // 혹시라도 0 또는 음수 들어오면 막기
+            if (ord == null || ord < 1) ord = i + 1;
+
+            DraftLine dl = DraftLine.builder()
+                    .draft(draft)
+                    .approver(em.getReference(Member.class, approverId))
+                    .lineOrder(ord)       // ★ 필수
+                    .signStatus(0)        // 대기
+                    .build();
+
+            lines.add(dl);
+        }
+
+        draftLineRepository.saveAll(lines);
+    }
+
+ // 목록 1) 결재하기
+    @GetMapping("inbox")
+    public String inbox(HttpSession session, Model model) {
+        Long me = Long.valueOf(((MemberDTO)session.getAttribute("loginuser")).getMemberSeq());
+        var rows = draftLineRepository.findInbox(me);
+
+        var list = new ArrayList<Map<String,Object>>();
+        for (var dl : rows) {
+            var d = dl.getDraft();
+            Date regDate = d.getDraftRegdate()==null ? null
+                : Date.from(d.getDraftRegdate().atZone(ZoneId.systemDefault()).toInstant());
+
+            var map = new LinkedHashMap<String,Object>();
+            map.put("draftSeq", d.getDraftSeq());
+            map.put("draftLineSeq", dl.getDraftLineSeq());
+            map.put("title", d.getDraftTitle());
+            map.put("docType", d.getDraftType()!=null ? d.getDraftType().getDraftTypeName() : "-");
+            map.put("drafterName", d.getMember()!=null? d.getMember().getMemberName() : "-");
+            map.put("isEmergency", d.getIsEmergency());
+            map.put("regdate", regDate);      // ★ Date로
+            map.put("lineOrder", dl.getLineOrder());
+            map.put("myStatus", dl.getSignStatus());
+            list.add(map);
+        }
+        model.addAttribute("rows", list);
+        return "sign/inbox";
+    }
+
+
+    // 목록 2) 문서함(내가 상신한 문서)
+    @GetMapping("sent")
+    public String sent(HttpSession session, Model model){
+        MemberDTO login = (MemberDTO) session.getAttribute("loginuser");
+        Long me = Long.valueOf(login.getMemberSeq());
+
+        List<Draft> drafts = draftRepository.findByMember_MemberSeqOrderByDraftSeqDesc(me);
+
+        List<Map<String,Object>> rows = new ArrayList<>();
+        for (Draft d : drafts) {
+            // 결재 상태 계산(생략)
+            int status = 0;
+            List<DraftLine> lines = draftLineRepository
+                .findByDraft_DraftSeqOrderByLineOrderAscDraftLineSeqAsc(d.getDraftSeq());
+            boolean anyReject  = lines.stream().anyMatch(l -> Integer.valueOf(9).equals(l.getSignStatus()));
+            boolean allApprove = !anyReject && lines.stream().allMatch(l -> Integer.valueOf(1).equals(l.getSignStatus()));
+            status = anyReject ? 9 : (allApprove ? 1 : 0);
+
+            // ★ LocalDateTime -> java.util.Date로 변환
+            Date regDate = null;
+            if (d.getDraftRegdate() != null) {
+                regDate = Date.from(
+                    d.getDraftRegdate().atZone(ZoneId.systemDefault()).toInstant()
+                );
+            }
+
+            Map<String,Object> m = new LinkedHashMap<>();
+            m.put("draftSeq", d.getDraftSeq());
+            m.put("title",    d.getDraftTitle());
+            m.put("status",   status);
+            m.put("regdate",  regDate);   // ← Date로 넣기
+            rows.add(m);
+        }
+
+        model.addAttribute("rows", rows);
+        return "/sign/sent";
+    }
+
+
+
+    // 목록 3) 결재함(내가 처리한 이력)
+    @GetMapping("history")
+    public String history(HttpSession session, Model model) {
+        Long me = Long.valueOf(((MemberDTO)session.getAttribute("loginuser")).getMemberSeq());
+        var rows = draftLineRepository.findHistory(me);
+
+        var list = new ArrayList<Map<String,Object>>();
+        for (var dl : rows) {
+            var d = dl.getDraft();
+            Date regDate = d.getDraftRegdate()==null ? null
+                : Date.from(d.getDraftRegdate().atZone(ZoneId.systemDefault()).toInstant());
+
+            var map = new LinkedHashMap<String,Object>();
+            map.put("draftSeq", d.getDraftSeq());
+            map.put("title", d.getDraftTitle());
+            map.put("docType", d.getDraftType()!=null ? d.getDraftType().getDraftTypeName() : "-");
+            map.put("drafterName", d.getMember()!=null? d.getMember().getMemberName() : "-");
+            map.put("isEmergency", d.getIsEmergency());
+            map.put("regdate", regDate);      // ★ Date로
+            map.put("lineOrder", dl.getLineOrder());
+            map.put("myStatus", dl.getSignStatus());
+            map.put("signDate", dl.getSignDate()); // 이건 LocalDateTime이면 JSP에서 그대로 문자열 출력 or 변환
+            map.put("draftLineSeq", dl.getDraftLineSeq());
+            list.add(map);
+        }
+        model.addAttribute("rows", list);
+        return "sign/history";
+    }
+
+    // 액션: 승인
+    @PostMapping("lines/{draftLineSeq}/approve")
+    @Transactional
+    @ResponseBody
+    public java.util.Map<String,Object> approve(@PathVariable Long draftLineSeq,
+                                                @RequestParam(required=false) String comment,
+                                                HttpSession session) {
+        var dl = draftLineRepository.findById(draftLineSeq).orElseThrow();
+        // 내가 다음 결재자인지 가드(같은 조건)
+        var d = dl.getDraft();
+        var nextOrd = em.createQuery("""
+            select min(x.lineOrder)
+              from DraftLine x
+             where x.draft = :d and x.signStatus <> 1
+            """, Integer.class)
+            .setParameter("d", d).getSingleResult();
+        if (!Integer.valueOf(0).equals(dl.getSignStatus()) || !dl.getLineOrder().equals(nextOrd)) {
+            return java.util.Map.of("ok", false, "msg", "처리할 수 없는 상태입니다.");
+        }
+        dl.setSignStatus(1);
+        dl.setSignComment(comment);
+        dl.setSignDate(java.time.LocalDateTime.now());
+        draftLineRepository.save(dl);
+        return java.util.Map.of("ok", true);
+    }
+
+    // 액션: 반려
+    @PostMapping("lines/{draftLineSeq}/reject")
+    @Transactional
+    @ResponseBody
+    public java.util.Map<String,Object> reject(@PathVariable Long draftLineSeq,
+                                               @RequestParam String comment) {
+        var dl = draftLineRepository.findById(draftLineSeq).orElseThrow();
+        dl.setSignStatus(9);
+        dl.setSignComment(comment);
+        dl.setSignDate(java.time.LocalDateTime.now());
+        draftLineRepository.save(dl);
+        return java.util.Map.of("ok", true);
+    }
+
+
+
     
 }

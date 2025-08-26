@@ -14,224 +14,48 @@
 <meta charset="UTF-8">
 <title>기안문서 작성</title>
 <style>
-:root {
-	--header-h: 70px;
-	--sidebar-w: 220px;
-	--bg: #f6f7fb;
-	--card: #fff;
-	--text: #111;
-	--muted: #6b7280;
-	--line: #e5e7eb;
-	--brand: #2563eb;
-	--brand-100: #e8eefc;
-	--danger: #ef4444;
-	--radius: 16px;
-}
-
-body {
-	margin: 0;
-	background: var(--bg);
-	font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial;
-}
-
-.main-content {
-	margin-left: var(--sidebar-w);
-	padding: 20px 28px 64px;
-	min-height: 100vh;
-	box-sizing: border-box;
-}
-
-.page-wrap {
-	max-width: 1200px;
-	margin: 24px auto;
-	padding: 0 16px;
-	box-sizing: border-box
-}
-
-.topbar {
-	display: flex;
-	align-items: center;
-	justify-content: space-between;
-	margin-bottom: 16px
-}
-
-.h1 {
-	margin: 0;
-	font-size: 22px;
-	font-weight: 800
-}
-
-.btn {
-	height: 36px;
-	padding: 0 14px;
-	border-radius: 10px;
-	border: 1px solid var(--line);
-	background: #fff;
-	cursor: pointer
-}
-
-.btn.brand {
-	border-color: var(--brand);
-	background: var(--brand);
-	color: #fff
-}
-
-.btn.ghost {
-	background: #fff
-}
-
-.badge-red {
-	display: inline-flex;
-	gap: 8px;
-	align-items: center;
-	font-size: 13px;
-	color: var(--danger)
-}
-
-.grid {
-	display: grid;
-	grid-template-columns: 1fr 1.1fr;
-	gap: 14px
-}
-
-.card {
-	background: var(--card);
-	border: 1px solid var(--line);
-	border-radius: var(--radius);
-	overflow: hidden
-}
-
-.card-h {
-	padding: 12px 14px;
-	border-bottom: 1px solid var(--line);
-	font-weight: 700
-}
-
-.card-b {
-	padding: 14px
-}
-
-.row2 {
-	display: grid;
-	grid-template-columns: 120px 1fr;
-	gap: 10px;
-	align-items: center
-}
-
-.input, .select, .date, .number, .textarea {
-	height: 40px;
-	border: 1px solid var(--line);
-	border-radius: 10px;
-	padding: 0 12px;
-	box-sizing: border-box;
-	width: 100%;
-}
-
-.textarea {
-	height: 180px;
-	padding: 10px 12px;
-	resize: vertical
-}
-
-.approval-table {
-	width: 100%;
-	border-collapse: collapse
-}
-
-.approval-table th, .approval-table td {
-	border: 1px solid var(--line);
-	padding: 8px
-}
-
-.approval-table th {
-	background: #f9fafb
-}
-
-.empty {
-	color: var(--muted);
-	text-align: center;
-	padding: 24px 0
-}
-
+:root { --header-h:70px; --sidebar-w:220px; --bg:#f6f7fb; --card:#fff; --text:#111; --muted:#6b7280; --line:#e5e7eb; --brand:#2563eb; --brand-100:#e8eefc; --danger:#ef4444; --radius:16px; }
+body { margin:0; background:var(--bg); font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial; }
+.main-content { margin-left:var(--sidebar-w); padding:20px 28px 64px; min-height:100vh; box-sizing:border-box; }
+.page-wrap { max-width:1200px; margin:24px auto; padding:0 16px; box-sizing:border-box }
+.topbar { display:flex; align-items:center; justify-content:space-between; margin-bottom:16px }
+.h1 { margin:0; font-size:22px; font-weight:800 }
+.btn { height:36px; padding:0 14px; border-radius:10px; border:1px solid var(--line); background:#fff; cursor:pointer }
+.btn.brand { border-color:var(--brand); background:var(--brand); color:#fff }
+.btn.ghost { background:#fff }
+.badge-red { display:inline-flex; gap:8px; align-items:center; font-size:13px; color:var(--danger) }
+.grid { display:grid; grid-template-columns:1fr 1.1fr; gap:14px }
+.card { background:var(--card); border:1px solid var(--line); border-radius:var(--radius); overflow:hidden }
+.card-h { padding:12px 14px; border-bottom:1px solid var(--line); font-weight:700 }
+.card-b { padding:14px }
+.row2 { display:grid; grid-template-columns:120px 1fr; gap:10px; align-items:center }
+.input,.select,.date,.number,.textarea { height:40px; border:1px solid var(--line); border-radius:10px; padding:0 12px; box-sizing:border-box; width:100%; }
+.textarea { height:180px; padding:10px 12px; resize:vertical }
+.approval-table { width:100%; border-collapse:collapse }
+.approval-table th,.approval-table td { border:1px solid var(--line); padding:8px }
+.approval-table th { background:#f9fafb }
+.empty { color:var(--muted); text-align:center; padding:24px 0 }
 /* 탭 */
-.doc-tabs {
-	margin-top: 14px
-}
-
-.doc-tabs input[type=radio] {
-	display: none
-}
-
-.tabbar {
-	display: flex;
-	gap: 8px;
-	flex-wrap: wrap
-}
-
-.tabbar label {
-	cursor: pointer;
-	border: 1px solid var(--line);
-	background: #fff;
-	border-radius: 999px;
-	padding: 8px 14px;
-	font-size: 14px;
-}
-
-#t-proposal:checked ~ .tabbar label[for=t-proposal], #t-vacation:checked 
-	~ .tabbar label[for=t-vacation], #t-expense:checked  ~ .tabbar label[for=t-expense],
-	#t-trip:checked     ~ .tabbar label[for=t-trip] {
-	border-color: var(--brand);
-	background: rgba(37, 99, 235, .1);
-	color: #1e40af;
-	font-weight: 700;
-}
-
-.forms .form {
-	display: none;
-	margin-top: 12px
-}
-
-#t-proposal:checked ~ .forms .f-proposal, #t-vacation:checked ~ .forms .f-vacation,
-	#t-expense:checked  ~ .forms .f-expense, #t-trip:checked     ~ .forms .f-trip
-	{
-	display: block
-}
-
+.doc-tabs { margin-top:14px }
+.doc-tabs input[type=radio]{ display:none }
+.tabbar { display:flex; gap:8px; flex-wrap:wrap }
+.tabbar label { cursor:pointer; border:1px solid var(--line); background:#fff; border-radius:999px; padding:8px 14px; font-size:14px; }
+#t-proposal:checked ~ .tabbar label[for=t-proposal],
+#t-vacation:checked ~ .tabbar label[for=t-vacation],
+#t-expense:checked  ~ .tabbar label[for=t-expense],
+#t-trip:checked     ~ .tabbar label[for=t-trip] { border-color:var(--brand); background:rgba(37,99,235,.1); color:#1e40af; font-weight:700; }
+.forms .form { display:none; margin-top:12px }
+#t-proposal:checked ~ .forms .f-proposal,
+#t-vacation:checked ~ .forms .f-vacation,
+#t-expense:checked  ~ .forms .f-expense,
+#t-trip:checked     ~ .forms .f-trip { display:block }
 /* 지출내역 */
-.exp-table {
-	width: 100%;
-	border-collapse: collapse;
-	margin-top: 8px
-}
-
-.exp-table th, .exp-table td {
-	border: 1px solid var(--line);
-	padding: 8px;
-	text-align: left
-}
-
-.exp-table th {
-	background: #f9fafb
-}
-
-.exp-actions {
-	display: flex;
-	gap: 8px;
-	margin-top: 8px
-}
-
-.sum {
-	margin-top: 8px;
-	color: #111;
-	font-weight: 700;
-	text-align: right
-}
-
-.small {
-	height: 32px;
-	padding: 0 10px;
-	border-radius: 8px
-}
+.exp-table { width:100%; border-collapse:collapse; margin-top:8px }
+.exp-table th,.exp-table td { border:1px solid var(--line); padding:8px; text-align:left }
+.exp-table th { background:#f9fafb }
+.exp-actions { display:flex; gap:8px; margin-top:8px }
+.sum { margin-top:8px; color:#111; font-weight:700; text-align:right }
+.small { height:32px; padding:0 10px; border-radius:8px }
 </style>
 </head>
 
@@ -268,7 +92,6 @@ body {
           <div class="row2">
             <div>기안일</div>
             <input class="input" id="draftDate" value="<%= java.time.LocalDate.now().toString() %>" readonly>
-
           </div>
           <div class="row2">
             <div>문서번호</div>
@@ -331,20 +154,36 @@ body {
             </div>
           </section>
 
-          <!-- 휴가 신청서 -->
-          <section id="pane-vacation" class="form f-vacation">
-            <div class="row2"><div>제목</div><input class="input" id="v-title" placeholder="예) 연차 신청"></div>
-            <div class="row2" style="margin-top:8px"><div>기간</div>
-              <div style="display:flex;gap:8px">
-                <input type="date" class="date" id="v-from"><span style="align-self:center">~</span>
-                <input type="date" class="date" id="v-to">
-              </div>
-            </div>
-            <div style="margin-top:10px">
-              <div style="color:var(--muted);font-size:13px;margin-bottom:6px">사유</div>
-              <textarea class="textarea" id="v-reason" placeholder="사유를 입력하세요."></textarea>
-            </div>
-          </section>
+<!-- 휴가 신청서 -->
+<section id="pane-vacation" class="form f-vacation">
+  <div class="row2">
+    <div>제목</div>
+    <input class="input" id="v-title" placeholder="예) 연차 신청">
+  </div>
+
+  <!-- 휴가 종류 -->
+  <div class="row2" style="margin-top:8px">
+    <div>휴가 종류</div>
+    <select class="select" id="v-type">
+      <option value="ANNUAL">연차</option>
+      <option value="HALF">반차</option>
+    </select>
+  </div>
+
+  <div class="row2" style="margin-top:8px">
+    <div>기간</div>
+    <div style="display:flex;gap:8px">
+      <input type="date" class="date" id="v-from">
+      <span style="align-self:center">~</span>
+      <input type="date" class="date" id="v-to">
+    </div>
+  </div>
+
+  <div style="margin-top:10px">
+    <div style="color:var(--muted);font-size:13px;margin-bottom:6px">사유</div>
+    <textarea class="textarea" id="v-reason" placeholder="사유를 입력하세요."></textarea>
+  </div>
+</section>
 
           <!-- 지출 결의서 -->
           <section id="pane-expense" class="form f-expense">
@@ -400,7 +239,7 @@ body {
     </section>
   </div>
 
-  <!-- 폼 전송용(필요 시) -->
+  <!-- 팝업이 히든 넣는 전용 폼(그대로 사용) -->
   <form id="draftForm" method="post" enctype="multipart/form-data" style="display:none"></form>
 </div>
 
@@ -408,27 +247,21 @@ body {
   const ctx = "${pageContext.request.contextPath}";
 
   function openSignlineLoadPopup(){
-    const w = 1000, h = 700;
-    const dualLeft = (window.screenLeft ?? window.screenX ?? 0);
-    const dualTop  = (window.screenTop  ?? window.screenY  ?? 0);
-    const viewportW = window.outerWidth  || document.documentElement.clientWidth  || screen.width;
-    const viewportH = window.outerHeight || document.documentElement.clientHeight || screen.height;
-    const left = Math.max(0, Math.round(dualLeft + (viewportW - w) / 2));
-    const top  = Math.max(0, Math.round(dualTop  + (viewportH - h) / 2));
-    const features = [
-      `width=${w}`, `height=${h}`, `left=${left}`, `top=${top}`,
-      'resizable=yes','scrollbars=yes','toolbar=no','location=no','status=no','menubar=no'
-    ].join(',');
-    const win = window.open(ctx + "/sign/line/load", "signlineLoadPopup", features);
-    if (win) {
-      try { win.focus(); win.resizeTo(w,h); win.moveTo(left,top); } catch(_) {}
-    }
+    const w=1000,h=700;
+    const dualLeft=(window.screenLeft??window.screenX??0);
+    const dualTop =(window.screenTop ??window.screenY??0);
+    const vw=window.outerWidth||document.documentElement.clientWidth||screen.width;
+    const vh=window.outerHeight||document.documentElement.clientHeight||screen.height;
+    const left=Math.max(0, Math.round(dualLeft + (vw - w)/2));
+    const top =Math.max(0, Math.round(dualTop  + (vh - h)/2));
+    const features=[`width=${w}`,`height=${h}`,`left=${left}`,`top=${top}`,'resizable=yes','scrollbars=yes','toolbar=no','location=no','status=no','menubar=no'].join(',');
+    const win=window.open(ctx + "/sign/line/load", "signlineLoadPopup", features);
+    if (win) { try { win.focus(); win.resizeTo(w,h); win.moveTo(left,top); } catch(_){} }
   }
 
-  // 팝업 콜백 (원래 로직)
+  // 팝업 콜백(원래 로직 유지)
   window.receiveSignline = function(approvers){
     const $tb = $("#apprTbody").empty();
-
     if (!approvers || approvers.length === 0) {
       $tb.html('<tr><td colspan="4" class="empty">결재자를 선택하세요.</td></tr>');
     } else {
@@ -444,29 +277,158 @@ body {
         $tb.append($tr);
       });
     }
-
-    // hidden inputs (원래 방식)
+    // hidden inputs(원래 방식)
     const $form = $("#draftForm").empty();
     (approvers || []).forEach((p, i) => {
-      $("<input>").attr({ type: "hidden", name: "approverSeq" }).val(p.memberSeq).appendTo($form);
-      $("<input>").attr({ type: "hidden", name: "lineOrder"   }).val(i + 1).appendTo($form);
+      $("<input>").attr({ type:"hidden", name:"approverSeq" }).val(p.memberSeq).appendTo($form);
+      $("<input>").attr({ type:"hidden", name:"lineOrder"   }).val(i + 1).appendTo($form);
     });
   };
 
+  // 합계
   function recalcSum(){
-    let sum = 0;
+    let sum=0;
     $("#expTable tbody .money").each(function(){
-      const v = Number($(this).val().replace(/,/g,'')) || 0;
+      const v = Number(String($(this).val()).replace(/,/g,'')) || 0;
       sum += v;
     });
     $("#sumMoney").text(sum.toLocaleString());
+    return sum;
   }
 
-  $(function(){
-    $("#btnPickLine").on("click", openSignlineLoadPopup);
-    $("#btnEditLine").on("click", openSignlineLoadPopup);
+  // ★ 반차 선택 시 종료일 고정/비활성화
+  function syncHalfDay(){
+    const type = $("#v-type").val(); // "ANNUAL" | "HALF"
+    const from = $("#v-from").val();
+    if (type === "HALF") {
+      if (from) $("#v-to").val(from);
+      $("#v-to").prop("disabled", true);
+    } else {
+      $("#v-to").prop("disabled", false);
+    }
+  }
 
-    // 지출내역
+  // 상신 클릭 → 선택 탭만 모아서 각 타입 전용 컨트롤러로 전송
+  $("#btnSubmit").on("click", async function(){
+    // 결재자 필수
+    if ($('#draftForm input[name="approverSeq"]').length === 0) {
+      alert("결재자를 선택하세요.");
+      return;
+    }
+
+    const memberSeq = "${sessionScope.loginuser.memberSeq}";
+    const isEmergency = $("#urgent").is(":checked") ? 1 : 0;
+
+    // 타입 판단(휴가1/출장2/품의3/지출4 기준)
+    const isVac   = $("#t-vacation").is(":checked");
+    const isTrip  = $("#t-trip").is(":checked");
+    const isProp  = $("#t-proposal").is(":checked");
+    const isExp   = $("#t-expense").is(":checked");
+
+    let url = "";
+    const fd = new FormData();
+
+    // 공통
+    fd.append("fk_member_seq", memberSeq);
+    fd.append("is_emergency", isEmergency);
+
+    // 결재라인
+    $("#draftForm input[name='approverSeq']").each(function(){ fd.append("approverSeq", this.value); });
+    $("#draftForm input[name='lineOrder']").each(function(){ fd.append("lineOrder", this.value); });
+
+    // 타입별 분기 + 요약 필드 포함(원하면 서버에서 무시해도 됨)
+    if (isProp) {
+      url = ctx + "/sign/draft/proposal";
+      fd.append("fk_draft_type_seq", 3);
+      const title = $("#p-title").val() || "";
+      const body  = $("#p-body").val()  || "";
+      fd.append("conform_title",   title);
+      fd.append("conform_content", body);
+      fd.append("draft_title",     title);
+      fd.append("draft_content",   body);
+      const files = ($("#p-file")[0] && $("#p-file")[0].files) || [];
+      for(let i=0;i<files.length;i++){ fd.append("files", files[i], files[i].name); }
+
+    } else if (isVac) {
+      url = ctx + "/sign/draft/vacation";
+      fd.append("fk_draft_type_seq", 1);
+
+      const title = $("#v-title").val()   || "";
+      const start = $("#v-from").val()    || "";
+      const type  = $("#v-type").val();                 // "ANNUAL" | "HALF"
+      const end   = (type === "HALF") ? start : ($("#v-to").val() || "");
+      const reason= $("#v-reason").val()  || "";
+
+      // 간단 검증
+      if (!start) { alert("휴가 시작일을 입력하세요."); return; }
+      if (type !== "HALF" && !end) { alert("휴가 종료일을 입력하세요."); return; }
+      if (type !== "HALF" && start > end) { alert("종료일이 시작일보다 빠릅니다."); return; }
+
+      fd.append("vacation_title",   title);
+      fd.append("vacation_start",   start);
+      fd.append("vacation_end",     end);
+      fd.append("vacation_content", reason);
+      fd.append("vacation_type",    type);             // ★ 서버에 전달
+
+      fd.append("draft_title",      title);
+      fd.append("draft_content",    reason);
+
+    } else if (isExp) {
+      url = ctx + "/sign/draft/expense";
+      fd.append("fk_draft_type_seq", 4);
+      const title = $("#e-title").val()  || "";
+      const why   = $("#e-reason").val() || "";
+      fd.append("payment_title",   title);
+      fd.append("payment_content", why);
+      // 리스트
+      $("#expTable tbody tr").each(function(){
+        const reg = $(this).find("input[type='date']").val() || "";
+        const use = $(this).find("input.input").val()         || "";
+        const amt = $(this).find(".money").val()              || "0";
+        fd.append("payment_list_regdate", reg);
+        fd.append("payment_list_content", use);
+        fd.append("payment_list_price[]",   amt);
+      });
+      // 합계
+      const total = recalcSum();
+      fd.append("total_amount", total);
+      fd.append("draft_title",  title);
+      fd.append("draft_content",why);
+
+    } else if (isTrip) {
+      url = ctx + "/sign/draft/trip";
+      fd.append("fk_draft_type_seq", 2);
+      const title   = $("#t-title").val()   || "";
+      const purpose = $("#t-purpose").val() || "";
+      const start   = $("#t-from").val()    || "";
+      const end     = $("#t-to").val()      || "";
+      const loc     = $("#t-area").val()    || "";
+      const result  = $("#t-result").val()  || "";
+      fd.append("business_title",    title);
+      fd.append("business_content",  purpose);
+      fd.append("business_start",    start);
+      fd.append("business_end",      end);
+      fd.append("business_location", loc);
+      fd.append("business_result",   result);
+      fd.append("draft_title",       title);
+      fd.append("draft_content",     result);
+    }
+
+    if (!url) { alert("문서 유형을 선택하세요."); return; }
+
+    try {
+      const res = await fetch(url, { method:"POST", body: fd });
+      if (!res.ok) throw new Error((await res.text()) || ("HTTP " + res.status));
+      location.href = ctx + "/sign/main";
+    } catch (e) {
+      alert("상신 실패: " + e.message);
+    }
+  });
+
+  // 부가: 지출행 추가/삭제 + 휴가 반차 동기화
+  $(function(){
+    $("#btnPickLine,#btnEditLine").on("click", openSignlineLoadPopup);
+
     $(document).on("input", "#expTable tbody .money", recalcSum);
     $("#btnAddRow").on("click", function(){
       $("#expTable tbody").append(
@@ -482,6 +444,12 @@ body {
       if($rows.length > 1) $rows.last().remove();
       recalcSum();
     });
+
+    $("#btnCancel").on("click", function(){ history.back(); });
+
+    // ★ 휴가 폼 이벤트 바인딩
+    $("#v-type, #v-from").on("change input", syncHalfDay);
+    syncHalfDay(); // 초기 호출
   });
 </script>
 

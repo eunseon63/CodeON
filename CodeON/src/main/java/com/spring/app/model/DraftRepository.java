@@ -1,5 +1,7 @@
 package com.spring.app.model;
 
+import java.util.List;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
@@ -14,4 +16,9 @@ public interface DraftRepository extends JpaRepository<Draft, Long> {
 	        WHERE sequence_name = 'DRAFT_SEQ'
 	        """, nativeQuery = true)
 	Long peekNextDraftNo();
+	
+	List<Draft> findByMember_MemberSeqOrderByDraftRegdateDesc(Long memberSeq);
+
+	List<Draft> findByMember_MemberSeqOrderByDraftSeqDesc(Long me);
+	
 }
