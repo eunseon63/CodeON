@@ -213,9 +213,7 @@ public class MemberService_imple implements MemberService {
 		
 		int seq = Integer.parseInt(memberSeq);
 		
-		BooleanExpression condition = Expressions.TRUE;
-		
-		condition = member.memberSeq.eq(seq);
+		BooleanExpression condition = member.memberSeq.eq(seq);
 		
 	    Member mbr = jPAQueryFactory
 	                .selectFrom(member)
@@ -459,5 +457,22 @@ public class MemberService_imple implements MemberService {
 		List<Map<String, String>> genderPercentageList = mbrdao.memberCntByGender();
 		return genderPercentageList;
 	}
+
+	// 전체 회원 조회
+	@Override
+	public List<MemberDTO> findAll() {
+		
+        List<Member> members = jPAQueryFactory
+                .selectFrom(member)
+                .fetch();
+        
+        List<MemberDTO> memberDtoList = members.stream()
+				   .map(Member::toDTO)
+				   .collect(Collectors.toList());
+        
+        return memberDtoList;
+	}
+	
+	
 }
 

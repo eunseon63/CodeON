@@ -129,6 +129,30 @@ $(function() {
         frm.action = "<%=ctxPath%>/member/downloadExcelFile";
         frm.submit();
     });
+    
+    $("#btnAnalyze").click(function() {
+        // 1. 로딩 표시
+        $("#aiLoading").show();
+        $("#aiResult").text(""); // 이전 결과 초기화
+
+        $.ajax({
+            url: "<%= ctxPath %>/chat", // GET 요청
+            type: "GET",
+            success: function(data) {
+                // 2. 결과 출력 (줄바꿈 처리)
+                $("#aiResult").html(data.replace(/\n/g, "<br>"));
+            },
+            error: function(xhr, status, error) {
+                $("#aiResult").text("AI 분석 중 오류 발생!");
+            },
+            complete: function() {
+                // 3. 로딩 숨기기
+                $("#aiLoading").hide();
+            }
+        });
+    });
+
+    
 });
 
 // 직원 검색
@@ -215,6 +239,8 @@ function goDetail(memberSeq) {
                     &nbsp;직원 목록
                 </h5>
                 <div class="action-buttons">
+					<button id="btnAnalyze" class="btn btn-info btn-sm">AI 요약 보기</button>
+                
                     <button type="button" class="btn btn-success btn-sm" id="btnExcel">
                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-file-earmark-excel-fill" viewBox="0 0 16 16">
                             <path d="M9.293 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V4.707A1 1 0 0 0 13.707 4L10 .293A1 1 0 0 0 9.707 0H9.293zM5.884 6.68L8 9.882l2.116-3.202a.5.5 0 1 1 .768.64L8.651 10l2.233 3.442a.5.5 0 1 1-.768.64L8 11.318l-2.116 3.202a.5.5 0 1 1-.768-.64L7.349 10 5.116 6.68a.5.5 0 1 1 .768-.64z"/>
@@ -262,6 +288,15 @@ function goDetail(memberSeq) {
 				        </svg>
 				    </button>
 				</form>
+				
+				<!-- AI 분석 결과 영역 -->
+				<div id="aiLoading" class="text-center my-2" style="display:none;">
+				    <div class="spinner-border text-primary" role="status">
+				        <span class="visually-hidden">Loading...</span>
+				    </div>
+				</div>
+				
+				<div id="aiResult" class="border p-3 mt-2"></div>
 				
                 <div class="table-responsive">
                     <table class="table table-hover table-bordered align-middle">
@@ -389,3 +424,5 @@ function goDetail(memberSeq) {
     </div>
 </body>
 </html>
+
+<jsp:include page="../footer/footer.jsp" />

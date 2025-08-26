@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- ==== mapper 기본설정 ==== -->
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<!-- SqlSessionTemplate(myBatis 3.0 이전 버전)을 사용하지 않는 Mapper Interface(myBatis 3.0 이상 버전 부터 사용가능함) 예제 ==== --> 
+<!--      매퍼.xml 파일이 DAO인터페이스를 구현하는 DAO클래스의 역할을 대신해준다. 
+          !!!!!! namespace 는 DAO인터페이스명으로 해야 한다. !!!!!!  --> 
+
+<mapper namespace="com.spring.app.mail.model.MailDAO">
+
+
+</mapper>

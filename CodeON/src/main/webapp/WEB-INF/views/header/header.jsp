@@ -96,7 +96,7 @@
 
     <nav>
       <a href="#">게시판</a>
-      <a href="#">메일</a>
+      <a href="<%= ctxPath %>/mail/list">메일</a>
       <a href="<%= ctxPath %>/schedule/scheduleManagement">일정</a>
       <a href="<%= ctxPath %>/member/work">근태관리</a>
       <a href="<%= ctxPath %>/sign/main">전자결재</a>
