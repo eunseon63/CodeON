@@ -10,7 +10,7 @@
 :root{
   --bg:#f7f8fb; --line:#e5e7eb; --text:#111827; --muted:#6b7280; --card:#fff; --brand:#2563eb;
 }
-.mypage-wrap{ max-width:1100px; margin:110px auto 60px; color:var(--text); font-family:'Pretendard','맑은 고딕',sans-serif; }
+.mypage-wrap{ max-width:1100px; margin:40px auto 60px; color:var(--text); font-family:'Pretendard','맑은 고딕',sans-serif; }
 .mypage-grid{ display:grid; grid-template-columns: 220px 1fr; gap:22px; }
 
 .aside{

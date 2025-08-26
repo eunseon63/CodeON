@@ -130,13 +130,14 @@ $(function() {
         frm.submit();
     });
     
+    // ai 분석 버튼
     $("#btnAnalyze").click(function() {
         // 1. 로딩 표시
         $("#aiLoading").show();
         $("#aiResult").text(""); // 이전 결과 초기화
 
         $.ajax({
-            url: "<%= ctxPath %>/chat", // GET 요청
+            url: "<%= ctxPath %>/ai/memberChat", // GET 요청
             type: "GET",
             success: function(data) {
                 // 2. 결과 출력 (줄바꿈 처리)
@@ -152,7 +153,6 @@ $(function() {
         });
     });
 
-    
 });
 
 // 직원 검색
@@ -239,8 +239,7 @@ function goDetail(memberSeq) {
                     &nbsp;직원 목록
                 </h5>
                 <div class="action-buttons">
-					<button id="btnAnalyze" class="btn btn-info btn-sm">AI 요약 보기</button>
-                
+                	<button id="btnAnalyze" class="btn btn-info btn-sm">AI 요약 보기</button>
                     <button type="button" class="btn btn-success btn-sm" id="btnExcel">
                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-file-earmark-excel-fill" viewBox="0 0 16 16">
                             <path d="M9.293 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V4.707A1 1 0 0 0 13.707 4L10 .293A1 1 0 0 0 9.707 0H9.293zM5.884 6.68L8 9.882l2.116-3.202a.5.5 0 1 1 .768.64L8.651 10l2.233 3.442a.5.5 0 1 1-.768.64L8 11.318l-2.116 3.202a.5.5 0 1 1-.768-.64L7.349 10 5.116 6.68a.5.5 0 1 1 .768-.64z"/>
@@ -347,15 +346,9 @@ function goDetail(memberSeq) {
                                                 <div class="d-flex justify-content-center">
                                                     <button class="btn btn-sm btn-outline-primary me-1"
                                                             onclick="window.location.href='<%= ctxPath%>/member/update?memberSeq=${item.memberSeq}'">
-                                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-pencil-square" viewBox="0 0 16 16">
-                                                            <path d="M15.502 1.94a.5.5 0 0 1 0 .706L14.459 3.69l-2-2L13.502.646a.5.5 0 0 1 .707 0l1.293 1.293zm-1.75 2.456-2-2L4.939 9.21a.5.5 0 0 0-.121.196l-.805 2.414a.25.25 0 0 0 .316.316l2.414-.805a.5.5 0 0 0 .196-.121L12.43 12.43a.5.5 0 0 1-.707.707L10.207 10.414 9.569 9.776l-2.389 2.389a.25.25 0 0 0 .316.316l2.414-.805a.5.5 0 0 0 .196-.121l6.124-6.124a.5.5 0 0 1 .707 0z"/>
-                                                        </svg>
                                                         수정
                                                     </button>
                                                     <button class="btn btn-sm btn-outline-danger" onclick="goDelete('${item.memberSeq}')">
-                                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash-fill" viewBox="0 0 16 16">
-                                                            <path d="M2.5 1a1 1 0 0 0-1 1v1a1 1 0 0 0 1 1H3v9a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V4h.5a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H2.5zM3 4h10v9a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V4z"/>
-                                                        </svg>
                                                         삭제
                                                     </button>
                                                 </div>
@@ -424,5 +417,3 @@ function goDetail(memberSeq) {
     </div>
 </body>
 </html>
-
-<jsp:include page="../footer/footer.jsp" />

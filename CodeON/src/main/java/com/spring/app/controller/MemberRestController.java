@@ -2,6 +2,7 @@ package com.spring.app.controller;
 
 import java.io.File;
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -144,7 +145,7 @@ public class MemberRestController {
 	            	
 	            	// 행이 존재하지 않으면 건너뛴다.
 	            	if (row == null) {
-	            		continue;
+	            		continue;	
 	            	}
 	            	
 	            	// 행의 1번째 열(입사일자)
@@ -296,5 +297,4 @@ public class MemberRestController {
 		return genderPercentageList;
 	}
 	
-
 }

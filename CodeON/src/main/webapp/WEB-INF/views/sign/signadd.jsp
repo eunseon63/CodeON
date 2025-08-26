@@ -1,12 +1,6 @@
-<%@ page language="java" contentType="text/html; charset=UTF-8"
-    pageEncoding="UTF-8"%>
-
+<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
 <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions"%>
-
-<%
-String ctxPath = request.getContextPath();
-%>
 
 <!-- jQuery -->
 <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
@@ -14,6 +8,11 @@ String ctxPath = request.getContextPath();
 <jsp:include page="../header/header.jsp" />
 <jsp:include page="signsidebar.jsp" />
 
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>기안문서 작성</title>
 <style>
 :root {
 	--header-h: 70px;
@@ -27,6 +26,12 @@ String ctxPath = request.getContextPath();
 	--brand-100: #e8eefc;
 	--danger: #ef4444;
 	--radius: 16px;
+}
+
+body {
+	margin: 0;
+	background: var(--bg);
+	font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial;
 }
 
 .main-content {
@@ -128,43 +133,6 @@ String ctxPath = request.getContextPath();
 	resize: vertical
 }
 
-.tbl {
-	width: 100%;
-	border-collapse: separate;
-	border-spacing: 0 10px
-}
-
-.tbl th {
-	font-size: 13px;
-	color: #374151;
-	text-align: left;
-	padding: 6px 10px
-}
-
-.tbl td {
-	background: #fafafa;
-	border: 1px solid var(--line);
-	border-left: none;
-	border-right: none;
-	padding: 10px
-}
-
-.tbl tr td:first-child {
-	border-left: 1px solid var(--line);
-	border-top-left-radius: 10px;
-	border-bottom-left-radius: 10px
-}
-
-.tbl tr td:last-child {
-	border-right: 1px solid var(--line);
-	border-top-right-radius: 10px;
-	border-bottom-right-radius: 10px
-}
-
-.tbl .center {
-	text-align: center
-}
-
 .approval-table {
 	width: 100%;
 	border-collapse: collapse
@@ -185,7 +153,7 @@ String ctxPath = request.getContextPath();
 	padding: 24px 0
 }
 
-/* 카테고리 탭 (라디오 + CSS만) */
+/* 탭 */
 .doc-tabs {
 	margin-top: 14px
 }
@@ -223,23 +191,13 @@ String ctxPath = request.getContextPath();
 	margin-top: 12px
 }
 
-#t-proposal:checked ~ .forms .f-proposal {
+#t-proposal:checked ~ .forms .f-proposal, #t-vacation:checked ~ .forms .f-vacation,
+	#t-expense:checked  ~ .forms .f-expense, #t-trip:checked     ~ .forms .f-trip
+	{
 	display: block
 }
 
-#t-vacation:checked ~ .forms .f-vacation {
-	display: block
-}
-
-#t-expense:checked  ~ .forms .f-expense {
-	display: block
-}
-
-#t-trip:checked     ~ .forms .f-trip {
-	display: block
-}
-
-/* 지출내역 테이블 */
+/* 지출내역 */
 .exp-table {
 	width: 100%;
 	border-collapse: collapse;
@@ -275,49 +233,7 @@ String ctxPath = request.getContextPath();
 	border-radius: 8px
 }
 </style>
-
-<script type="text/javascript">
-
-function openSignlineLoadPopup(){
-    const ctx = "<%=ctxPath%>";
-    const w = 1000, h = 700;
-
-    // 현재 브라우저 창의 화면 좌표(멀티모니터 대응)
-    const dualLeft = (window.screenLeft ?? window.screenX ?? 0);
-    const dualTop  = (window.screenTop  ?? window.screenY  ?? 0);
-
-    // 브라우저 바깥 크기(툴바 포함) 우선 사용
-    const viewportW = window.outerWidth  || document.documentElement.clientWidth  || screen.width;
-    const viewportH = window.outerHeight || document.documentElement.clientHeight || screen.height;
-
-    const left = Math.max(0, Math.round(dualLeft + (viewportW - w) / 2));
-    const top  = Math.max(0, Math.round(dualTop  + (viewportH - h) / 2));
-
-    const features = [
-        `width=${w}`, `height=${h}`,
-        `left=${left}`, `top=${top}`,
-        'resizable=yes','scrollbars=yes',
-        'toolbar=no','location=no','status=no','menubar=no'
-      ].join(',');
-
-    const win = window.open(ctx + "/sign/line/load", "signlineLoadPopup", features);
-    
-    if (win) {
-        try {
-          win.focus();
-          win.resizeTo(w, h);
-          win.moveTo(left, top);
-        } catch (_) { /* same-origin이 아닐 때 접근 제한될 수 있음 */ }
-      }
-  }
-
-  $(function(){
-    // 불러오기 버튼 -> 로드 팝업
-    $("#btnPickLine").on("click", openSignlineLoadPopup);
-  });
-
-
-</script>
+</head>
 
 <body>
 <div class="main-content">
@@ -351,7 +267,8 @@ function openSignlineLoadPopup(){
           </div>
           <div class="row2">
             <div>기안일</div>
-            <input class="input" id="draftDate" readonly>
+            <input class="input" id="draftDate" value="<%= java.time.LocalDate.now().toString() %>" readonly>
+
           </div>
           <div class="row2">
             <div>문서번호</div>
@@ -423,13 +340,6 @@ function openSignlineLoadPopup(){
                 <input type="date" class="date" id="v-to">
               </div>
             </div>
-            <div class="row2" style="margin-top:8px">
-              <div>종류</div>
-              <div style="display:flex;gap:16px;align-items:center">
-                <label><input type="radio" name="v-type" value="연차" checked> 연차</label>
-                <label><input type="radio" name="v-type" value="반차"> 반차</label>
-              </div>
-            </div>
             <div style="margin-top:10px">
               <div style="color:var(--muted);font-size:13px;margin-bottom:6px">사유</div>
               <textarea class="textarea" id="v-reason" placeholder="사유를 입력하세요."></textarea>
@@ -493,7 +403,89 @@ function openSignlineLoadPopup(){
   <!-- 폼 전송용(필요 시) -->
   <form id="draftForm" method="post" enctype="multipart/form-data" style="display:none"></form>
 </div>
-</body>
 
+<script type="text/javascript">
+  const ctx = "${pageContext.request.contextPath}";
+
+  function openSignlineLoadPopup(){
+    const w = 1000, h = 700;
+    const dualLeft = (window.screenLeft ?? window.screenX ?? 0);
+    const dualTop  = (window.screenTop  ?? window.screenY  ?? 0);
+    const viewportW = window.outerWidth  || document.documentElement.clientWidth  || screen.width;
+    const viewportH = window.outerHeight || document.documentElement.clientHeight || screen.height;
+    const left = Math.max(0, Math.round(dualLeft + (viewportW - w) / 2));
+    const top  = Math.max(0, Math.round(dualTop  + (viewportH - h) / 2));
+    const features = [
+      `width=${w}`, `height=${h}`, `left=${left}`, `top=${top}`,
+      'resizable=yes','scrollbars=yes','toolbar=no','location=no','status=no','menubar=no'
+    ].join(',');
+    const win = window.open(ctx + "/sign/line/load", "signlineLoadPopup", features);
+    if (win) {
+      try { win.focus(); win.resizeTo(w,h); win.moveTo(left,top); } catch(_) {}
+    }
+  }
+
+  // 팝업 콜백 (원래 로직)
+  window.receiveSignline = function(approvers){
+    const $tb = $("#apprTbody").empty();
+
+    if (!approvers || approvers.length === 0) {
+      $tb.html('<tr><td colspan="4" class="empty">결재자를 선택하세요.</td></tr>');
+    } else {
+      approvers.forEach((p, idx) => {
+        const dept  = p.dept  ?? p.departmentName ?? (p.department && p.department.departmentName) ?? '';
+        const grade = p.grade ?? p.gradeName      ?? (p.grade && p.grade.gradeName)               ?? '';
+        const name  = p.name ?? p.memberName ?? '';
+        const $tr = $("<tr/>");
+        $tr.append($("<td/>", { class:"center", text: idx + 1 }));
+        $tr.append($("<td/>", { text: dept }));
+        $tr.append($("<td/>", { class:"center", text: grade }));
+        $tr.append($("<td/>", { class:"center", text: name }));
+        $tb.append($tr);
+      });
+    }
+
+    // hidden inputs (원래 방식)
+    const $form = $("#draftForm").empty();
+    (approvers || []).forEach((p, i) => {
+      $("<input>").attr({ type: "hidden", name: "approverSeq" }).val(p.memberSeq).appendTo($form);
+      $("<input>").attr({ type: "hidden", name: "lineOrder"   }).val(i + 1).appendTo($form);
+    });
+  };
+
+  function recalcSum(){
+    let sum = 0;
+    $("#expTable tbody .money").each(function(){
+      const v = Number($(this).val().replace(/,/g,'')) || 0;
+      sum += v;
+    });
+    $("#sumMoney").text(sum.toLocaleString());
+  }
+
+  $(function(){
+    $("#btnPickLine").on("click", openSignlineLoadPopup);
+    $("#btnEditLine").on("click", openSignlineLoadPopup);
+
+    // 지출내역
+    $(document).on("input", "#expTable tbody .money", recalcSum);
+    $("#btnAddRow").on("click", function(){
+      $("#expTable tbody").append(
+        '<tr>'
+        + '<td><input type="date" class="date"></td>'
+        + '<td><input class="input" placeholder="사용처 입력"></td>'
+        + '<td><input type="number" class="number money" min="0" step="100" placeholder="0"></td>'
+        + '</tr>'
+      );
+    });
+    $("#btnDelRow").on("click", function(){
+      const $rows = $("#expTable tbody tr");
+      if($rows.length > 1) $rows.last().remove();
+      recalcSum();
+    });
+  });
+</script>
+
+</body>
+</html>
 
 <jsp:include page="../footer/footer.jsp" />

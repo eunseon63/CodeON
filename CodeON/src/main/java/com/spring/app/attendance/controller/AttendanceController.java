@@ -46,6 +46,9 @@ public class AttendanceController {
         
         WorkSummary summary = attendanceService.getMonthlySummary(memberSeq, month);
         
+        // ✅ 연차 조회
+        var leave = attendanceService.getAnnualLeave(memberSeq);
+        
         // JSP로 데이터 전달
         model.addAttribute("userName", userName);
         model.addAttribute("attendanceList", list);
@@ -53,6 +56,8 @@ public class AttendanceController {
         model.addAttribute("todayStr", LocalDate.now(ZONE).format(YMD));
         
         model.addAttribute("summary", summary);
+        model.addAttribute("leave", leave);   
+        
         return "member/work";
     }
 

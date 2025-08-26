@@ -130,3 +130,5 @@ desc tbl_business;
 select * from tbl_payment;
 select * from tbl_business_conform;
 
+select * from tab;
+

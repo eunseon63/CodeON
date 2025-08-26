@@ -11,7 +11,7 @@
 :root{
   --bg:#f7f8fb; --line:#e5e7eb; --text:#111827; --muted:#6b7280; --card:#fff; --brand:#2563eb;
 }
-.address-container{ max-width: 1100px; margin: 110px auto 60px; color: var(--text); font-family: 'Pretendard','맑은 고딕',sans-serif; }
+.address-container{ max-width: 1100px; margin: 40px auto 60px; color: var(--text); font-family: 'Pretendard','맑은 고딕',sans-serif; }
 .toolbar{
   display:flex; gap:10px; align-items:center; padding:12px; background:var(--card);
   border:1px solid var(--line); border-radius:12px; box-shadow:0 2px 10px rgba(0,0,0,.05);

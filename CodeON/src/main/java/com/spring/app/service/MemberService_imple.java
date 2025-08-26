@@ -44,7 +44,6 @@ import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.spring.app.domain.MemberDTO;
 import com.spring.app.entity.AnnualLeave;
 import com.spring.app.entity.Member;
-import com.spring.app.model.AnnualLeaveRepository;
 import com.spring.app.model.MemberDAO;
 import com.spring.app.model.MemberRepository;
 
@@ -57,7 +56,6 @@ import lombok.RequiredArgsConstructor;
 public class MemberService_imple implements MemberService {
 
     private final MemberRepository memberRepository;
-    private final AnnualLeaveRepository annualLeaveRepository;
     private final MemberDAO mbrdao;
     private final JPAQueryFactory jPAQueryFactory;
 
@@ -219,7 +217,7 @@ public class MemberService_imple implements MemberService {
 	                .selectFrom(member)
 	                .where(condition)
 	                .fetchOne();
-        
+	    
 	    return mbr.toDTO();
 	}
 	
@@ -472,7 +470,6 @@ public class MemberService_imple implements MemberService {
         
         return memberDtoList;
 	}
-	
 	
 }
 

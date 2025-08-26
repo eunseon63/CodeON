@@ -100,7 +100,6 @@ public class Member {
     			.memberMobile(this.memberMobile)
     			.memberGender(this.memberGender)
     			.stampImage(this.stampImage)
-    			.department(this.getDepartment())
     			.build();
     }
 }

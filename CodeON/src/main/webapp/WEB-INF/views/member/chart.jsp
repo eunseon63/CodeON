@@ -9,13 +9,96 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
 <jsp:include page="../header/header.jsp" />
-<jsp:include page="../admin/adminsidebar.jsp" />
+<div id="admin-sidebar">
+  <jsp:include page="../admin/adminsidebar.jsp" />
+</div>
         
 <meta charset="UTF-8">
 <title>통계 차트</title>
 
 <script src="<%= ctxPath %>/js/jquery-3.7.1.min.js"></script>
 
+<style type="text/css">
+  :root{
+    --header-h: 70px;      /* header 높이에 맞게 조정 */
+    --sidebar-w: 220px;    /* adminsidebar 실제 폭에 맞게 조정 */
+    --bg:#f7f8fb;
+    --card:#ffffff;
+    --text:#111827;
+    --muted:#6b7280;
+    --line:#e5e7eb;
+    --brand:#2563eb;
+  }
+
+  /* === 사이드바: 항상 위에 떠 있고 클릭 가능 === */
+  #admin-sidebar{
+    position: fixed;
+    top: var(--header-h);
+    left: 0;
+    width: var(--sidebar-w);
+    height: calc(100vh - var(--header-h));
+    z-index: 1040;            /* 메인 컨텐츠보다 높은 z-index */
+    overflow: auto;
+    background: #fff;         /* 필요 시 배경 */
+    border-right: 1px solid var(--line);
+  }
+
+  /* === 메인 컨텐츠: 사이드바 폭만큼 마진 확보 === */
+  .main-content{
+    margin-left: var(--sidebar-w);
+    padding-top: 1rem;
+    min-height: calc(100vh - var(--header-h));
+    position: relative;     /* stacking context 분리 */
+    z-index: 1;
+  }
+
+  .highcharts-figure,
+  .highcharts-data-table table {
+      min-width: 320px;
+      max-width: 800px;
+      margin: 1em auto;
+  }
+  
+  #chart_container { height: 400px; }
+  
+  .highcharts-data-table table {
+      font-family: Verdana, sans-serif;
+      border-collapse: collapse;
+      border: 1px solid #ebebeb;
+      margin: 10px auto;
+      text-align: center;
+      width: 100%;
+      max-width: 500px;
+  }
+  
+  .highcharts-data-table caption {
+      padding: 1em 0;
+      font-size: 1.2em;
+      color: #555;
+  }
+  
+  .highcharts-data-table th {
+      font-weight: 600;
+      padding: 0.5em;
+  }
+  
+  .highcharts-data-table td,
+  .highcharts-data-table th,
+  .highcharts-data-table caption {
+      padding: 0.5em;
+  }
+  
+  .highcharts-data-table thead tr,
+  .highcharts-data-table tr:nth-child(even) {
+      background: #f8f8f8;
+  }
+  
+  .highcharts-data-table tr:hover { background: #f1f7ff; }
+  input[type="number"] { min-width: 50px; }
+
+  #table_container table { width: 100% }
+  #table_container th, #table_container td { border: 1px solid gray; text-align: center; } 
+  #table_container th { background-color: #595959; color: white; } 
 <style>
     body {
         background-color: #f8f9fa;
@@ -117,6 +200,35 @@
 <script src="<%= ctxPath%>/Highcharts-10.3.1/code/modules/data.js"></script>
 <script src="<%= ctxPath%>/Highcharts-10.3.1/code/modules/drilldown.js"></script>
 
+<br><br>
+<body class="bg-light">
+<div class="container-fluid" style="transform: translateY(-5rem) !important;">
+    <div class="row">
+        <div class="col-md-10 py-5 px-4 offset-md-2">
+            <div class="card shadow-sm">
+                <div class="card-body p-4">
+                    <h2 class="card-title text-center text-primary fw-bold mb-4">사원 통계정보 (차트)</h2>
+                    <div class="d-flex justify-content-center mb-5">
+                        <form name="searchFrm" class="form-inline">
+                            <select name="searchType" id="searchType" class="form-select">
+                                <option value="">통계 선택</option>
+                                <option value="deptname">부서별 인원통계</option>
+                                <option value="gender">성별 인원통계</option>
+                            </select>
+                        </form>
+                    </div>
+
+                    <div id="chart_container" class="highcharts-figure"></div>
+                    <div id="table_container" class="mt-5"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<jsp:include page="../footer/footer.jsp" />
+</body>
+
 <script type="text/javascript">
 $(function(){
    $('select#searchType').change(function(e){
@@ -171,8 +283,7 @@ function func_choice(searchTypeVal) {
 	   		    			
 	   		    			resultArr.push(obj); // 배열속에 객체넣기
 	   		    		}
-	   		    		
-	   		    		// ============================================ //
+	   		    	
 	   		    		
 	   		    		Highcharts.chart('chart_container', {
 	   		   			    chart: {
@@ -333,32 +444,10 @@ function func_choice(searchTypeVal) {
 	   			});
 	   			
 	   			 break;
+	   			 
+	   			
 	   }
 }
 </script>
-
-<body>
-    <div class="main-container">
-        <div class="card shadow-sm stat-card">
-            <div class="card-body p-4">
-                <h2 class="card-title text-center text-primary fw-bold mb-4">
-                    사원 통계정보 (차트)
-                </h2>
-                <div class="d-flex justify-content-center mb-5">
-                    <form name="searchFrm" class="form-inline">
-                        <select name="searchType" id="searchType" class="form-select">
-                            <option value="">통계 선택</option>
-                            <option value="deptname">부서별 인원통계</option>
-                            <option value="gender">성별 인원통계</option>
-                        </select>
-                    </form>
-                </div>
-
-                <div id="chart_container" class="highcharts-figure"></div>
-                <div id="table_container" class="mt-5"></div>
-            </div>
-        </div>
-    </div>
-</body>
 
 <jsp:include page="../footer/footer.jsp" />

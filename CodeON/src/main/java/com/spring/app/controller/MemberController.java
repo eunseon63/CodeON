@@ -172,9 +172,6 @@ public class MemberController {
 		return "member/chart";
 	}
 
-	@GetMapping("attend")
-	public String attend() {
-		return "member/attend";
-	}
+	
 }
 

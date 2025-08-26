@@ -43,6 +43,9 @@
 <script type="text/javascript" src="<%=ctxPath%>/jquery-ui-1.13.1.custom/jquery-ui.min.js"></script>
     
 <body>
+<<<<<<< HEAD
+faf
+=======
 <!-- 상단 네비게이션 -->
 <nav class="navbar navbar-expand-lg navbar-light bg-white border-bottom">
     <div class="container-fluid">
@@ -125,5 +128,6 @@
     setInterval(updateClock, 1000);
     updateClock();
 </script>
+>>>>>>> refs/heads/main
 </body>
 </html>
