@@ -1,28 +1,27 @@
 package com.spring.app.board.domain;
 
 import lombok.Data;
-
 import java.util.Date;
-
 import org.springframework.web.multipart.MultipartFile;
 
 @Data
 public class BoardDTO {
-    private Integer board_seq;
-    private Integer fk_board_type_seq;
-    private Integer fk_board_category_seq;
-    private Integer fk_member_seq;
-    private String board_title;
-    private String board_content;
-    private Date board_regdate;
-    private Integer board_readcount;
-    private String board_password;
-    private String board_file_ori_name;
-    private String board_file_save_name;
-    private Long board_file_size;
+    private Integer boardSeq;
+    private Integer fkBoardTypeSeq;
+    private Integer fkBoardCategorySeq;
+    private Integer fkMemberSeq;
+    private String boardTitle;
+    private String boardContent;
+    private Date boardRegdate;
+    private Integer boardReadcount;
+    private String boardPassword;
+    private String boardFileOriName;
+    private String boardFileSaveName;
+    private Long boardFileSize;
     private MultipartFile attach;
+
     // join 용
-    private String member_name;
-    private String board_category_name;
-    private Integer comment_count;
+    private String memberName;
+    private String boardCategoryName;
+    private Integer commentCount;
 }

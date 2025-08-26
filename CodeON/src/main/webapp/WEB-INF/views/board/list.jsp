@@ -1,11 +1,12 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8"
     pageEncoding="UTF-8"%>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 <%
     String ctxPath = request.getContextPath();
 %>
 
-<jsp:include page="../header/header.jsp" />
+<jsp:include page="/WEB-INF/views/header/header.jsp" />
 
 <!DOCTYPE html>
 <html lang="ko">
@@ -41,10 +42,8 @@
         <div class="col-md-2 sidebar border-end">
             <h5 class="mt-3">게시판</h5>
             <ul class="nav flex-column">
-                <li class="nav-item fw-bold">사내 게시판</li>
-                <li class="nav-item ms-3"><a href="${ctxPath}/board/list?fk_board_type_seq=0" class="nav-link">사내게시판 이동</a></li>
-                <li class="nav-item fw-bold mt-3">본인이 속한 부서 게시판</li>  
-                <li class="nav-item ms-3"><a href="${ctxPath}/board/list?fk_board_type_seq=1" class="nav-link">부서게시판 이동</a></li> 
+                <li class="nav-item ms-3"><a href="${ctxPath}/board/list?fkBoardTypeSeq=0" class="nav-link">사내게시판 이동</a></li>
+                <li class="nav-item ms-3"><a href="${ctxPath}/board/list?fkBoardTypeSeq=1" class="nav-link">부서게시판 이동</a></li>
             </ul>
         </div>
 
@@ -53,31 +52,39 @@
             <!-- 게시판 유형 버튼 -->
             <div class="d-flex justify-content-between align-items-center mt-4 mb-3">
                 <div>
-                    <a href="${ctxPath}/board/list?fk_board_type_seq=0" class="btn ${param.fk_board_type_seq=='0'?'btn-primary':'btn-outline-primary'}">사내게시판</a>
-                    <a href="${ctxPath}/board/list?fk_board_type_seq=1" class="btn ${param.fk_board_type_seq=='1'?'btn-primary':'btn-outline-primary'}">부서게시판</a>
+                    <a href="${ctxPath}/board/list?fkBoardTypeSeq=0" 
+                       class="btn ${param.fkBoardTypeSeq=='0'?'btn-primary':'btn-outline-primary'}">사내게시판</a>
+                    <a href="${ctxPath}/board/list?fkBoardTypeSeq=1" 
+                       class="btn ${param.fkBoardTypeSeq=='1'?'btn-primary':'btn-outline-primary'}">부서게시판</a>
                 </div>
-                <button type="button" class="btn btn-success" onclick="location.href='${ctxPath}/board/add?fk_board_type_seq=${param.fk_board_type_seq}'">글쓰기</button>
+                <button type="button" class="btn btn-success" 
+                        onclick="location.href='${ctxPath}/board/add?fkBoardTypeSeq=${param.fkBoardTypeSeq}'">글쓰기</button>
             </div>
 
-            <!-- 카테고리 필터 -->
+            <!-- 카테고리 + 검색 -->
             <form class="d-flex align-items-center mb-3" method="get" action="${ctxPath}/board/list">
-                <input type="hidden" name="fk_board_type_seq" value="${param.fk_board_type_seq}" />
+                <input type="hidden" name="fkBoardTypeSeq" value="${param.fkBoardTypeSeq}" />
+                
+                
+                
                 <label class="me-2">카테고리:</label>
-                <select name="fk_board_category_seq" class="form-select me-3" style="width:150px;">
+                <select name="fkBoardCategorySeq" class="form-select me-3" style="width:150px;">
                     <option value="">전체</option>
-                    <option value="0" ${param.fk_board_category_seq=='0'?'selected':''}>공지사항</option>
-                    <option value="1" ${param.fk_board_category_seq=='1'?'selected':''}>일반</option>
-                    <option value="2" ${param.fk_board_category_seq=='2'?'selected':''}>경조사</option>
+                    <option value="0" ${param.fkBoardCategorySeq=='0'?'selected':''}>공지사항</option>
+                    <option value="1" ${param.fkBoardCategorySeq=='1'?'selected':''}>일반</option>
+                    <option value="2" ${param.fkBoardCategorySeq=='2'?'selected':''}>경조사</option>
+                </select>
+            
+                <select class="form-select me-2" name="searchType" style="width: 150px;">
+                    <option value="boardTitle" ${param.searchType=='boardTitle'?'selected':''}>제목</option>
+                    <option value="boardContent" ${param.searchType=='boardContent'?'selected':''}>내용</option>
+                   
+                    <option value="titleContent" ${param.searchType=='titleContent'?'selected':''}>제목+내용</option>
+                    <option value="memberName" ${param.searchType=='memberName'?'selected':''}>글쓴이</option>
                 </select>
 
-                <!-- 검색 -->
-                <select class="form-select me-2" name="searchType" style="width: 150px;">
-                    <option value="board_title" ${param.searchType=='board_title'?'selected':''}>제목</option>
-                    <option value="board_content" ${param.searchType=='board_content'?'selected':''}>내용</option>
-                    <option value="title_content" ${param.searchType=='title_content'?'selected':''}>제목+내용</option>
-                    <option value="member_name" ${param.searchType=='member_name'?'selected':''}>글쓴이</option>
-                </select>
-                <input type="text" name="keyword" value="${param.keyword}" class="form-control me-2" placeholder="검색어 입력" style="width: 300px;" />
+                <input type="text" name="searchword" value="${param.searchword}" 
+                       class="form-control me-2" placeholder="검색어 입력" style="width: 300px;" />
                 <button type="submit" class="btn btn-primary">검색</button>
             </form>
 
@@ -92,39 +99,46 @@
                         <th>날짜</th>
                         <th>조회수</th>
                         <th>첨부</th>
-                        <th>댓글</th>
                     </tr>
                 </thead>
                 <tbody>
-                    <c:forEach var="board" items="${boardList}">
-                        <tr>
-                            <td>${board.board_seq}</td>
-                            <td>${board.board_category_name}</td>
-                            <td>
-                                <a href="${ctxPath}/board/view?board_seq=${board.board_seq}">
-                                    ${board.board_title}
-                                </a>
-                            </td>
-                            <td>${board.member_name}</td>
-                            <td>${board.board_regdate}</td>
-                            <td>${board.board_readcount}</td>
-                            <td><c:if test="${not empty board.board_file_save_name}"><i class="bi bi-paperclip file-icon"></i></c:if></td>
-                            <td><span class="comment-count">${board.comment_count}</span></td>
-                        </tr>
-                    </c:forEach>
+                    <c:choose>
+                        <c:when test="${empty boardList}">
+                            <tr>
+                                <td colspan="7" class="text-center text-muted">등록된 게시글이 없습니다.</td>
+                            </tr>
+                        </c:when>
+                        <c:otherwise>
+                            <c:forEach var="board" items="${boardList}">
+                                <tr>
+                                    <td>${board.boardSeq}</td>
+                                    <td>${board.boardCategoryName}</td>
+                                    <td>
+                                        <a href="${ctxPath}/board/view?boardSeq=${board.boardSeq}">
+                                            ${board.boardTitle}
+                                        </a>
+                                        <span class="badge bg-secondary">${board.commentCount}</span>
+                                    </td>
+                                    <td>${board.memberName}</td>
+                                    <td>
+                                        <fmt:formatDate value="${board.boardRegdate}" pattern="yyyy-MM-dd" />
+                                    </td>
+                                    <td>${board.boardReadcount}</td>
+                                    <td>
+                                        <c:if test="${not empty board.boardFileSaveName}">
+                                            <i class="bi bi-paperclip file-icon"></i>
+                                        </c:if>
+                                    </td>
+                                </tr>
+                            </c:forEach>
+                        </c:otherwise>
+                    </c:choose>
                 </tbody>
             </table>
 
             <!-- 페이지네이션 -->
-            <div class="d-flex justify-content-center mt-4">
-                <nav>
-                    <ul class="pagination">
-                        <li class="page-item disabled"><a class="page-link" href="#">이전</a></li>
-                        <li class="page-item active"><a class="page-link" href="#">1</a></li>
-                        <li class="page-item"><a class="page-link" href="#">2</a></li>
-                        <li class="page-item"><a class="page-link" href="#">다음</a></li>
-                    </ul>
-                </nav>
+            <div class="text-center mt-4">
+                ${pageBar}
             </div>
         </div>
     </div>

@@ -10,4 +10,35 @@ public interface BoardService {
 
    
 	List<BoardDTO> selectBoardList(Map<String, String> paramMap);
+
+
+	List<Map<String, Object>> getBoardTypeList();
+
+
+	List<Map<String, Object>> getBoardCategoryList();
+
+
+	int getTotalCount(Map<String, String> paraMap);
+
+	
+	List<BoardDTO> boardListSearch_withPaging(Map<String, String> paraMap);
+
+
+	BoardDTO getBoardDetail(String boardSeq);
+
+
+	BoardDTO getPrevBoard(String boardSeq);
+
+
+	BoardDTO getNextBoard(String boardSeq);
+
+	//글 삭제
+	 int delete(String boardSeq);
+
+
+	 void updateBoard(BoardDTO boardDto)throws Exception;
+	
+	
+	
+
 }

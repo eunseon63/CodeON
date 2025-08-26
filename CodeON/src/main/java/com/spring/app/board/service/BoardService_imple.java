@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.spring.app.board.domain.BoardDTO;
 import com.spring.app.board.model.BoardDAO;
@@ -29,5 +30,81 @@ public class BoardService_imple implements BoardService {
 		public List<BoardDTO> selectBoardList(Map<String, String> paramMap) {
 			return dao.selectBoardList(paramMap);
 		}
+
+
+
+		@Override
+		public List<Map<String, Object>> getBoardTypeList() {
+			  return dao.getBoardTypeList();
+		}
+
+
+
+		@Override
+		public List<Map<String, Object>> getBoardCategoryList() {
+			return dao.getBoardCategoryList();
+		}
+
+
+
+		@Override
+		public int getTotalCount(Map<String, String> paraMap) {
+			int totalCount = dao.getTotalCount(paraMap);
+			return totalCount;
+		}
+
+
+
+		@Override
+		public List<BoardDTO> boardListSearch_withPaging(Map<String, String> paraMap) {
+			List<BoardDTO> boardList= dao.boardListSearch_withPaging(paraMap);
+			return boardList;
+		}
+
+
+
+		@Override
+		public BoardDTO getBoardDetail(String boardSeq) {
+			dao.updateReadCount(boardSeq);   //조회수 증가
+			 return dao.getBoardDetail(boardSeq);
+		}
+
+
+
+		@Override
+		public BoardDTO getPrevBoard(String boardSeq) {
+			 return dao.getPrevBoard(boardSeq);
+		}
+
+
+
+		@Override
+		public BoardDTO getNextBoard(String boardSeq) {
+			return dao.getNextBoard(boardSeq);
+		}
+
+
+
+		@Override
+		@Transactional  // 글 삭제시 첨부파일,댓글 까지 함께 처리하는 트랜잭션 , tbl_comment 테이블에는 시퀀스에 delete cascade 제약조건 걸려있음
+		public int delete(String boardSeq) {
+			   return dao.delete(boardSeq);
+		}
+
+
+
+		@Override
+		public void updateBoard(BoardDTO boardDto) throws Exception {
+			dao.updateBoard(boardDto);
+			
+		}
+
+
+
+		
+
+
+
+
 
 }
