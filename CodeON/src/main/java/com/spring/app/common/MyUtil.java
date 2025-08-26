@@ -1,3 +1,4 @@
+
 package com.spring.app.common;
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -33,3 +34,5 @@ public class MyUtil {
 		return currentURL;
 	}
 }
+
+

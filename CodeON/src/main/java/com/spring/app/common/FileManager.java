@@ -7,6 +7,7 @@ import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.UUID;
 
@@ -15,7 +16,7 @@ import org.springframework.stereotype.Component;
 import jakarta.servlet.ServletOutputStream;
 import jakarta.servlet.http.HttpServletResponse;
 
-// === FileManager 클래스 생성하기 === //
+// === #149. FileManager 클래스 생성하기 === //
 @Component
 public class FileManager {
 
@@ -23,7 +24,7 @@ public class FileManager {
     // byte[] bytes : 파일의 내용물
 	// String originalFilename : 첨부된 파일의 원래이름
 	// String path : 업로드 할 파일의 저장경로
-	// 리턴값 : 서버에 저장된 새로운 파일명(예: 20250712122533_48d82ae1e33a4682b9c03f8421538a43.jpg) 
+	// 리턴값 : 서버에 저장된 새로운 파일명(예: 20250712122533_48d82ae1e33a4682b9c03f8421538a43.png) 
 	
 	public String doFileUpload(byte[] bytes, String originalFilename, String path) throws Exception {
 		
@@ -49,10 +50,10 @@ public class FileManager {
 		
 		// 서버에 저장할 새로운 파일명을 만든다.
 	/*
-		// 서버에 저장할 새로운 파일명이 동일한 파일명이 되지 않고 고유한 파일명이 되도록 하기 위해
+		// 서버에 저장)할 새로운 파일명이 동일한 파일명이 되지 않고 고유한 파일명이 되도록 하기 위해
 		// 현재의 년월일시분초에다가 현재 나노세컨즈nanoseconds 값을 결합하여 확장자를 붙여서 만든다.
 		newFileName = String.format("%1$tY%1$tm%1$td%1$tH%1$tM%1$tS", Calendar.getInstance()); 
-		newFileName += System.nanoTime();
+		newFileName += System.nanoTime(;
 		newFileName += fileExt;
 		// newFileName 은 예를 들면, 2025020709291535243254235235234.png 와 같이 된다. 
 	*/
@@ -219,11 +220,11 @@ public class FileManager {
 				while( (length = bfin.read(readByte, 0, 4096)) != -1 ) {
 				/*
 				    bfin.read(readByte, 0, 4096) 은 
-				    다운로드 해주어야할 file에서 0(처음) 부터 4096 byte 만큼 읽어들인 후 
+				        다운로드 해주어야할 file에서 0(처음) 부터 4096 byte 만큼 읽어들인 후 
 				    readByte 라는 변수에 읽어들인 내용을 저장시킨다.
-				    그런데 다운로드 해주어야할 file에서 읽어들인 내용이 없다라면 bfin.read(readByte, 0, 4096) 은 -1 을 리턴시켜준다. 
-				    그러므로  while( (length = bfin.read(readByte, 0, 4096)) != -1  ) 말은 
-				    다운로드 해주어야할 file 을 매번 4096 byte 씩 읽어들인다는 말이다.      	
+				       그런데 다운로드 해주어야할 file에서 읽어들인 내용이 없다라면 bfin.read(readByte, 0, 4096) 은 -1 을 리턴시켜준다. 
+				       그러므로  while( (length = bfin.read(readByte, 0, 4096)) != -1  ) 말은 
+				       다운로드 해주어야할 file 을 매번 4096 byte 씩 읽어들인다는 말이다.      	
 				 */
 					
 					souts.write(readByte, 0, length);
