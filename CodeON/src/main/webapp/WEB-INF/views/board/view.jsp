@@ -49,8 +49,8 @@
                                 or fn:endsWith(board.boardFileSaveName, '.png') 
                                 or fn:endsWith(board.boardFileSaveName, '.gif')}">
                         <div class="mt-3">
-                            <img src="${ctxPath}/upload/board/${board.boardFileSaveName}" 
-                                 alt="${board.boardFileOriName}" class="img-fluid rounded">
+                         <img src="${ctxPath}/resources/upload/${board.boardFileSaveName}" 
+    						 alt="${board.boardFileOriName}" class="img-fluid rounded">
                         </div>
                     </c:when>
                     <c:otherwise>

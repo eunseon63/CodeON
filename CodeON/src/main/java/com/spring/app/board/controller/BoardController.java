@@ -64,13 +64,14 @@ public class BoardController {
 
     // 글쓰기 처리(POST) 
     @PostMapping("add")
-    public ModelAndView addPost(BoardDTO boardDto, HttpSession session) {
+    public ModelAndView addPost(@RequestParam("fkBoardTypeSeq") Integer fkBoardTypeSeq,BoardDTO boardDto, HttpSession session) {
         ModelAndView mav = new ModelAndView();
+        
         try {
             MemberDTO loginuser = (MemberDTO) session.getAttribute("loginuser");
             boardDto.setFkMemberSeq(loginuser.getMemberSeq());
             boardDto.setMemberName(loginuser.getMemberName());
-
+            boardDto.setFkBoardTypeSeq(fkBoardTypeSeq);
             // ===== 파일 업로드 처리 =====
             if (boardDto.getAttach() != null && !boardDto.getAttach().isEmpty()) {
                 String originalFilename = boardDto.getAttach().getOriginalFilename();
@@ -91,9 +92,12 @@ public class BoardController {
                 boardDto.getAttach().transferTo(savedFile);
             }
 
+            System.out.println("fkBoardTypeSeq = " + boardDto.getFkBoardTypeSeq());
+
             boardService.add(boardDto);
 
-            mav.setViewName("redirect:/board/list?fk_board_type_seq=" + boardDto.getFkBoardTypeSeq());
+            
+            mav.setViewName("redirect:/board/list?fkBoardTypeSeq=" + boardDto.getFkBoardTypeSeq());
 
         } catch (IOException e) {
             e.printStackTrace();
@@ -108,6 +112,7 @@ public class BoardController {
         }
         return mav;
     }
+
 
     // 게시물 목록
     @GetMapping("list")
