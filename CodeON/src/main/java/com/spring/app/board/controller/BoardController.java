@@ -120,10 +120,22 @@ public class BoardController {
                              HttpServletResponse response) {
 
         List<BoardDTO> boardList = null;
-
+        
         HttpSession session = request.getSession();
         session.setAttribute("readCountPermission", "yes");
-
+        
+        MemberDTO loginUser = (MemberDTO) session.getAttribute("loginuser");
+        Integer userDept = (loginUser != null) ? loginUser.getFkDepartmentSeq() : null;
+        
+        // ---- 로그인 유저 부서명 추가 ----
+        String loginUserDeptName = "부서없음";
+        if (loginUser != null && loginUser.getDepartment() != null) {
+            loginUserDeptName = loginUser.getDepartment().getDepartmentName();
+        } 
+        mav.addObject("loginUserDeptName", loginUserDeptName);
+        
+        
+        
         String referer = request.getHeader("Referer");
         if(referer == null) {
             mav.setViewName("redirect:/index");
@@ -136,7 +148,10 @@ public class BoardController {
         paraMap.put("fkBoardCategorySeq", fkBoardCategorySeq);
         paraMap.put("fkBoardTypeSeq", fkBoardTypeSeq);
         
-        
+        // if fkBoardTypeSeq="1" (부서게시판) 일때 현재 로그인중인 유저의 부서를 걸러내는 용도
+        if("1".equals(fkBoardTypeSeq) && userDept != null) {
+            paraMap.put("fkDepartmentSeq", String.valueOf(userDept));
+        }
         
         int totalCount = boardService.getTotalCount(paraMap);
         int sizePerPage = 10;  
@@ -199,7 +214,7 @@ public class BoardController {
         pageBar += "</ul>";
 
         mav.addObject("pageBar", pageBar);
-
+        
         mav.addObject("totalCount", totalCount);
         mav.addObject("currentShowPageNo", pageNo);
         mav.addObject("sizePerPage", sizePerPage);

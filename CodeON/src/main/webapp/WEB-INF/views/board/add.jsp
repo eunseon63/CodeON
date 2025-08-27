@@ -72,29 +72,42 @@ $(function(){
                         <input type="text" name="memberName" value="${sessionScope.loginuser.memberName}" readonly />
                     </td>
                 </tr>
-                <tr>
-				    <th style="background-color: #DDDDDD;">게시판 타입</th>
-				    <td>
-				        <select name="fkBoardTypeSeq" class="form-control">
-				            <c:forEach var="type" items="${boardTypeList}">
-				                <option value="${type.BOARDTYPESEQ}">
-				                    ${type.BOARDTYPENAME}
-				                </option>
-				            </c:forEach>
-				        </select>
-				    </td>
-				</tr>
+               <!-- 기존 게시판 타입 선택 부분 숨김 -->
+<tr style="display:none;">
+    <th style="background-color: #DDDDDD;">게시판 타입</th>
+    <td>
+        <select name="fkBoardTypeSeq" class="form-control">
+            <c:forEach var="type" items="${boardTypeList}">
+                <option value="${type.BOARDTYPESEQ}">
+                    ${type.BOARDTYPENAME}
+                </option>
+            </c:forEach>
+        </select>
+    </td>
+</tr>
+
+<!-- hidden input으로 값 전달 -->
+<input type="hidden" name="fkBoardTypeSeq" value="${param.fkBoardTypeSeq}" />
+               
 				<tr>
 				    <th style="background-color: #DDDDDD;">카테고리</th>
 				    <td>
-				        <select name="fkBoardCategorySeq" class="form-control">
-				            <c:forEach var="cate" items="${boardCategoryList}">
-				                <option value="${cate.BOARDCATEGORYSEQ}">
-				                    ${cate.BOARDCATEGORYNAME}
-				                </option>
-				            </c:forEach>
+				    
+				      <select name="fkBoardCategorySeq" class="form-control"> 
+						      <c:forEach var="cate" items="${boardCategoryList}"> 
+								      <c:choose> <c:when test="${cate.BOARDCATEGORYSEQ != 0}"> 
+										      <option value="${cate.BOARDCATEGORYSEQ}">
+										      ${cate.BOARDCATEGORYNAME}
+										      </option> 
+											      </c:when> 
+										      <c:when test="${cate.BOARDCATEGORYSEQ == 0 and ((param.fkBoardTypeSeq == 0 and sessionScope.loginuser.fkDepartmentSeq == 10) 
+										      or (param.fkBoardTypeSeq == 1 and sessionScope.loginuser.fkGradeSeq == 4))}">
+										       <option value="${cate.BOARDCATEGORYSEQ}">${cate.BOARDCATEGORYNAME}</option>
+										        </c:when> 
+								        </c:choose> 
+						        </c:forEach> 
 				        </select>
-				    </td>
+				   </td>
 				</tr>
                 <tr>
                     <th style="background-color: #DDDDDD;">제목</th>

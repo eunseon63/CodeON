@@ -39,13 +39,7 @@
 <div class="container-fluid">
     <div class="row">
         <!-- Sidebar -->
-        <div class="col-md-2 sidebar border-end">
-            <h5 class="mt-3">게시판</h5>
-            <ul class="nav flex-column">
-                <li class="nav-item ms-3"><a href="${ctxPath}/board/list?fkBoardTypeSeq=0" class="nav-link">사내게시판 이동</a></li>
-                <li class="nav-item ms-3"><a href="${ctxPath}/board/list?fkBoardTypeSeq=1" class="nav-link">부서게시판 이동</a></li>
-            </ul>
-        </div>
+        
 
         <!-- Main Content -->
         <div class="col-md-10">
@@ -61,6 +55,14 @@
                         onclick="location.href='${ctxPath}/board/add?fkBoardTypeSeq=${param.fkBoardTypeSeq}'">글쓰기</button>
             </div>
 
+			<!-- 로그인 유저 부서 표시 -->
+			<c:if test="${param.fkBoardTypeSeq == '1'}">
+				    <div class="mb-3 text-center">
+				        <span style="font-size:1.3rem; font-weight:bold;">
+				         	현재 로그인 계정 부서 :	 ${loginUserDeptName} 
+				        </span>
+				    </div>
+				</c:if>
             <!-- 카테고리 + 검색 -->
             <form class="d-flex align-items-center mb-3" method="get" action="${ctxPath}/board/list">
                 <input type="hidden" name="fkBoardTypeSeq" value="${param.fkBoardTypeSeq}" />

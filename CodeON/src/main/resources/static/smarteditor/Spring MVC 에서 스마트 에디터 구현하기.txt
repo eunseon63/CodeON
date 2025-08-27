@@ -303,8 +303,8 @@
 		// path 가 첨부파일들을 저장할 WAS(톰캣)의 폴더가 된다.
 		
      // System.out.println("~~~ 확인용 path => " + path);
-	//  ~~~ 확인용 path => C:\NCS\workspace_spring_boot_17\myspring\src\main\webapp\resources\photo_upload
-		
+	 //  ~~~ 확인용 path => C:\NCS\workspace_spring_boot\.metadata\.plugins\org.eclipse.wst.server.core\tmp0\wtpwebapps\board\resources\photo_upload
+	
 		File dir = new File(path);
 		if(!dir.exists()) {
 			dir.mkdirs();
