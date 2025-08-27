@@ -179,21 +179,29 @@ tbody tr:last-child td{ border-bottom:none; }
       </div>
 
       <!-- 페이지네이션 -->
-      <div class="actions">
-        <div class="pagination">
-          <c:if test="${totalPages > 1}">
-            <c:forEach var="p" begin="1" end="${totalPages}">
-              <a class="page-btn ${p == page ? 'active' : ''}"
-                 href="${ctxPath}/member/attend?month=${currentMonth}
-                 <c:if test='${not empty selectedDept}'> &amp;dept=${selectedDept}</c:if>
-                 <c:if test='${not empty selectedGrade}'> &amp;grade=${selectedGrade}</c:if>
-                 &amp;page=${p}">
-                 ${p}
-              </a>
-            </c:forEach>
-          </c:if>
-        </div>
-      </div>
+		<div class="actions">
+		  <div class="pagination">
+		    <c:if test="${totalPages > 1}">
+		      <c:forEach var="p" begin="1" end="${totalPages}">
+		        <c:url var="pageUrl" value="/member/attend">
+		          <c:param name="month" value="${currentMonth}"/>
+		          <c:if test="${not empty selectedDept}">
+		            <c:param name="dept" value="${selectedDept}"/>
+		          </c:if>
+		          <c:if test="${not empty selectedGrade}">
+		            <c:param name="grade" value="${selectedGrade}"/>
+		          </c:if>
+		          <c:param name="page" value="${p}"/>
+		        </c:url>
+		
+		        <a class="page-btn ${p == page ? 'active' : ''}" href="${pageUrl}">
+		          ${p}
+		        </a>
+		      </c:forEach>
+		    </c:if>
+		  </div>
+		</div>
+
 
     </section>
   </div>

@@ -1,6 +1,5 @@
 package com.spring.app.service;
 
-import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 
@@ -50,6 +49,8 @@ public interface MemberService {
 	// tbl_member 테이블에서 성별별 인원수 및 퍼센티지 가져오기 
 	public List<Map<String, String>> memberCntByGender();
 
+	// 직원 전체 조회
+	public List<MemberDTO> findAll();
 
 }
 
