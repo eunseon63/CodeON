@@ -19,7 +19,7 @@
        nhn.husky.EZCreator.createInIFrame({
            oAppRef: oEditors,
            elPlaceHolder: "emailContent",
-           sSkinURI: "${ctxPath}/smarteditor/SmartEditor2Skin.html",
+           sSkinURI: "<%= ctxPath%>/smarteditor/SmartEditor2Skin.html",
            htParams: {
                bUseToolbar: true,
                bUseVerticalResizer: true,

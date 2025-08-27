@@ -34,5 +34,6 @@ public class MailController {
 	public String write() {
 		return "mail/write";
 	}
+	
 
 }
