@@ -10,11 +10,15 @@ import java.time.LocalDateTime;
 @NoArgsConstructor @AllArgsConstructor @Builder
 public class Draft {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "SEQ_DRAFT_GEN")
-    @SequenceGenerator(name = "SEQ_DRAFT_GEN", sequenceName = "SEQ_DRAFT", allocationSize = 1)
-    @Column(name = "draft_seq", nullable = false)
-    private Long draftSeq;
+	@Id
+	@GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "DRAFT_SEQ_GEN")
+	@SequenceGenerator(
+	    name = "DRAFT_SEQ_GEN",
+	    sequenceName = "DRAFT_SEQ", 
+	    allocationSize = 1
+	)
+	@Column(name = "draft_seq")
+	private Long draftSeq;
 
     // FK: TBL_DRAFT_TYPE(draft_type_seq)
     @ManyToOne(fetch = FetchType.LAZY, optional = false)

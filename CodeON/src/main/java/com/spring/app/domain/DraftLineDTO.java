@@ -1,5 +1,7 @@
 package com.spring.app.domain;
 
+import java.time.LocalDateTime;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -13,12 +15,12 @@ import lombok.Setter;
 @Builder
 public class DraftLineDTO {
 	
-	private int draftLineSeq;
-	private int fkDraftSeq;
-	private int fkMemberSeq;
-	private int lineOrder;
-	private String approvalStatus;
-	private String rejectReason;
-	private String approvalDate;
+	   private Long draftLineSeq;
+	    private Long fkDraftSeq;
+	    private Long fkMemberSeq;
+	    private Integer lineOrder; 
+	    private Integer signStatus; 
+	    private String signComment; 
+	    private LocalDateTime signDate; 
     
 }
