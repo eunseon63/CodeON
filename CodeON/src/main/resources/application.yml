@@ -27,6 +27,10 @@ spring: # 주의할 점은 내용작성시 들여쓰기 내어쓰기를 반드�
       idle-timeout: 30000    # 30초 후 연결 실패시 예외 발생 
       max-lifetime: 1800000  # 커넥션 풀에서 살아있을 수 있는 커넥션의 최대 수명시간 1,800초(30분). 30분 이상 유지된 커넥션은 제거  
       connection-timeout: 30000 # 클라이언트가 pool에 connection을 요청하는데 기다리는 최대시간을 설정 30초
+      
+  data: #=== (몽고DB #웹채팅관련8) === 
+    mongodb:
+      uri: mongodb://devuser:qwer1234$@127.0.0.1:27017/mydb
   
   jpa:
     database-platform: org.hibernate.dialect.OracleDialect      # Spring Boot 3.2.1 버전 이후 부터는 JPA Provider가 적절한 Dialect 를 찾아내게 해주므로, 즉 설정을 명시하지 않아도 Oracle을 자동 인식해주므로 이를 명시적으로 지정하게 되면 오류가 발생하게 된다.  
@@ -62,7 +66,6 @@ spring: # 주의할 점은 내용작성시 들여쓰기 내어쓰기를 반드�
       # '[use_sql_comments]': true 는 사용자 주석문을 보여줌 
     
     open-in-view: false
-       
 
   messages: #메시지(파일이 여러개일 경우 ,로 구분)
     basename: messages.validation
