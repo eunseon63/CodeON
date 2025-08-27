@@ -96,7 +96,7 @@ public class BoardController {
 
             boardService.add(boardDto);
 
-            // redirect 시 camelCase 일관성 유지
+            
             mav.setViewName("redirect:/board/list?fkBoardTypeSeq=" + boardDto.getFkBoardTypeSeq());
 
         } catch (IOException e) {
