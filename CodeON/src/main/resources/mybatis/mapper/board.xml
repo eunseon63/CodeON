@@ -137,20 +137,23 @@
         SELECT ROWNUM AS rno, V.*
         FROM (
             SELECT 
-                b.board_seq AS boardSeq,
-                b.fk_board_type_seq AS fkBoardTypeSeq,
-                b.fk_board_category_seq AS fkBoardCategorySeq,
-                b.fk_member_seq AS fkMemberSeq,
-                b.board_title AS boardTitle,
-                b.board_content AS boardContent,
-                b.board_regdate AS boardRegdate,
-                b.board_readcount AS boardReadcount,
-                m.member_name AS memberName,
-                c.board_category_name AS boardCategoryName,
-                (SELECT COUNT(*) FROM tbl_comment cm WHERE cm.fk_board_seq = b.board_seq) AS commentCount
-         	 FROM tbl_board b
-			LEFT JOIN tbl_member m ON b.fk_member_seq = m.member_seq
-			LEFT JOIN tbl_board_category c ON b.fk_board_category_seq = c.board_category_seq
+    b.board_seq AS boardSeq,
+    b.fk_board_type_seq AS fkBoardTypeSeq,
+    b.fk_board_category_seq AS fkBoardCategorySeq,
+    b.fk_member_seq AS fkMemberSeq,
+    b.board_title AS boardTitle,
+    b.board_content AS boardContent,
+    b.board_regdate AS boardRegdate,
+    b.board_readcount AS boardReadcount,
+    b.board_file_ori_name AS boardFileOriName,
+    b.board_file_save_name AS boardFileSaveName,
+    b.board_file_size AS boardFileSize,
+    m.member_name AS memberName,
+    c.board_category_name AS boardCategoryName,
+    (SELECT COUNT(*) FROM tbl_comment cm WHERE cm.fk_board_seq = b.board_seq) AS commentCount
+	FROM tbl_board b
+	LEFT JOIN tbl_member m ON b.fk_member_seq = m.member_seq
+	LEFT JOIN tbl_board_category c ON b.fk_board_category_seq = c.board_category_seq
 			WHERE 1=1
 			<if test="fkBoardTypeSeq != null">
 			    AND b.fk_board_type_seq = #{fkBoardTypeSeq, jdbcType=NUMERIC}

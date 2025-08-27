@@ -113,6 +113,7 @@
                         <c:otherwise>
                             <c:forEach var="board" items="${boardList}">
                                 <tr>
+                                	
                                     <td>${board.boardSeq}</td>
                                     <td>${board.boardCategoryName}</td>
                                     <td>
@@ -127,9 +128,8 @@
                                     </td>
                                     <td>${board.boardReadcount}</td>
                                     <td>
-                                        <c:if test="${not empty board.boardFileSaveName}">
-                                            <i class="bi bi-paperclip file-icon"></i>
-                                        </c:if>
+                                    <c:if test="${not empty board.boardFileSaveName}"> <i class="bi bi-paperclip file-icon"></i> 
+                                    </c:if>
                                     </td>
                                 </tr>
                             </c:forEach>
