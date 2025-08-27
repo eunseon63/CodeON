@@ -271,8 +271,27 @@ from tbl_comment
 
 desc tbl_comment
 SELECT seq_comment.NEXTVAL FROM dual;
-fffff
 
+select *
+from tbl_reaction
+
+
+
+
+--추천 테이블---
+CREATE TABLE tbl_recommend (
+    recommend_seq     NUMBER PRIMARY KEY,              -- 추천 PK
+    fk_board_seq      NUMBER NOT NULL,                 -- 게시글 번호
+    fk_member_seq     NUMBER NOT NULL,                 -- 추천한 회원 번호
+    CONSTRAINT fk_recommend_board FOREIGN KEY (fk_board_seq) 
+        REFERENCES tbl_board(board_seq) ON DELETE CASCADE,
+    CONSTRAINT fk_recommend_member FOREIGN KEY (fk_member_seq) 
+        REFERENCES tbl_member(member_seq) ON DELETE CASCADE,
+    CONSTRAINT uq_board_member UNIQUE (fk_board_seq, fk_member_seq) -- 같은 글 중복 추천 방지
+);
+
+select * from tbl_comment
+drop table tbl_board_recommend
 ------------------- **** >>> Spring Boot Security <<< **** -------------------
 
 

@@ -70,6 +70,25 @@
         WHERE r.fk_comment_seq = #{parentCommentSeq}
         ORDER BY r.reply_seq ASC
     </select>
+  <!-- 추천 추가 -->
+    <insert id="insertRecommend" parameterType="map">
+        INSERT INTO tbl_recommend (recommend_seq, fk_board_seq, fk_member_seq)
+        VALUES (seq_recommend.nextval, #{fkBoardSeq}, #{fkMemberSeq})
+    </insert>
+
+    <!-- 추천 수 조회 -->
+    <select id="selectRecommendCount" parameterType="int" resultType="int">
+        SELECT COUNT(*) 
+        FROM tbl_recommend
+        WHERE fk_board_seq = #{fkBoardSeq}
+    </select>
+		<!-- 추천한 사람 이름 조회 -->
+		<select id="selectRecommendMemberNames" parameterType="int" resultType="string">
+		    SELECT m.member_name AS memberName
+		    FROM tbl_recommend r 
+		    JOIN tbl_member m ON r.fk_member_seq = m.member_seq
+		    WHERE r.fk_board_seq = #{fkBoardSeq}
+		</select>
 
 <!-- 댓글 삭제 -->
 <delete id="deleteComment" parameterType="map">

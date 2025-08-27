@@ -26,5 +26,11 @@ public interface CommentDAO {
 		int updateComment(CommentDTO cdto);
 
 		int updateReply(ReplyDTO rdto);
+
+		int insertRecommend(Map<String, Object> paramMap);
+
+		int selectRecommendCount(Integer fkBoardSeq);
+
+		List<String> selectRecommendMemberNames(Integer fkBoardSeq);
 	    
 }

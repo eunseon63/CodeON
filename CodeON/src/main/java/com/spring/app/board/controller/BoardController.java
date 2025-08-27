@@ -19,6 +19,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.spring.app.board.domain.BoardDTO;
 import com.spring.app.board.service.BoardService;
+import com.spring.app.board.service.CommentService;
 import com.spring.app.common.FileManager;
 import com.spring.app.common.MyUtil;
 import com.spring.app.domain.MemberDTO;
@@ -35,6 +36,7 @@ import lombok.RequiredArgsConstructor;
 public class BoardController {
 
     private final BoardService boardService;
+    private final CommentService commentService;
     private final FileManager fileManager;
     
     // 글쓰기 폼 요청(GET) 
@@ -237,30 +239,26 @@ public class BoardController {
     @GetMapping("view")
     public String view(@RequestParam("boardSeq") String boardSeq,
                        Model model,
-                       RedirectAttributes redirectAttrs) {//RedirectAttributes는 리다이렉트시 메시지를 "flash" 속성으로 넘겨줄 때 달아준다
+                       RedirectAttributes redirectAttrs) {
+
         // 게시글 상세 조회
-    	BoardDTO board = boardService.getBoardDetail(boardSeq);
+        BoardDTO board = boardService.getBoardDetail(boardSeq);
 
         if (board == null) {
-            // 존재하지 않는 게시글일 경우 리스트로 리다이렉트
             redirectAttrs.addFlashAttribute("errorMsg", "존재하지 않는 게시글입니다.");
             return "redirect:/board/list";
         }
 
-        // 댓글 목록 조회 (추후 구현)
-        // List<CommentDTO> commentList = commentService.getCommentList(boardSeq);
+        // 추천 수 조회
+        int recommendCount = commentService.getRecommendCount(Integer.valueOf(boardSeq));
+        board.setRecommendCount(recommendCount); // BoardDTO에 recommendCount 필드 있어야 함
 
-        // 리액션 집계 (추후 구현)
-        // ReactionCountDTO reaction = reactionService.getReactionCount(boardSeq);
-
-        //이전/다음 글 조회
+        // 이전/다음 글 조회
         BoardDTO prevBoard = boardService.getPrevBoard(boardSeq);
         BoardDTO nextBoard = boardService.getNextBoard(boardSeq);
 
         // JSP로 데이터 전달
         model.addAttribute("board", board);
-        // model.addAttribute("commentList", commentList);
-        // model.addAttribute("reaction", reaction);
         model.addAttribute("prevBoard", prevBoard);
         model.addAttribute("nextBoard", nextBoard);
 
@@ -365,6 +363,8 @@ public class BoardController {
 
         return mav;
     }  
+    
+    
     
     
     

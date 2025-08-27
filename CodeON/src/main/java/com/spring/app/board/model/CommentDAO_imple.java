@@ -79,6 +79,25 @@ public class CommentDAO_imple implements CommentDAO {
 		public int updateReply(ReplyDTO rdto) {
 			 return sqlSession.update("comment.updateReply", rdto);
 		}
+
+
+
+		@Override
+	    public int insertRecommend(Map<String, Object> paramMap) {
+	        return sqlSession.insert("comment.insertRecommend", paramMap);
+	    }
+
+	    @Override
+	    public int selectRecommendCount(Integer fkBoardSeq) {
+	        return sqlSession.selectOne("comment.selectRecommendCount", fkBoardSeq);
+	    }
+
+
+	    //추천한 사람 이름 조회
+		@Override
+		public List<String> selectRecommendMemberNames(Integer fkBoardSeq) {
+			return sqlSession.selectList("comment.selectRecommendMemberNames", fkBoardSeq);
+		}
 		
 		
 		
