@@ -2,6 +2,7 @@
 package com.spring.app.model;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -45,5 +46,45 @@ public interface DraftLineRepository extends JpaRepository<DraftLine, Long> {
     
     List<DraftLine> findByDraft_DraftSeqOrderByLineOrderAscDraftLineSeqAsc(Long draftSeq);
 
+
+    @Query("""
+      select dl
+        from DraftLine dl
+        join fetch dl.approver a
+        left join fetch a.department dep
+        left join fetch a.grade g
+       where dl.draft.draftSeq = :draftSeq
+       order by dl.lineOrder asc, dl.draftLineSeq asc
+    """)
+    List<DraftLine> findDetailLines(@Param("draftSeq") Long draftSeq);
+
+    @Query("""
+      select min(x.lineOrder)
+        from DraftLine x
+       where x.draft.draftSeq = :draftSeq
+         and x.signStatus <> 1
+    """)
+    Integer findNextOrder(@Param("draftSeq") Long draftSeq);
+
+    @Query("""
+      select dl
+        from DraftLine dl
+       where dl.draft.draftSeq = :draftSeq
+         and dl.approver.memberSeq = :memberSeq
+    """)
+    Optional<DraftLine> findMyLine(@Param("draftSeq") Long draftSeq,
+                                   @Param("memberSeq") Long memberSeq);
+
+    @Query("""
+            select dl
+              from DraftLine dl
+              join fetch dl.draft d
+              join fetch dl.approver a
+              left join fetch a.department dep
+              left join fetch a.grade g
+             where d.draftSeq = :draftSeq
+             order by dl.lineOrder asc, dl.draftLineSeq asc
+        """)
+	List<DraftLine> findLinesWithApprover(@Param("draftSeq") Long draftSeq);
 	
 }

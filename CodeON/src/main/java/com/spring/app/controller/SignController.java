@@ -9,9 +9,11 @@ import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.MediaType;
@@ -78,9 +80,69 @@ public class SignController {
     private final MemberService memberService;
 
     @GetMapping("main")
-    public String signmain() {
+    public String signmain(HttpSession session, Model model) {
+        Long me = Long.valueOf(((MemberDTO)session.getAttribute("loginuser")).getMemberSeq());
+        ZoneId ZONE = ZoneId.of("Asia/Seoul");
+
+        // 1) 결재 대기 문서 (내가 결재해야 할 것) → inbox
+        var inboxRows = draftLineRepository.findInbox(me);
+        var inboxPreview = new ArrayList<Map<String,Object>>();
+        for (var dl : inboxRows) {
+            var d = dl.getDraft();
+            Map<String,Object> m = new LinkedHashMap<>();
+            m.put("draftSeq", d.getDraftSeq());
+            m.put("title", d.getDraftTitle());
+            m.put("docType", d.getDraftType()!=null ? d.getDraftType().getDraftTypeName() : "-");
+            m.put("drafterName", d.getMember()!=null ? d.getMember().getMemberName() : "-");
+            m.put("isEmergency", d.getIsEmergency());
+            m.put("regdate", d.getDraftRegdate()==null ? null :
+                    java.util.Date.from(d.getDraftRegdate().atZone(ZONE).toInstant()));
+            inboxPreview.add(m);
+            if (inboxPreview.size() == 3) break;
+        }
+
+        // 2) 결재 진행 문서 (내가 상신한 문서) → sent
+        var myDrafts = draftRepository.findByMember_MemberSeqOrderByDraftSeqDesc(me);
+        var sentPreview = new ArrayList<Map<String,Object>>();
+        for (var d : myDrafts) {
+            var lines = draftLineRepository
+                .findByDraft_DraftSeqOrderByLineOrderAscDraftLineSeqAsc(d.getDraftSeq());
+            boolean anyReject  = lines.stream().anyMatch(l -> Integer.valueOf(9).equals(l.getSignStatus()));
+            boolean allApprove = !anyReject && lines.stream().allMatch(l -> Integer.valueOf(1).equals(l.getSignStatus()));
+            int status = anyReject ? 9 : (allApprove ? 1 : 0);
+
+            Map<String,Object> m = new LinkedHashMap<>();
+            m.put("draftSeq", d.getDraftSeq());
+            m.put("title", d.getDraftTitle());
+            m.put("status", status); // 0:진행중,1:완료,9:반려
+            m.put("regdate", d.getDraftRegdate()==null ? null :
+                    java.util.Date.from(d.getDraftRegdate().atZone(ZONE).toInstant()));
+            sentPreview.add(m);
+            if (sentPreview.size() == 3) break;
+        }
+
+        // 3) 결재 완료 문서 (내가 처리한 이력) → history
+        var historyRows = draftLineRepository.findHistory(me);
+        var historyPreview = new ArrayList<Map<String,Object>>();
+        for (var dl : historyRows) {
+            var d = dl.getDraft();
+            Map<String,Object> m = new LinkedHashMap<>();
+            m.put("draftSeq", d.getDraftSeq());
+            m.put("title", d.getDraftTitle());
+            m.put("docType", d.getDraftType()!=null ? d.getDraftType().getDraftTypeName() : "-");
+            m.put("drafterName", d.getMember()!=null ? d.getMember().getMemberName() : "-");
+            m.put("signDate", dl.getSignDate()==null ? null :
+                    java.util.Date.from(dl.getSignDate().atZone(ZONE).toInstant()));
+            historyPreview.add(m);
+            if (historyPreview.size() == 3) break;
+        }
+
+        model.addAttribute("inboxPreview", inboxPreview);
+        model.addAttribute("sentPreview", sentPreview);
+        model.addAttribute("historyPreview", historyPreview);
         return "/sign/signmain";
     }
+
     
     @GetMapping("add")
     public String signadd(HttpServletRequest request) {
@@ -607,37 +669,39 @@ public class SignController {
     }
 
 
-    // 목록 2) 문서함(내가 상신한 문서)
+ // 목록 2) 문서함(내가 상신한 문서)
     @GetMapping("sent")
     public String sent(HttpSession session, Model model){
         MemberDTO login = (MemberDTO) session.getAttribute("loginuser");
         Long me = Long.valueOf(login.getMemberSeq());
 
-        List<Draft> drafts = draftRepository.findByMember_MemberSeqOrderByDraftSeqDesc(me);
+        List<Draft> drafts = draftRepository.findByMemberWithType(me);
 
         List<Map<String,Object>> rows = new ArrayList<>();
         for (Draft d : drafts) {
-            // 결재 상태 계산(생략)
-            int status = 0;
+            // 결재 상태 계산
             List<DraftLine> lines = draftLineRepository
                 .findByDraft_DraftSeqOrderByLineOrderAscDraftLineSeqAsc(d.getDraftSeq());
             boolean anyReject  = lines.stream().anyMatch(l -> Integer.valueOf(9).equals(l.getSignStatus()));
             boolean allApprove = !anyReject && lines.stream().allMatch(l -> Integer.valueOf(1).equals(l.getSignStatus()));
-            status = anyReject ? 9 : (allApprove ? 1 : 0);
+            int status = anyReject ? 9 : (allApprove ? 1 : 0);
 
-            // ★ LocalDateTime -> java.util.Date로 변환
-            Date regDate = null;
-            if (d.getDraftRegdate() != null) {
-                regDate = Date.from(
-                    d.getDraftRegdate().atZone(ZoneId.systemDefault()).toInstant()
-                );
-            }
+            // 날짜 변환
+            Date regDate = (d.getDraftRegdate()==null) ? null
+                : Date.from(d.getDraftRegdate().atZone(ZoneId.of("Asia/Seoul")).toInstant());
+
+
+            String docType = (d.getDraftType()!=null && d.getDraftType().getDraftTypeName()!=null)
+                    ? d.getDraftType().getDraftTypeName() : "-";
+            Integer isEmergency = (d.getIsEmergency()==null) ? 0 : d.getIsEmergency();
 
             Map<String,Object> m = new LinkedHashMap<>();
             m.put("draftSeq", d.getDraftSeq());
             m.put("title",    d.getDraftTitle());
             m.put("status",   status);
-            m.put("regdate",  regDate);   // ← Date로 넣기
+            m.put("regdate",  regDate);
+            m.put("docType",  docType);       
+            m.put("isEmergency", isEmergency); 
             rows.add(m);
         }
 
@@ -645,19 +709,24 @@ public class SignController {
         return "/sign/sent";
     }
 
-
-
-    // 목록 3) 결재함(내가 처리한 이력)
+ // 목록 3) 결재함(내가 처리한 이력)
     @GetMapping("history")
     public String history(HttpSession session, Model model) {
         Long me = Long.valueOf(((MemberDTO)session.getAttribute("loginuser")).getMemberSeq());
         var rows = draftLineRepository.findHistory(me);
 
+        ZoneId ZONE = ZoneId.of("Asia/Seoul"); // 운영/개발 동일 타임존 보장
+
         var list = new ArrayList<Map<String,Object>>();
         for (var dl : rows) {
             var d = dl.getDraft();
-            Date regDate = d.getDraftRegdate()==null ? null
-                : Date.from(d.getDraftRegdate().atZone(ZoneId.systemDefault()).toInstant());
+
+            // LocalDateTime -> Date (null-safe)
+            Date regDate = (d.getDraftRegdate() == null) ? null
+                    : Date.from(d.getDraftRegdate().atZone(ZONE).toInstant());
+
+            Date signDate = (dl.getSignDate() == null) ? null
+                    : Date.from(dl.getSignDate().atZone(ZONE).toInstant()); //  핵심 변경
 
             var map = new LinkedHashMap<String,Object>();
             map.put("draftSeq", d.getDraftSeq());
@@ -665,10 +734,10 @@ public class SignController {
             map.put("docType", d.getDraftType()!=null ? d.getDraftType().getDraftTypeName() : "-");
             map.put("drafterName", d.getMember()!=null? d.getMember().getMemberName() : "-");
             map.put("isEmergency", d.getIsEmergency());
-            map.put("regdate", regDate);      // ★ Date로
+            map.put("regdate", regDate);     //  Date로 넘김 → JSP에서 <fmt:formatDate> 가능
             map.put("lineOrder", dl.getLineOrder());
             map.put("myStatus", dl.getSignStatus());
-            map.put("signDate", dl.getSignDate()); // 이건 LocalDateTime이면 JSP에서 그대로 문자열 출력 or 변환
+            map.put("signDate", signDate);   // Date로 넘김 → JSP에서 <fmt:formatDate> 가능
             map.put("draftLineSeq", dl.getDraftLineSeq());
             list.add(map);
         }
@@ -676,46 +745,184 @@ public class SignController {
         return "sign/history";
     }
 
-    // 액션: 승인
+ // 승인
     @PostMapping("lines/{draftLineSeq}/approve")
     @Transactional
     @ResponseBody
-    public java.util.Map<String,Object> approve(@PathVariable Long draftLineSeq,
-                                                @RequestParam(required=false) String comment,
-                                                HttpSession session) {
-        var dl = draftLineRepository.findById(draftLineSeq).orElseThrow();
-        // 내가 다음 결재자인지 가드(같은 조건)
-        var d = dl.getDraft();
-        var nextOrd = em.createQuery("""
-            select min(x.lineOrder)
-              from DraftLine x
-             where x.draft = :d and x.signStatus <> 1
-            """, Integer.class)
-            .setParameter("d", d).getSingleResult();
-        if (!Integer.valueOf(0).equals(dl.getSignStatus()) || !dl.getLineOrder().equals(nextOrd)) {
-            return java.util.Map.of("ok", false, "msg", "처리할 수 없는 상태입니다.");
+    public Map<String,Object> approve(@PathVariable Long draftLineSeq,
+                                      @RequestParam(required=false) String comment,
+                                      HttpSession session) {
+        MemberDTO login = (MemberDTO) session.getAttribute("loginuser");
+        Long me = Long.valueOf(login.getMemberSeq());
+
+        // 1) 라인/문서 식별
+        DraftLine anyLine = draftLineRepository.findById(draftLineSeq).orElseThrow();
+        Long draftSeq = anyLine.getDraft().getDraftSeq();
+
+        // 2) 내 결재선 검증 + 순번 체크
+        DraftLine mine = draftLineRepository.findMyLine(draftSeq, me).orElse(null);
+        if (mine == null) return Map.of("ok", false, "msg", "내 결재선이 아닙니다.");
+
+        Integer nextOrd = draftLineRepository.findNextOrder(draftSeq);
+        if (!Integer.valueOf(0).equals(mine.getSignStatus()) || nextOrd == null || !mine.getLineOrder().equals(nextOrd)) {
+            return Map.of("ok", false, "msg", "지금은 결재할 수 없는 상태입니다.");
         }
-        dl.setSignStatus(1);
-        dl.setSignComment(comment);
-        dl.setSignDate(java.time.LocalDateTime.now());
-        draftLineRepository.save(dl);
-        return java.util.Map.of("ok", true);
+
+        // 3) 내 라인 승인
+        mine.setSignStatus(1);
+        mine.setSignComment(comment);
+        mine.setSignDate(java.time.LocalDateTime.now());
+        draftLineRepository.save(mine);
+
+        // 4) 전체 상태 재계산
+        List<DraftLine> lines = draftLineRepository
+            .findByDraft_DraftSeqOrderByLineOrderAscDraftLineSeqAsc(draftSeq);
+        boolean anyReject  = lines.stream().anyMatch(l -> Integer.valueOf(9).equals(l.getSignStatus()));
+        boolean allApprove = !anyReject && lines.stream().allMatch(l -> Integer.valueOf(1).equals(l.getSignStatus()));
+
+        Draft d = anyLine.getDraft();
+        d.setDraftStatus(anyReject ? 9 : (allApprove ? 1 : 0));
+        draftRepository.save(d);
+
+        // 5) ✅ 모두 승인된 경우에만 휴가 차감 시도
+        if (allApprove) {
+            applyVacationDeductionIfNeeded(d);
+        }
+
+        return Map.of("ok", true, "lineSeq", mine.getDraftLineSeq());
     }
 
-    // 액션: 반려
+    /** 최종 승인된 휴가 문서면 연차 차감 */
+    private void applyVacationDeductionIfNeeded(Draft draft) {
+        // 휴가 문서 여부: draftSeq로 Vacation 존재 확인
+        var optVac = vacationRepository.findByDraftSeq(draft.getDraftSeq());
+        if (optVac.isEmpty()) return; // 휴가 문서가 아니면 종료
+
+        var v = optVac.get();
+
+        // 사용 일수 계산 (HALF=0.5, 그 외: 시작~종료 '포함' 일수)
+        java.math.BigDecimal useDays = calcVacationDays(v);
+
+        // 차감: 제출자 기준으로 잔여/사용 연차 업데이트
+        em.createNativeQuery(
+            "UPDATE TBL_ANNUAL_LEAVE " +
+            "   SET USED_LEAVE = USED_LEAVE + :d, " +
+            "       REMAINING_LEAVE = REMAINING_LEAVE - :d " +
+            " WHERE MEMBER_SEQ = :m"
+        ).setParameter("d", useDays)
+         .setParameter("m", draft.getMember().getMemberSeq())
+         .executeUpdate();
+
+        // (선택) 중복 차감 방지 플래그/로그가 있다면 여기서 표시/기록
+    }
+
+    /** HALF=0.5, 그 외는 (end-start)+1 */
+    private java.math.BigDecimal calcVacationDays(com.spring.app.entity.Vacation v) {
+        if ("HALF".equalsIgnoreCase(v.getVacationType())) {
+            return new java.math.BigDecimal("0.5");
+        }
+        long days = java.time.temporal.ChronoUnit.DAYS.between(v.getVacationStart(), v.getVacationEnd()) + 1;
+        return new java.math.BigDecimal(days);
+    }
+
+
+    // 반려
     @PostMapping("lines/{draftLineSeq}/reject")
     @Transactional
     @ResponseBody
-    public java.util.Map<String,Object> reject(@PathVariable Long draftLineSeq,
-                                               @RequestParam String comment) {
-        var dl = draftLineRepository.findById(draftLineSeq).orElseThrow();
-        dl.setSignStatus(9);
-        dl.setSignComment(comment);
-        dl.setSignDate(java.time.LocalDateTime.now());
-        draftLineRepository.save(dl);
-        return java.util.Map.of("ok", true);
+    public Map<String,Object> reject(@PathVariable Long draftLineSeq,
+                                     @RequestParam String comment,
+                                     HttpSession session) {
+        MemberDTO login = (MemberDTO) session.getAttribute("loginuser");
+        Long me = Long.valueOf(login.getMemberSeq());
+
+        DraftLine anyLine = draftLineRepository.findById(draftLineSeq).orElseThrow();
+        Long draftSeq = anyLine.getDraft().getDraftSeq();
+
+        DraftLine mine = draftLineRepository.findMyLine(draftSeq, me).orElse(null);
+        if (mine == null) {
+            return Map.of("ok", false, "msg", "내 결재선이 아닙니다.");
+        }
+
+        // 내 순번/대기 상태일 때만 반려 허용(원하면 순번 체크는 생략 가능)
+        Integer nextOrd = draftLineRepository.findNextOrder(draftSeq);
+        if (!Integer.valueOf(0).equals(mine.getSignStatus()) || nextOrd == null || !mine.getLineOrder().equals(nextOrd)) {
+            return Map.of("ok", false, "msg", "지금은 결재할 수 없는 상태입니다.");
+        }
+
+        mine.setSignStatus(9);
+        mine.setSignComment(comment);
+        mine.setSignDate(java.time.LocalDateTime.now());
+        draftLineRepository.save(mine);
+
+        // 문서 상태 즉시 반려 처리
+        Draft d = anyLine.getDraft();
+        d.setDraftStatus(9);
+        draftRepository.save(d);
+
+        return Map.of("ok", true, "lineSeq", mine.getDraftLineSeq());
     }
 
+
+    
+    
+    @GetMapping("/view/{draftSeq}")
+    @Transactional(readOnly = true)
+    public String view(@PathVariable Long draftSeq, HttpSession session, Model model) {
+        MemberDTO login = (MemberDTO) session.getAttribute("loginuser");
+        if (login == null) throw new IllegalStateException("로그인 필요");
+
+        // 레포 쿼리들이 Long 파라미터라서 타입 맞춤
+        Long me = Long.valueOf(login.getMemberSeq());
+
+        // 1) 결재라인(+결재자/부서/직급) : 레포 메서드 사용
+        List<DraftLine> lines = draftLineRepository.findLinesWithApprover(draftSeq);
+        if (lines.isEmpty()) {
+            throw new IllegalArgumentException("결재라인이 존재하지 않습니다. draftSeq=" + draftSeq);
+        }
+
+        // 2) Draft 본문은 LAZY 터지지 않도록 fetch join으로 한 번 더 가져옴
+        //    (d.member, d.member.department/grade, d.draftType까지 초기화)
+        Draft draft = em.createQuery("""
+            select d
+              from Draft d
+              join fetch d.member m
+              left join fetch m.department
+              left join fetch m.grade
+              left join fetch d.draftType
+             where d.draftSeq = :id
+            """, Draft.class)
+            .setParameter("id", draftSeq)
+            .getSingleResult();
+
+        // 3) 내 라인 / 다음 결재순번 : 레포 메서드로 계산
+        DraftLine myLine = draftLineRepository.findMyLine(draftSeq, me).orElse(null);
+        Integer  nextOrd = draftLineRepository.findNextOrder(draftSeq); // 승인(1) 아닌 라인들 중 최소 순번
+
+        // 권한: 내가 존재 + 내 상태=대기(0) + 내 순번이 nextOrd
+        boolean canAct = (myLine != null)
+                && Integer.valueOf(0).equals(myLine.getSignStatus())
+                && (nextOrd != null && myLine.getLineOrder().equals(nextOrd));
+
+        // 4) 뷰에 필요한 부가값
+        String docTypeName = (draft.getDraftType() != null && draft.getDraftType().getDraftTypeName() != null)
+                ? draft.getDraftType().getDraftTypeName()
+                : "문서";
+
+        String myStamp = memberRepository.findStampImageByUserid(login.getMemberUserid());
+        if (myStamp == null) myStamp = "";
+
+        // 5) 모델 바인딩
+        model.addAttribute("draft", draft);
+        model.addAttribute("lines", lines);
+        model.addAttribute("canAct", canAct);
+        model.addAttribute("myDraftLineSeq", (myLine != null ? myLine.getDraftLineSeq() : null));
+        model.addAttribute("loginMemberSeq", me);
+        model.addAttribute("docTypeName", docTypeName);
+        model.addAttribute("myStampImage", myStamp);
+
+        return "sign/view";
+    }
 
 
     

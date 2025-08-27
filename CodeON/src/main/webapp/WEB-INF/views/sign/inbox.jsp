@@ -1,6 +1,4 @@
-<%@ page language="java" contentType="text/html; charset=UTF-8"
-    pageEncoding="UTF-8"%>
-
+<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ taglib prefix="c"  uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt"  %>
 
@@ -32,11 +30,16 @@
             </c:when>
             <c:otherwise>
               <c:forEach var="r" items="${rows}">
-                <tr>
+                <!-- ▼ 행 전체 클릭 이동용 data-href 만 추가 -->
+                <tr class="rowlink"
+                    data-href="${pageContext.request.contextPath}/sign/view/${r.draftSeq}"
+                    style="cursor:pointer">
                   <td style="border:1px solid #e5e7eb;padding:8px;text-align:center">${r.draftSeq}</td>
                   <td style="border:1px solid #e5e7eb;padding:8px;text-align:center">${r.docType}</td>
                   <td style="border:1px solid #e5e7eb;padding:8px">
-                    <a href="${pageContext.request.contextPath}/sign/view/${r.draftSeq}" style="text-decoration:none;color:#111">${r.title}</a>
+                    <!-- 제목은 기존처럼 링크 유지 -->
+                    <a href="${pageContext.request.contextPath}/sign/view/${r.draftSeq}"
+                       style="text-decoration:none;color:#111">${r.title}</a>
                   </td>
                   <td style="border:1px solid #e5e7eb;padding:8px;text-align:center">${r.drafterName}</td>
                   <td style="border:1px solid #e5e7eb;padding:8px;text-align:center">
@@ -62,16 +65,25 @@
 
 <script>
 const ctx='${pageContext.request.contextPath}';
+
+// 행 전체 클릭 → view 로 이동 (버튼/링크 클릭은 제외)
+document.addEventListener('click', (e) => {
+  const tr = e.target.closest('tr.rowlink');
+  if (!tr) return;
+  if (e.target.closest('button') || e.target.closest('a')) return;
+  location.href = tr.dataset.href;
+});
+
 async function approve(id){
   const comment = prompt('의견(선택):')??'';
   const res = await fetch(`${ctx}/sign/lines/${id}/approve`, {method:'POST', body:new URLSearchParams({comment})});
-  const j = await res.json(); if(!j.ok){ alert(j.msg||'실패'); } location.reload();
+  const j = await res.json(); if(!j.ok){ alert(j.msg||'실패'); return; } location.reload();
 }
 async function reject(id){
   const comment = prompt('반려 사유(필수):');
   if(!comment || !comment.trim()){ alert('반려 사유를 입력하세요.'); return; }
   const res = await fetch(`${ctx}/sign/lines/${id}/reject`, {method:'POST', body:new URLSearchParams({comment})});
-  const j = await res.json(); if(!j.ok){ alert(j.msg||'실패'); } location.reload();
+  const j = await res.json(); if(!j.ok){ alert(j.msg||'실패'); return; } location.reload();
 }
 </script>
 
