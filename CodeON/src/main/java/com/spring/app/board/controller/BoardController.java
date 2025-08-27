@@ -64,13 +64,14 @@ public class BoardController {
 
     // 글쓰기 처리(POST) 
     @PostMapping("add")
-    public ModelAndView addPost(BoardDTO boardDto, HttpSession session) {
+    public ModelAndView addPost(@RequestParam("fkBoardTypeSeq") Integer fkBoardTypeSeq,BoardDTO boardDto, HttpSession session) {
         ModelAndView mav = new ModelAndView();
+        
         try {
             MemberDTO loginuser = (MemberDTO) session.getAttribute("loginuser");
             boardDto.setFkMemberSeq(loginuser.getMemberSeq());
             boardDto.setMemberName(loginuser.getMemberName());
-            
+            boardDto.setFkBoardTypeSeq(fkBoardTypeSeq);
             // ===== 파일 업로드 처리 =====
             if (boardDto.getAttach() != null && !boardDto.getAttach().isEmpty()) {
                 String originalFilename = boardDto.getAttach().getOriginalFilename();
@@ -95,7 +96,7 @@ public class BoardController {
 
             boardService.add(boardDto);
 
-            // redirect 시 camelCase 일관성 유지
+            
             mav.setViewName("redirect:/board/list?fkBoardTypeSeq=" + boardDto.getFkBoardTypeSeq());
 
         } catch (IOException e) {

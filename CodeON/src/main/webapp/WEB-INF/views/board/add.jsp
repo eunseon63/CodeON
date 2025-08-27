@@ -1,3 +1,4 @@
+
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 
@@ -76,13 +77,7 @@ $(function(){
 <tr style="display:none;">
     <th style="background-color: #DDDDDD;">게시판 타입</th>
     <td>
-        <select name="fkBoardTypeSeq" class="form-control">
-            <c:forEach var="type" items="${boardTypeList}">
-                <option value="${type.BOARDTYPESEQ}">
-                    ${type.BOARDTYPENAME}
-                </option>
-            </c:forEach>
-        </select>
+        
     </td>
 </tr>
 
@@ -133,5 +128,3 @@ $(function(){
         </form>
     </div>
 </div>
-
-

@@ -1,4 +1,3 @@
-
 <%@ page language="java" contentType="text/html; charset=UTF-8"
     pageEncoding="UTF-8"%>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
@@ -60,7 +59,7 @@
 			<c:if test="${param.fkBoardTypeSeq == '1'}">
 				    <div class="mb-3 text-center">
 				        <span style="font-size:1.3rem; font-weight:bold;">
-				         	현재 로그인 계정 부서 :	 ${loginUserDeptName} 
+				         	현재 로그인 계정 부서 :	${loginUserDeptName} 
 				        </span>
 				    </div>
 				</c:if>
@@ -114,6 +113,7 @@
                         <c:otherwise>
                             <c:forEach var="board" items="${boardList}">
                                 <tr>
+                                	
                                     <td>${board.boardSeq}</td>
                                     <td>${board.boardCategoryName}</td>
                                     <td>
@@ -128,9 +128,8 @@
                                     </td>
                                     <td>${board.boardReadcount}</td>
                                     <td>
-                                        <c:if test="${not empty board.boardFileSaveName}">
-                                            <i class="bi bi-paperclip file-icon"></i>
-                                        </c:if>
+                                    <c:if test="${not empty board.boardFileSaveName}"> <i class="bi bi-paperclip file-icon"></i> 
+                                    </c:if>
                                     </td>
                                 </tr>
                             </c:forEach>
