@@ -249,16 +249,10 @@ $(function() {
 
                 <div class="d-flex justify-content-center mt-4">
                     <button type="button" id="btnUpdate" class="btn btn-primary px-5 me-2">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-pencil-square me-1" viewBox="0 0 16 16">
-                            <path d="M15.502 1.94a.5.5 0 0 1 0 .706L14.459 3.69l-2-2L13.502.646a.5.5 0 0 1 .707 0l1.293 1.293zm-1.75 2.456-2-2L4.939 9.21a.5.5 0 0 0-.121.196l-.805 2.414a.25.25 0 0 0 .316.316l2.414-.805a.5.5 0 0 0 .196-.121L12.43 12.43a.5.5 0 0 1-.707.707L10.207 10.414 9.569 9.776l-2.389 2.389a.25.25 0 0 0 .316.316l2.414-.805a.5.5 0 0 0 .196-.121l6.124-6.124a.5.5 0 0 1 .707 0z"/>
-                        </svg>
                         수정
                     </button>
-                    <button type="reset" class="btn btn-outline-secondary px-5">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-counterclockwise me-1" viewBox="0 0 16 16">
-                            <path fill-rule="evenodd" d="M8 3a5 5 0 1 1-4.57 7.5l-.5-.87A4 4 0 1 0 8 4a4 4 0 0 0-4 4v.5a.5.5 0 0 1-1 0V8a5 5 0 0 1 10 0v1.5a.5.5 0 0 1-.5.5z"/>
-                        </svg>
-                        초기화
+                    <button type="button" class="btn btn-outline-secondary px-5" onclick="window.location.href='<%= ctxPath%>/member/list'">
+                        취소
                     </button>
                 </div>
             </form>

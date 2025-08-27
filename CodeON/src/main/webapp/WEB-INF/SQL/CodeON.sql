@@ -271,7 +271,7 @@ from tbl_comment
 
 desc tbl_comment
 SELECT seq_comment.NEXTVAL FROM dual;
-
+fffff
 
 ------------------- **** >>> Spring Boot Security <<< **** -------------------
 

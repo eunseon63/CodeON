@@ -59,7 +59,7 @@
 			<c:if test="${param.fkBoardTypeSeq == '1'}">
 				    <div class="mb-3 text-center">
 				        <span style="font-size:1.3rem; font-weight:bold;">
-				         	현재 로그인 계정 부서 :	 ${loginUserDeptName} 
+				         	현재 로그인 계정 부서 :	${loginUserDeptName} 
 				        </span>
 				    </div>
 				</c:if>

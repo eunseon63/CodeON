@@ -32,7 +32,7 @@ public class AnnualLeave {
     private int memberSeq;   // PK이자 FK
 
     @OneToOne(fetch = FetchType.LAZY)
-    @MapsId   // ✅ PK를 FK로 공유
+    @MapsId   //  PK를 FK로 공유
     @JoinColumn(name = "member_seq")
     @JsonIgnore // 이 필드를 JSON 직렬화에서 제외
     private Member member;

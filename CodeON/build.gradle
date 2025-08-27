@@ -98,6 +98,30 @@ dependencies {
 		
 	// https://mvnrepository.com/artifact/org.apache.poi/poi-ooxml
 	implementation 'org.apache.poi:poi-ooxml:5.3.0'
+	
+	implementation 'org.springframework.boot:spring-boot-starter-data-mongodb'
+	
+	// Spring websocket dependency를 추가(#웹채팅관련1)
+	// https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-starter-websocket
+	//implementation 'org.springframework.boot:spring-boot-starter-websocket'
+	implementation 'org.springframework.boot:spring-boot-starter-websocket:3.4.7'
+	
+	implementation 'com.google.code.gson:gson:2.10.1'
+    
+   /*
+    아파치 POI(Apache POI)는 아파치 소프트웨어 재단에서 만든 라이브러리로서 마이크로소프트 오피스파일 포맷을 순수 자바 언어로서 읽고 쓰는 기능을 제공한다. 
+    주로 워드, 엑셀, 파워포인트와 파일을 지원하며 최근의 오피스 포맷인 Office Open XML File Formats(OOXML, 즉 xml 기반의 *.docx, *.xlsx, *.pptx 등) 이나 아웃룩, 비지오, 퍼블리셔 등으로 지원 파일 포맷을 늘려가고 있다. 
+    poi-ooxml은 excel 2007이후 버전이며 이때 schemas도 같이 porting을 해줘야 xlsx 파일을 읽어들인다. 
+    poi는 excel 2007포함한 이전 버전이다.  
+   */
+   // https://mvnrepository.com/artifact/org.apache.poi/poi
+   implementation 'org.apache.poi:poi:5.3.0'
+      
+   // https://mvnrepository.com/artifact/org.apache.poi/poi-ooxml
+   implementation 'org.apache.poi:poi-ooxml:5.3.0'
+   
+   implementation platform("org.springframework.ai:spring-ai-bom:1.0.0")
+   implementation 'org.springframework.ai:spring-ai-starter-model-openai'
 }
 
 tasks.named('test') {

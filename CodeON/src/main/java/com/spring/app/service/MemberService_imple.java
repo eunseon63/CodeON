@@ -44,7 +44,6 @@ import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.spring.app.domain.MemberDTO;
 import com.spring.app.entity.AnnualLeave;
 import com.spring.app.entity.Member;
-import com.spring.app.model.AnnualLeaveRepository;
 import com.spring.app.model.MemberDAO;
 import com.spring.app.model.MemberRepository;
 
@@ -57,7 +56,6 @@ import lombok.RequiredArgsConstructor;
 public class MemberService_imple implements MemberService {
 
     private final MemberRepository memberRepository;
-    private final AnnualLeaveRepository annualLeaveRepository;
     private final MemberDAO mbrdao;
     private final JPAQueryFactory jPAQueryFactory;
 
@@ -213,15 +211,13 @@ public class MemberService_imple implements MemberService {
 		
 		int seq = Integer.parseInt(memberSeq);
 		
-		BooleanExpression condition = Expressions.TRUE;
-		
-		condition = member.memberSeq.eq(seq);
+		BooleanExpression condition = member.memberSeq.eq(seq);
 		
 	    Member mbr = jPAQueryFactory
 	                .selectFrom(member)
 	                .where(condition)
 	                .fetchOne();
-        
+	    
 	    return mbr.toDTO();
 	}
 	
@@ -460,6 +456,20 @@ public class MemberService_imple implements MemberService {
 		return genderPercentageList;
 	}
 
+	// 전체 회원 조회
+	@Override
+	public List<MemberDTO> findAll() {
+		
+        List<Member> members = jPAQueryFactory
+                .selectFrom(member)
+                .fetch();
+        
+        List<MemberDTO> memberDtoList = members.stream()
+				   .map(Member::toDTO)
+				   .collect(Collectors.toList());
+        
+        return memberDtoList;
+	}
 	
 }
 
