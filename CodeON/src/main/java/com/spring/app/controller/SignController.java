@@ -359,7 +359,7 @@ public class SignController {
     
     @GetMapping("lines/{id}")
     @ResponseBody
-    public Signline lineDetail(@PathVariable Long id) {
+    public Signline lineDetail(@PathVariable("id") Long id) {
         return signlineService.getLineWithMembers(id);
     }
     
@@ -749,8 +749,8 @@ public class SignController {
     @PostMapping("lines/{draftLineSeq}/approve")
     @Transactional
     @ResponseBody
-    public Map<String,Object> approve(@PathVariable Long draftLineSeq,
-                                      @RequestParam(required=false) String comment,
+    public Map<String,Object> approve(@PathVariable("draftLineSeq") Long draftLineSeq,
+    								  @RequestParam(name="comment", required=false) String comment,
                                       HttpSession session) {
         MemberDTO login = (MemberDTO) session.getAttribute("loginuser");
         Long me = Long.valueOf(login.getMemberSeq());
@@ -830,8 +830,8 @@ public class SignController {
     @PostMapping("lines/{draftLineSeq}/reject")
     @Transactional
     @ResponseBody
-    public Map<String,Object> reject(@PathVariable Long draftLineSeq,
-                                     @RequestParam String comment,
+    public Map<String,Object> reject(@PathVariable("draftLineSeq") Long draftLineSeq,
+    								 @RequestParam(name="comment") String comment,
                                      HttpSession session) {
         MemberDTO login = (MemberDTO) session.getAttribute("loginuser");
         Long me = Long.valueOf(login.getMemberSeq());
@@ -868,7 +868,7 @@ public class SignController {
     
     @GetMapping("/view/{draftSeq}")
     @Transactional(readOnly = true)
-    public String view(@PathVariable Long draftSeq, HttpSession session, Model model) {
+    public String view(@PathVariable("draftSeq") Long draftSeq, HttpSession session, Model model) {
         MemberDTO login = (MemberDTO) session.getAttribute("loginuser");
         if (login == null) throw new IllegalStateException("로그인 필요");
 
