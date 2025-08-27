@@ -218,6 +218,15 @@
     WHERE b.board_seq = #{boardSeq}
 </select>
 
+ <!-- 부서명 조회 -->
+    <select id="getDepartmentNameBySeq" parameterType="int" resultType="string">
+        SELECT department_name
+        FROM tbl_department
+        WHERE department_seq = #{fkDepartmentSeq}
+    </select>
+
+
+
 <!-- 이전글 -->
 <select id="getPrevBoard" parameterType="string" resultType="com.spring.app.board.domain.BoardDTO">
     SELECT 
