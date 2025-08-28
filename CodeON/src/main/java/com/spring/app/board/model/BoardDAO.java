@@ -41,6 +41,10 @@ public interface BoardDAO {
 
 
 
+	 String getDepartmentNameBySeq(Integer fkDepartmentSeq);
+
+
+
 
 
 

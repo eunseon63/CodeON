@@ -19,6 +19,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.spring.app.board.domain.BoardDTO;
 import com.spring.app.board.service.BoardService;
+import com.spring.app.board.service.CommentService;
 import com.spring.app.common.FileManager;
 import com.spring.app.common.MyUtil;
 import com.spring.app.domain.MemberDTO;
@@ -35,6 +36,7 @@ import lombok.RequiredArgsConstructor;
 public class BoardController {
 
     private final BoardService boardService;
+    private final CommentService commentService;
     private final FileManager fileManager;
     
     // 글쓰기 폼 요청(GET) 
@@ -64,13 +66,14 @@ public class BoardController {
 
     // 글쓰기 처리(POST) 
     @PostMapping("add")
-    public ModelAndView addPost(BoardDTO boardDto, HttpSession session) {
+    public ModelAndView addPost(@RequestParam("fkBoardTypeSeq") Integer fkBoardTypeSeq,BoardDTO boardDto, HttpSession session) {
         ModelAndView mav = new ModelAndView();
+        
         try {
             MemberDTO loginuser = (MemberDTO) session.getAttribute("loginuser");
             boardDto.setFkMemberSeq(loginuser.getMemberSeq());
             boardDto.setMemberName(loginuser.getMemberName());
-
+            boardDto.setFkBoardTypeSeq(fkBoardTypeSeq);
             // ===== 파일 업로드 처리 =====
             if (boardDto.getAttach() != null && !boardDto.getAttach().isEmpty()) {
                 String originalFilename = boardDto.getAttach().getOriginalFilename();
@@ -91,9 +94,12 @@ public class BoardController {
                 boardDto.getAttach().transferTo(savedFile);
             }
 
+            System.out.println("fkBoardTypeSeq = " + boardDto.getFkBoardTypeSeq());
+
             boardService.add(boardDto);
 
-            mav.setViewName("redirect:/board/list?fk_board_type_seq=" + boardDto.getFkBoardTypeSeq());
+            
+            mav.setViewName("redirect:/board/list?fkBoardTypeSeq=" + boardDto.getFkBoardTypeSeq());
 
         } catch (IOException e) {
             e.printStackTrace();
@@ -109,35 +115,37 @@ public class BoardController {
         return mav;
     }
 
+
     // 게시물 목록
     @GetMapping("list")
     public ModelAndView list(ModelAndView mav, HttpServletRequest request, 
                              @RequestParam(name="searchType", defaultValue="") String searchType,
                              @RequestParam(name="searchword", defaultValue="") String searchword, 
                              @RequestParam(name="currentShowPageNo", defaultValue="1") String currentShowPageNo, 
-                             @RequestParam(name="fkBoardCategorySeq",defaultValue="") String  fkBoardCategorySeq,
-                             @RequestParam(name="fkBoardTypeSeq",defaultValue="0")String fkBoardTypeSeq,
+                             @RequestParam(name="fkBoardCategorySeq", defaultValue="") String fkBoardCategorySeq,
+                             @RequestParam(name="fkBoardTypeSeq", defaultValue="0") String fkBoardTypeSeq,
                              HttpServletResponse response) {
 
-        List<BoardDTO> boardList = null;
-        
         HttpSession session = request.getSession();
         session.setAttribute("readCountPermission", "yes");
-        
+
         MemberDTO loginUser = (MemberDTO) session.getAttribute("loginuser");
         Integer userDept = (loginUser != null) ? loginUser.getFkDepartmentSeq() : null;
-        
-        // ---- 로그인 유저 부서명 추가 ----
+
+        // 부서명 조회
         String loginUserDeptName = "부서없음";
-        if (loginUser != null && loginUser.getDepartment() != null) {
-            loginUserDeptName = loginUser.getDepartment().getDepartmentName();
-        } 
+        if (userDept != null) {
+            // DB에서 부서명을 가져오는 서비스 메소드 필요
+            loginUserDeptName = boardService.getDepartmentNameBySeq(userDept);
+            if (loginUserDeptName == null || loginUserDeptName.isEmpty()) {
+                loginUserDeptName = "부서없음";
+            }
+        }
         mav.addObject("loginUserDeptName", loginUserDeptName);
-        
-        
-        
+
+        // 이전 페이지 이동 시 referer 체크
         String referer = request.getHeader("Referer");
-        if(referer == null) {
+        if (referer == null) {
             mav.setViewName("redirect:/index");
             return mav;
         }
@@ -147,22 +155,21 @@ public class BoardController {
         paraMap.put("searchWord", searchword);
         paraMap.put("fkBoardCategorySeq", fkBoardCategorySeq);
         paraMap.put("fkBoardTypeSeq", fkBoardTypeSeq);
-        
-        // if fkBoardTypeSeq="1" (부서게시판) 일때 현재 로그인중인 유저의 부서를 걸러내는 용도
-        if("1".equals(fkBoardTypeSeq) && userDept != null) {
+
+        // 부서게시판 필터링
+        if ("1".equals(fkBoardTypeSeq) && userDept != null) {
             paraMap.put("fkDepartmentSeq", String.valueOf(userDept));
         }
-        
+
+        // 페이징 계산
         int totalCount = boardService.getTotalCount(paraMap);
-        int sizePerPage = 10;  
+        int sizePerPage = 10;
         int totalPage = (int) Math.ceil((double) totalCount / sizePerPage);
 
-        int pageNo = 1; 
+        int pageNo = 1;
         try {
             pageNo = Integer.parseInt(currentShowPageNo);
-            if(pageNo < 1 || pageNo > totalPage) {
-                pageNo = 1;
-            }
+            if (pageNo < 1 || pageNo > totalPage) pageNo = 1;
         } catch (NumberFormatException e) {
             pageNo = 1;
         }
@@ -174,88 +181,84 @@ public class BoardController {
         paraMap.put("startRno", String.valueOf(startRno));
         paraMap.put("endRno", String.valueOf(endRno));
 
-        boardList = boardService.boardListSearch_withPaging(paraMap);
-
+        List<BoardDTO> boardList = boardService.boardListSearch_withPaging(paraMap);
         mav.addObject("boardList", boardList);
 
-        if(!"".equals(searchType)) {
+        if (!"".equals(searchType)) {
             mav.addObject("paraMap", paraMap);
         }
 
+        // 페이징바 생성
         int blockSize = 10;
         int loop = 1;
         int pageStart = ((pageNo - 1) / blockSize) * blockSize + 1;
+        String url = "list";
+        String fkBoardTypeParam = "&fkBoardTypeSeq=" + fkBoardTypeSeq;
 
         String pageBar = "<ul style='list-style:none;'>";
-        String url = "list";
 
-        pageBar += "<li style='display:inline-block; width:70px; font-size:12pt;'><a href='"+url+"?searchType="+searchType+"&searchword="+searchword+"&currentShowPageNo=1'>[맨처음]</a></li>"; 
+        pageBar += "<li style='display:inline-block; width:70px; font-size:12pt;'><a href='" + url + "?searchType=" + searchType + "&searchword=" + searchword + fkBoardTypeParam + "&currentShowPageNo=1'>[맨처음]</a></li>";
 
-        if(pageStart != 1) {
-            pageBar += "<li style='display:inline-block; width:50px; font-size:12pt;'><a href='"+url+"?searchType="+searchType+"&searchword="+searchword+"&currentShowPageNo="+(pageStart-1)+"'>[이전]</a></li>"; 
+        if (pageStart != 1) {
+            pageBar += "<li style='display:inline-block; width:50px; font-size:12pt;'><a href='" + url + "?searchType=" + searchType + "&searchword=" + searchword + fkBoardTypeParam + "&currentShowPageNo=" + (pageStart - 1) + "'>[이전]</a></li>";
         }
 
-        while(!(loop > blockSize || pageStart > totalPage)) {
-            if(pageStart == pageNo) {
-                pageBar += "<li style='display:inline-block; width:30px; font-size:12pt; border:solid 1px gray; color:red; padding:2px 4px;'>"+pageStart+"</li>";
-            }
-            else {
-                pageBar += "<li style='display:inline-block; width:30px; font-size:12pt;'><a href='"+url+"?searchType="+searchType+"&searchword="+searchword+"&currentShowPageNo="+pageStart+"'>"+pageStart+"</a></li>"; 
+        while (!(loop > blockSize || pageStart > totalPage)) {
+            if (pageStart == pageNo) {
+                pageBar += "<li style='display:inline-block; width:30px; font-size:12pt; border:solid 1px gray; color:red; padding:2px 4px;'>" + pageStart + "</li>";
+            } else {
+                pageBar += "<li style='display:inline-block; width:30px; font-size:12pt;'><a href='" + url + "?searchType=" + searchType + "&searchword=" + searchword + fkBoardTypeParam + "&currentShowPageNo=" + pageStart + "'>" + pageStart + "</a></li>";
             }
             loop++;
             pageStart++;
         }
 
-        if(pageStart <= totalPage) {
-            pageBar += "<li style='display:inline-block; width:50px; font-size:12pt;'><a href='"+url+"?searchType="+searchType+"&searchword="+searchword+"&currentShowPageNo="+pageStart+"'>[다음]</a></li>";  
+        if (pageStart <= totalPage) {
+            pageBar += "<li style='display:inline-block; width:50px; font-size:12pt;'><a href='" + url + "?searchType=" + searchType + "&searchword=" + searchword + fkBoardTypeParam + "&currentShowPageNo=" + pageStart + "'>[다음]</a></li>";
         }
 
-        pageBar += "<li style='display:inline-block; width:70px; font-size:12pt;'><a href='"+url+"?searchType="+searchType+"&searchword="+searchword+"&currentShowPageNo="+totalPage+"'>[마지막]</a></li>"; 
+        pageBar += "<li style='display:inline-block; width:70px; font-size:12pt;'><a href='" + url + "?searchType=" + searchType + "&searchword=" + searchword + fkBoardTypeParam + "&currentShowPageNo=" + totalPage + "'>[마지막]</a></li>";
         pageBar += "</ul>";
-
         mav.addObject("pageBar", pageBar);
-        
+
         mav.addObject("totalCount", totalCount);
         mav.addObject("currentShowPageNo", pageNo);
         mav.addObject("sizePerPage", sizePerPage);
 
+        // 현재 URL 저장 (쿠키)
         String listURL = MyUtil.getCurrentURL(request);
         Cookie cookie = new Cookie("listURL", listURL);
-        cookie.setMaxAge(24*60*60);
+        cookie.setMaxAge(24 * 60 * 60);
         cookie.setPath("/myspring/board/");
         response.addCookie(cookie);
 
-        mav.setViewName("board/list"); 
+        mav.setViewName("board/list");
         return mav;
     }
 
     @GetMapping("view")
     public String view(@RequestParam("boardSeq") String boardSeq,
                        Model model,
-                       RedirectAttributes redirectAttrs) {//RedirectAttributes는 리다이렉트시 메시지를 "flash" 속성으로 넘겨줄 때 달아준다
+                       RedirectAttributes redirectAttrs) {
+
         // 게시글 상세 조회
-    	BoardDTO board = boardService.getBoardDetail(boardSeq);
+        BoardDTO board = boardService.getBoardDetail(boardSeq);
 
         if (board == null) {
-            // 존재하지 않는 게시글일 경우 리스트로 리다이렉트
             redirectAttrs.addFlashAttribute("errorMsg", "존재하지 않는 게시글입니다.");
             return "redirect:/board/list";
         }
 
-        // 댓글 목록 조회 (추후 구현)
-        // List<CommentDTO> commentList = commentService.getCommentList(boardSeq);
+        // 추천 수 조회
+        int recommendCount = commentService.getRecommendCount(Integer.valueOf(boardSeq));
+        board.setRecommendCount(recommendCount); // BoardDTO에 recommendCount 필드 있어야 함
 
-        // 리액션 집계 (추후 구현)
-        // ReactionCountDTO reaction = reactionService.getReactionCount(boardSeq);
-
-        //이전/다음 글 조회
+        // 이전/다음 글 조회
         BoardDTO prevBoard = boardService.getPrevBoard(boardSeq);
         BoardDTO nextBoard = boardService.getNextBoard(boardSeq);
 
         // JSP로 데이터 전달
         model.addAttribute("board", board);
-        // model.addAttribute("commentList", commentList);
-        // model.addAttribute("reaction", reaction);
         model.addAttribute("prevBoard", prevBoard);
         model.addAttribute("nextBoard", nextBoard);
 
@@ -360,6 +363,8 @@ public class BoardController {
 
         return mav;
     }  
+    
+    
     
     
     

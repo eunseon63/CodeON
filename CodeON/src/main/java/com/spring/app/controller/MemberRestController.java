@@ -282,19 +282,23 @@ public class MemberRestController {
 	
 	// 부서별 인원통계
 	@GetMapping("memberCntByDeptname")
-	public List<Map<String, String>> memberCntByDeptname() {
-		List<Map<String, String>> deptnamePercentageList = memberService.memberCntByDeptname();
-		
-		return deptnamePercentageList;
-	}
-	
-	// 성별 인원통계
-	@GetMapping("memberCntByGender")
-	@ResponseBody
-	public List<Map<String, String>> memberCntByGender() {
-		List<Map<String, String>> genderPercentageList = memberService.memberCntByGender();
-		
-		return genderPercentageList;
-	}
+    public List<Map<String, Object>> memberCntByDeptname() {
+        return memberService.memberCntByDeptname();
+    }
+
+    @GetMapping("memberCntByGender")
+    public List<Map<String, Object>> memberCntByGender() {
+        return memberService.memberCntByGender();
+    }
+
+    @GetMapping("memberCntByHireYear")
+    public List<Map<String, Object>> memberCntByHireYear() {
+        return memberService.memberCntByHireYear();
+    }
+
+    @GetMapping("memberCntByHireYearGender")
+    public List<Map<String, Object>> memberCntByHireYearGender() {
+        return memberService.memberCntByHireYearGender();
+    }
 	
 }

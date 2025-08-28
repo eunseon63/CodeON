@@ -8,9 +8,14 @@ import org.apache.ibatis.annotations.Mapper;
 @Mapper
 public interface MemberDAO {
 
-	List<Map<String, String>> memberCntByDeptname();
+	List<Map<String, Object>> memberCntByDeptname();
+    List<Map<String, Object>> memberCntByGender();
+	
+	// 입사연도별 인원/퍼센티지
+	List<Map<String, Object>> memberCntByHireYear();
 
-	List<Map<String, String>> memberCntByGender();
+    // 입사연도×성별 분해
+	List<Map<String, Object>> memberCntByHireYearGender();
 	
 
 }

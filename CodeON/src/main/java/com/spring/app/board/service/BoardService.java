@@ -37,6 +37,9 @@ public interface BoardService {
 
 
 	 void updateBoard(BoardDTO boardDto)throws Exception;
+
+
+	 String getDepartmentNameBySeq(Integer userDept);
 	
 	
 	

@@ -1,27 +1,12 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8"
     pageEncoding="UTF-8"%>
+<%
+    String ctxPath = request.getContextPath();
+%>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-
-<style>
-    .mail-unread { color: #212529; font-weight: bold; }
-    .mail-read { color: #6c757d; font-weight: normal; }
-    .table-hover tbody tr:hover td { background-color: #f1f3f5; }
-    .icon-cell { width: 40px; text-align: center; }
-    .star { cursor: pointer; font-size: 1.2rem; color: #dcdcdc; }
-    .star.important { color: #ffc107; }
-</style>
-
-<script>
-    function toggleStar(element, emailSeq) {
-        element.classList.toggle('important');
-        // AJAX 호출로 서버에 중요메일 상태 저장 가능
-        console.log('메일 번호 ' + emailSeq + ' 중요 상태 토글됨');
-    }
-</script>
 
 <jsp:include page="../header/header.jsp" />
 <jsp:include page="mailsidebar.jsp" />
@@ -34,7 +19,7 @@
         <div class="card mb-4 shadow-sm">
             <div class="card-body row g-2 align-items-center">
                 <div class="col-md-8 col-sm-12">
-                    <input type="text" id="searchKeyword" class="form-control" placeholder="메일 검색...">
+                    <input type="text" id="searchWord" class="form-control" placeholder="메일 검색..." value="${param.searchWord}">
                 </div>
                 <div class="col-md-4 col-sm-12 text-md-end mt-2 mt-md-0">
                     <button class="btn btn-primary" id="btnSearch">검색</button>
@@ -45,60 +30,72 @@
         <!-- 메일 테이블 카드 -->
         <div class="card shadow-sm">
             <div class="card-body p-0">
-                <table class="table table-hover mb-0 align-middle">
+                <table class="table table-hover mb-0">
                     <thead class="table-light">
                         <tr>
-                            <th scope="col"></th> <!-- 중요메일 별표 -->
-                            <th scope="col"></th> <!-- 메일 아이콘 -->
+                            <th scope="col" style="width:60px;">#</th>
                             <th scope="col">보낸 사람</th>
                             <th scope="col">제목</th>
                             <th scope="col">날짜</th>
-                            <th scope="col"></th> <!-- 첨부파일 -->
+                            <th scope="col">상태</th>
                         </tr>
                     </thead>
                     <tbody>
                         <c:forEach var="mail" items="${mailList}">
                             <tr style="cursor:pointer;" onclick="viewMail(${mail.emailSeq})">
-                                <!-- 중요메일 별표 -->
-                                <td class="icon-cell">
-                                    <i class="bi bi-star star ${mail.emailSendImportant == 1 ? 'important' : ''}" 
-                                       onclick="event.stopPropagation(); toggleStar(this, ${mail.emailSeq});"></i>
-                                </td>
+                                <!-- 중요 & 읽음 이미지 -->
+							<td class="align-middle text-center">
+							    <!-- 중요 별 클릭 -->
+							    <img src="${ctxPath}/resources/images/important${mail.emailSendImportant == 1 ? 'On' : 'Off'}.png" 
+							         alt="중요" class="important-icon" 
+							         style="width:16px; height:16px; margin-right:4px;"
+							         data-emailseq="${mail.emailSeq}" data-important="${mail.emailSendImportant}">
+							
+							    <!-- 읽음/안읽음 아이콘 클릭 -->
+							    <img src="${ctxPath}/resources/images/mail${mail.emailReadStatus == 1 ? 'Read' : 'Unread'}.png" 
+							         alt="메일상태" class="read-icon" 
+							         style="width:16px; height:16px;"
+							         data-emailseq="${mail.emailSeq}" data-read="${mail.emailReadStatus}">
+							</td>
 
-                                <!-- 메일 아이콘 -->
-                                <td class="icon-cell">
+                                <td class="align-middle">${mail.sendMemberEmail}</td>
+                                <td class="align-middle">${mail.emailTitle}</td>
+                                <td class="align-middle">${mail.emailRegdate}</td>
+                                <td class="align-middle">
                                     <c:choose>
-                                        <c:when test="${mail.emailReadStatus == 0}">
-                                            <i class="bi bi-envelope-fill"></i>
+                                        <c:when test="${mail.emailReadStatus == 1}">
+                                            <span class="badge bg-secondary">읽음</span>
                                         </c:when>
                                         <c:otherwise>
-                                            <i class="bi bi-envelope-open-fill"></i>
+                                            <span class="badge bg-primary">안읽음</span>
                                         </c:otherwise>
                                     </c:choose>
-                                </td>
-
-                                <td>${mail.sendMemberEmail}</td>
-
-                                <!-- 제목 색상 -->
-                                <td class="${mail.emailReadStatus == 0 ? 'mail-unread' : 'mail-read'}">
-                                    ${mail.emailTitle}
-                                </td>
-
-                                <td>${mail.emailRegdate}</td>
-
-                                <!-- 첨부파일 아이콘 -->
-                                <td class="icon-cell">
-                                    <c:if test="${not empty mail.emailFilename}">
-                                        <i class="bi bi-paperclip"></i>
-                                    </c:if>
                                 </td>
                             </tr>
                         </c:forEach>
                     </tbody>
                 </table>
+
+                <!-- 페이지바 -->
+                <div align="center" style="border: solid 0px gray; width: 80%; margin: 30px auto;">
+                    ${requestScope.pageBar}
+                </div>
             </div>
         </div>
     </div>
 </main>
+
+<script type="text/javascript">
+    // 검색 버튼 클릭 시
+    document.getElementById("btnSearch").addEventListener("click", function() {
+        const searchWord = document.getElementById("searchWord").value.trim();
+        window.location.href = "${ctxPath}/mail/list?searchWord=" + encodeURIComponent(searchWord);
+    });
+
+    // 메일 클릭 시 상세보기 페이지로 이동
+    function viewMail(emailSeq) {
+        window.location.href = "${ctxPath}/mail/view?emailSeq=" + emailSeq;
+    }
+</script>
 
 <jsp:include page="../footer/footer.jsp" />
