@@ -9,5 +9,32 @@
 
 <mapper namespace="com.spring.app.mail.model.MailDAO">
 
+   <!-- === 파일첨부가 없는 글쓰기 === -->
+   <insert id="write" parameterType="MailDTO">
+       insert into TBL_EMAIL(email_seq, send_member_email, receive_member_email, email_title, email_content, email_regdate, email_send_status, email_receive_status, email_send_important, email_receive_important, email_readstatus)
+       values(emailSeq.nextval, #{sendMemberEmail}, #{receiveMemberEmail}, #{emailTitle}, #{emailContent}, sysdate, default, default, #{emailSendImportant}, default, default)
+   </insert>
+   
+	<select id="getTotalCount" resultType="int" parameterType="string">
+	    SELECT COUNT(*)
+	    FROM tbl_email
+	    <where>
+	        <if test="searchWord != null and searchWord != ''">
+	            AND LOWER(email_content) LIKE CONCAT('%', LOWER(#{searchWord}), '%')
+	        </if>
+	    </where>
+	</select>
+
+	<select id="mailListSearch_withPaging" parameterType="HashMap" resultType="MailDTO">
+		select *
+		from tbl_email
+	    <where>
+	        <if test="searchWord != null and searchWord != ''">
+	            AND LOWER(email_content) LIKE CONCAT('%', LOWER(#{searchWord}), '%')
+	        </if>
+	    </where>
+		OFFSET (to_number(#{currentShowPageNo})-1)*10 ROW    
+		FETCH NEXT 10 ROW ONLY
+	</select>
 
 </mapper>
