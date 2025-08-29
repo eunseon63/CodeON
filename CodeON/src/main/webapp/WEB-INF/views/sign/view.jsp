@@ -7,7 +7,6 @@
 <jsp:include page="signsidebar.jsp"/>
 
 <c:set var="ctx" value="${pageContext.request.contextPath}"/>
-<c:url var="stampBase" value="/resources/stamp_upload/"/>
 
 <style>
   :root{--ink:#111;--muted:#6b7280;--line:#d1d5db;--card:#fff;--bg:#f6f7fb;--brand:#2563eb;--danger:#ef4444}
@@ -37,7 +36,6 @@
   .section-b{padding:12px}
   .note{width:100%;min-height:120px;border:1px solid #e5e7eb;border-radius:10px;padding:10px;box-sizing:border-box;font-size:14px}
 
-  /* 의견 기록 카드 */
   .opin-item{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;border:1px solid #e5e7eb;border-radius:10px;padding:10px;margin-bottom:8px;background:#fff}
   .opin-author{font-weight:700}
   .opin-meta{flex:0 0 auto;min-width:190px;white-space:nowrap;color:#6b7280;text-align:right}
@@ -48,19 +46,47 @@
   .btn.primary{background:var(--brand);border-color:var(--brand);color:#fff}
   .btn.danger{color:var(--danger);border-color:var(--danger);background:#fff}
   .btn[disabled]{opacity:.5;cursor:not-allowed}
+
+  /* 첨부파일 */
+  .attach-list{list-style:none;margin:0;padding:0}
+  .attach-list li{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid #f0f0f0}
+  .attach-list li:last-child{border-bottom:0}
+  .attach-name{flex:1 1 auto;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .attach-down{flex:0 0 auto}
+  .pill{display:inline-block;border:1px solid var(--line);border-radius:999px;padding:2px 8px;font-size:12px;color:#555}
+
+.topbar{display:flex;align-items:center;gap:12px;margin-bottom:14px}
+.topbar .title{margin:0}
+.topbar form{margin-left:auto}
+
 </style>
 
-<%-- LocalDateTime 문자열에서 날짜부분만 잘라서 표시 --%>
 <c:set var="regStr" value="${draft.draftRegdate}"/>
 <c:set var="regDay" value="${empty regStr ? '' : fn:substring(regStr,0,10)}"/>
 
+<c:set var="myComment" value=""/>
+<c:set var="myStatus" value=""/>
+<c:forEach var="l" items="${lines}">
+  <c:if test="${l.approver.memberSeq == loginMemberSeq}">
+    <c:set var="myComment" value="${l.signComment}"/>
+    <c:set var="myStatus" value="${l.signStatus}"/>
+  </c:if>
+</c:forEach>
+
 <div class="page">
   <div class="doc">
-    <h2 class="title"><c:out value="${docTypeName}"/> 상세</h2>
+<div class="topbar">
+  <h2 class="title"><c:out value="${docTypeName}"/></h2>
+  <form id="excelForm" action="<c:url value='/sign/downloadExcelFile'/>" method="post">
+    <input type="hidden" name="draftSeq" value="${draft.draftSeq}"/>
+    <c:if test="${_csrf != null}">
+      <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}"/>
+    </c:if>
+    <button type="submit" class="btn primary">엑셀 다운로드</button>
+  </form>
+</div>
 
-    <!-- 상단 : 고정폭 메타 + 오른쪽 정렬 도장 -->
     <div class="head">
-
       <!-- 메타 -->
       <div class="meta">
         <table class="m-table">
@@ -71,8 +97,9 @@
         </table>
         <div class="subject"><strong>제목</strong> : <c:out value="${draft.draftTitle}"/></div>
       </div>
+      
 
-      <!-- 도장 (승인된 라인만 이미지 표시) -->
+      <!-- 도장 -->
       <div class="stamp-box">
         <div class="stamps">
           <c:forEach var="l" items="${lines}">
@@ -96,9 +123,7 @@
                       <c:otherwise><span class="hint">도장 미등록</span></c:otherwise>
                     </c:choose>
                   </c:when>
-                  <c:otherwise>
-                    <span class="hint">대기</span>
-                  </c:otherwise>
+                  <c:otherwise><span class="hint">대기</span></c:otherwise>
                 </c:choose>
               </div>
 
@@ -115,47 +140,56 @@
       <div class="section-b">
         <c:choose>
           <c:when test="${not empty vacation}">
-            <div style="display:flex;gap:28px;margin-bottom:8px;font-size:15px">
-              <div>연차<c:if test="${vacation.vacationType == 'ANNUAL'}"> ✓</c:if></div>
-              <div>반차<c:if test="${vacation.vacationType == 'HALF'}"> ✓</c:if></div>
-            </div>
-            <div style="margin-bottom:6px"><strong>제목</strong> : <c:out value="${vacation.vacationTitle}"/></div>
-            <div style="margin-bottom:6px"><strong>기간</strong> :
+            <c:set var="vacTypeKo" value="${vacation.vacationType == 'HALF' ? '반차' : '연차'}"/>
+            <div style="margin-bottom:6px">
+              <strong>기간</strong> :
               <c:out value="${vacation.vacationStart}"/> ~ <c:out value="${vacation.vacationEnd}"/>
+              <span style="color:#6b7280;margin-left:6px">(<c:out value="${vacTypeKo}"/>)</span>
             </div>
-            <div style="white-space:pre-line"><c:out value="${vacation.vacationContent}"/></div>
+            <div style="white-space:pre-line">
+              <c:out value="${vacation.vacationContent}"/>
+            </div>
           </c:when>
+          
+                <c:when test="${not empty payment}">
+        <div style="margin-bottom:10px">
+          <div><strong>지출 제목</strong> : <c:out value="${payment.paymentTitle}"/></div>
+          <div style="margin-top:6px;white-space:pre-line">
+            <strong>지출 사유</strong><br/>
+            <c:out value="${payment.paymentContent}"/>
+          </div>
+        </div>
 
-          <c:when test="${not empty payment}">
-            <div style="margin-bottom:6px"><strong>제목</strong> : <c:out value="${payment.paymentTitle}"/></div>
-            <div style="margin-bottom:12px;white-space:pre-line"><c:out value="${payment.paymentContent}"/></div>
-            <c:if test="${not empty paymentLists}">
-              <table style="width:100%;border-collapse:collapse;border:1px solid var(--line)">
-                <thead>
-                  <tr style="background:#fafafa">
-                    <th style="border:1px solid var(--line);padding:6px 8px;width:140px">지출일자</th>
-                    <th style="border:1px solid var(--line);padding:6px 8px">사용처</th>
-                    <th style="border:1px solid var(--line);padding:6px 8px;width:160px">금액</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <c:forEach var="pl" items="${paymentLists}">
-                    <tr>
-                      <td style="border:1px solid var(--line);padding:6px 8px">${pl.regdate}</td>
-                      <td style="border:1px solid var(--line);padding:6px 8px;text-align:left">${pl.content}</td>
-                      <td style="border:1px solid var(--line);padding:6px 8px;text-align:right">
-                        <fmt:formatNumber value="${pl.price}" type="number"/>
-                      </td>
-                    </tr>
-                  </c:forEach>
-                </tbody>
-              </table>
-              <div style="text-align:right;margin-top:8px">
-                <strong>합계 :</strong> <fmt:formatNumber value="${payment.totalAmount}" type="number"/> 원
-              </div>
-            </c:if>
-          </c:when>
-
+        <table class="m-table" style="margin-top:8px">
+          <thead>
+            <tr>
+              <th style="width:140px">지출일자</th>
+              <th>사용처</th>
+              <th style="width:160px">금액</th>
+            </tr>
+          </thead>
+          <tbody>
+            <c:forEach var="row" items="${paymentLists}">
+              <tr>
+                <td><c:out value="${row.regdate}"/></td>
+                <td><c:out value="${row.content}"/></td>
+                <td style="text-align:right">
+                  <fmt:formatNumber value="${row.price}" type="number"/> 원
+                </td>
+              </tr>
+            </c:forEach>
+          </tbody>
+          <tfoot>
+            <tr>
+              <th colspan="2" style="text-align:right">합계</th>
+              <th style="text-align:right">
+                <fmt:formatNumber value="${payment.totalAmount}" type="number"/> 원
+              </th>
+            </tr>
+          </tfoot>
+        </table>
+      </c:when>
+      
           <c:otherwise>
             <div style="white-space:pre-line"><c:out value="${draft.draftContent}"/></div>
           </c:otherwise>
@@ -163,7 +197,27 @@
       </div>
     </div>
 
-    <!-- 의견 기록 (항상 노출, 있을 때 목록) -->
+<!-- 첨부파일 -->
+<c:if test="${not empty attachments}">
+  <div class="section">
+    <div class="section-h">첨부파일</div>
+    <div class="section-b">
+      <ul class="attach-list">
+        <c:forEach var="f" items="${attachments}">
+          <li>
+            <span class="pill">FILE</span>
+            <span class="attach-name" title="${f.fileName}">
+              <c:out value="${f.fileName}"/>
+            </span>
+            <a class="attach-down" href="${ctx}/sign/files/${f.draftFileSeq}/download">다운로드</a>
+          </li>
+        </c:forEach>
+      </ul>
+    </div>
+  </div>
+</c:if>
+
+    <!-- 의견 기록 -->
     <div class="section">
       <div class="section-h">의견 기록</div>
       <div class="section-b">
@@ -171,10 +225,8 @@
         <c:forEach var="l" items="${lines}">
           <c:if test="${not empty l.signComment}">
             <c:set var="hasAny" value="true"/>
-            <%-- yyyy-MM-dd HH:mm:ss 로 표시 --%>
             <c:set var="sd2" value="${l.signDate}"/>
             <c:set var="sday2" value="${empty sd2 ? '' : fn:replace(fn:substring(sd2,0,19),'T',' ')}"/>
-
             <div class="opin-item">
               <div style="min-width:0">
                 <div class="opin-author">
@@ -201,12 +253,15 @@
       </div>
     </div>
 
-    <!-- 의견 입력 (내 차례일 때만 노출) -->
-    <c:if test="${canAct}">
+    <!-- 의견 입력 (내 차례 or 수정 가능일 때) -->
+    <c:if test="${canAct || canEdit}">
       <div class="section">
-        <div class="section-h">의견(선택)</div>
+        <div class="section-h">의견 <span style="color:#6b7280;font-weight:400">(반려 시 필수)</span></div>
         <div class="section-b">
-          <textarea id="opinion" class="note" placeholder="의견을 입력하세요. (반려 시 필수)"></textarea>
+          <textarea id="opinion" class="note" placeholder="의견을 입력하세요."><c:out value="${myComment}"/></textarea>
+          <c:if test="${!canAct && canEdit}">
+            <div style="margin-top:6px;font-size:12px;color:#6b7280">※ 내 차례가 아니지만, 이전 결재 결과를 수정할 수 있습니다.</div>
+          </c:if>
         </div>
       </div>
     </c:if>
@@ -218,8 +273,12 @@
 <div class="actions">
   <c:choose>
     <c:when test="${canAct}">
-      <button class="btn primary" onclick="approve()">승인</button>
-      <button class="btn danger"  onclick="reject()">반려</button>
+      <button class="btn primary" onclick="approve(false)">승인</button>
+      <button class="btn danger"  onclick="reject(false)">반려</button>
+    </c:when>
+    <c:when test="${!canAct && canEdit}">
+      <button class="btn primary" onclick="approve(true)">승인(수정)</button>
+      <button class="btn danger"  onclick="reject(true)">반려(수정)</button>
     </c:when>
     <c:otherwise>
       <button class="btn" disabled>처리 권한 없음</button>
@@ -251,7 +310,7 @@
     return res.json();
   }
 
-  window.approve = async function () {
+  window.approve = async function (editMode) {
     if (myLineSeq === null) { alert('처리 권한이 없습니다.'); return; }
     if (!myStampImage) {
       if (confirm('도장 이미지가 등록되어 있지 않습니다. 설정에서 등록하시겠어요?')) {
@@ -261,8 +320,10 @@
     }
     const comment = (document.getElementById('opinion')?.value || '');
     const url = ctx + '/sign/lines/' + encodeURIComponent(myLineSeq) + '/approve';
+    const payload = { comment };
+    if (editMode) payload.editing = '1';
     try {
-      const j = await post(url, { comment });
+      const j = await post(url, payload);
       if (!j.ok) { alert(j.msg || '승인 실패'); return; }
       location.reload();
     } catch (e) {
@@ -270,13 +331,15 @@
     }
   };
 
-  window.reject = async function () {
+  window.reject = async function (editMode) {
     if (myLineSeq === null) { alert('처리 권한이 없습니다.'); return; }
     const comment = (document.getElementById('opinion')?.value || '').trim();
     if (!comment) { alert('반려 사유를 입력하세요.'); return; }
     const url = ctx + '/sign/lines/' + encodeURIComponent(myLineSeq) + '/reject';
+    const payload = { comment };
+    if (editMode) payload.editing = '1';
     try {
-      const j = await post(url, { comment });
+      const j = await post(url, payload);
       if (!j.ok) { alert(j.msg || '반려 실패'); return; }
       location.reload();
     } catch (e) {

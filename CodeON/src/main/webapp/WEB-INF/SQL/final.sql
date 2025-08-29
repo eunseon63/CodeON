@@ -46,14 +46,6 @@ CREATE SEQUENCE MEMBER_SEQ_GENERATOR
 
 commit;
 
-create table tbl_member_1
-as
-select * from tbl_member;
-
-
-INSERT INTO tbl_member
-SELECT * FROM tbl_member_1;
-
 WITH
 A AS
 (SELECT department_name
@@ -99,36 +91,48 @@ select * from TBL_CALENDAR;
 select *
 from TBL_DRAFT;
 
+drop table TBL_EMAIL;
+
 CREATE TABLE TBL_EMAIL (
     email_seq NUMBER PRIMARY KEY,
-    fk_member_seq NUMBER NOT NULL,
-    send_member_email VARCHAR2(50),
-    resive_member_email VARCHAR2(50),
+    send_member_email VARCHAR2(50) NOT NULL,
+    receive_member_email VARCHAR2(50),
     email_send_orgno NUMBER,
-    email_resive_orgno NUMBER,
+    email_receive_orgno NUMBER,
     email_title VARCHAR2(50),
     email_content CLOB,
     email_regdate DATE DEFAULT SYSDATE,
     email_send_status NUMBER(1) DEFAULT 0,
-    email_recieve_status NUMBER(1) DEFAULT 0,
+    email_receive_status NUMBER(1) DEFAULT 0,
     email_filename VARCHAR2(255),
     email_orgfilename VARCHAR2(255),
     email_filesize VARCHAR2(255),
-    email_send_importent NUMBER(1) DEFAULT 0,
-    email_recieve_importent NUMBER(1) DEFAULT 0,
+    email_send_important NUMBER(1) DEFAULT 0,
+    email_receive_important NUMBER(1) DEFAULT 0,
     email_readstatus NUMBER(1) DEFAULT 0,
-    CONSTRAINT fk_email_member FOREIGN KEY (fk_member_seq)
-        REFERENCES TBL_MEMBER(member_seq)
+    CONSTRAINT fk_email_send_member_email FOREIGN KEY (send_member_email)
+        REFERENCES TBL_MEMBER(member_email)
 );
+
+CREATE SEQUENCE emailSeq
+START WITH 1
+INCREMENT BY 1
+NOCACHE;
 
 select * from tbl_member;
 desc tbl_member;
 select * from tab;
 select * from tbl_vacation;
+desc tbl_vacation;
 select * from tbl_business;
 desc tbl_business;
 select * from tbl_payment;
 select * from tbl_business_conform;
 
 select * from tab;
+select * from tbl_member;
+select * from tbl_email;
+desc tbl_email;
 
+select count(*)
+from tbl_email;

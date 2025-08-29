@@ -100,20 +100,22 @@ public class BoardService_imple implements BoardService {
 		}
 
 
+		// 메인 화면
+		@Override
+		public List<BoardDTO> selectRecentNotices(List<Integer> typeSeqs, int limit){
+		    Map<String,Object> p = new HashMap<>();
+		    p.put("typeSeqs", typeSeqs);      // 예: [0, 1]
+		    p.put("limit", limit);            // 예: 5
+		    return dao.selectRecentNoticesFromTypes(p);
+		}
+
+
 
 		@Override
 	    public String getDepartmentNameBySeq(Integer fkDepartmentSeq) {
 	        if (fkDepartmentSeq == null) return null;
 	        return dao.getDepartmentNameBySeq(fkDepartmentSeq);
 	    }
-
-
-
-		@Override
-		public List<BoardDTO> getRecentNotices(Map<String, String> noticeMap) {
-			List<BoardDTO>noticeList =dao.getRecentNotices(noticeMap);
-			return noticeList;
-		}
 
 
 		

@@ -20,7 +20,6 @@
               <th style="border:1px solid #e5e7eb;padding:8px;width:120px">기안자</th>
               <th style="border:1px solid #e5e7eb;padding:8px;width:120px">기안일</th>
               <th style="border:1px solid #e5e7eb;padding:8px;width:80px">긴급</th>
-              <th style="border:1px solid #e5e7eb;padding:8px;width:130px">처리</th>
             </tr>
           </thead>
           <tbody>
@@ -47,10 +46,6 @@
                   </td>
                   <td style="border:1px solid #e5e7eb;padding:8px;text-align:center">
                     <c:if test="${r.isEmergency==1}">✅</c:if>
-                  </td>
-                  <td style="border:1px solid #e5e7eb;padding:8px;text-align:center">
-                    <button class="btn" onclick="approve(${r.draftLineSeq})" style="height:32px;border-radius:8px;border:1px solid #e5e7eb">승인</button>
-                    <button class="btn" onclick="reject(${r.draftLineSeq})"  style="height:32px;border-radius:8px;border:1px solid #e5e7eb">반려</button>
                   </td>
                 </tr>
               </c:forEach>

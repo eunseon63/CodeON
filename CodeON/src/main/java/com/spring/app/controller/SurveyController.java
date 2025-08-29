@@ -1,0 +1,53 @@
+// src/main/java/com/spring/app/controller/SurveyController.java
+package com.spring.app.controller;
+
+import com.spring.app.domain.MemberDTO;
+import com.spring.app.domain.MemberProfileDTO;
+import com.spring.app.domain.SurveyDTO;
+import com.spring.app.service.MyPageService;
+import com.spring.app.service.SurveyService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.SessionAttribute;
+
+import java.util.Collections;
+import java.util.List;
+
+@Controller
+@RequestMapping("/survey")
+@RequiredArgsConstructor
+public class SurveyController {
+
+    private final MyPageService myPageService;
+    private final SurveyService surveyService;
+
+    @GetMapping
+    public String index() {
+        return "redirect:/survey/main";
+    }
+
+    @GetMapping("/main")
+    public String main(Model model,
+                       @SessionAttribute(name = "loginuser", required = false) MemberDTO loginuser) {
+
+        if (loginuser != null) {
+            MemberProfileDTO profile = myPageService.getProfile(loginuser.getMemberSeq());
+            model.addAttribute("userName",  loginuser.getMemberName());
+            model.addAttribute("gradeName", profile != null ? profile.getGradeName() : "-");
+            model.addAttribute("deptName",  profile != null ? profile.getDeptName()  : "-");
+
+            // ★ SSR용: 로그인 사용자가 "볼 수 있는" 설문 목록을 바로 실어 보냄
+            Long memberSeq = (long) loginuser.getMemberSeq();
+            Long deptSeq   = (long) loginuser.getFkDepartmentSeq();
+            List<SurveyDTO> list = surveyService.getVisibleSurveys(null, memberSeq, deptSeq);
+            model.addAttribute("surveys", list);
+        } else {
+            model.addAttribute("surveys", Collections.emptyList());
+        }
+
+        return "survey/main"; // /WEB-INF/views/survey/main.jsp
+    }
+}

@@ -38,7 +38,7 @@
                     </td>
                     <td style="border:1px solid #e5e7eb;padding:8px;text-align:center">${r.drafterName}</td>
                     <td style="border:1px solid #e5e7eb;padding:8px;text-align:center">
-                      <fmt:formatDate value="${r.signDate}" pattern="yyyy-MM-dd HH:mm"/>
+                      <fmt:formatDate value="${r.signDate}" pattern="yyyy-MM-dd"/>
                     </td>
                     <td style="border:1px solid #e5e7eb;padding:8px;text-align:center">
                       <c:choose>
@@ -56,6 +56,5 @@
       </div>
     </div>
   </div>
-</div>
 
 <jsp:include page="../footer/footer.jsp"/>

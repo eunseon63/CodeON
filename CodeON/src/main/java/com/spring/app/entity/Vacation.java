@@ -25,6 +25,7 @@ public class Vacation {
     @Column(name = "vacation_end", nullable = false)
     private LocalDate vacationEnd;
 
-    @Column(name = "vacation_content", length = 300)
+    @Lob
+    @Column(name="VACATION_CONTENT", columnDefinition="CLOB")
     private String vacationContent;
 }

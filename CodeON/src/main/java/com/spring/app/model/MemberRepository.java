@@ -83,4 +83,8 @@ public interface MemberRepository extends JpaRepository<Member, Integer> {
 
 		    boolean existsByMemberEmailAndMemberSeqNot(String email, Integer memberSeq);
 
+		    @Query("select d.departmentName from Department d where d.departmentSeq = :seq")
+		    String findDeptName(@Param("seq") int seq);
+
+
 }

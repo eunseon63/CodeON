@@ -6,6 +6,8 @@ import com.spring.app.board.domain.BoardDTO;
 import com.spring.app.board.service.BoardService;
 import com.spring.app.domain.MemberDTO;
 import com.spring.app.domain.MemberProfileDTO;
+import com.spring.app.entity.DraftLine;
+import com.spring.app.model.DraftLineRepository;
 import com.spring.app.service.MyPageService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
@@ -32,6 +34,7 @@ public class FrontController {
     private final MyPageService myPageService;
     private final BoardService boardService;
     private static final ZoneId KST = ZoneId.of("Asia/Seoul");
+    private final DraftLineRepository draftLineRepository;
 
     @GetMapping("")
     public String start() {
@@ -73,13 +76,14 @@ public class FrontController {
         model.addAttribute("endTimeStr", endTimeStr);
 
         model.addAttribute("attendanceList", monthList);
-
-        // ===== 사내게시판 공지사항만 불러오기 =====
-        Map<String, String> noticeMap = new HashMap<>();
-        noticeMap.put("fkBoardCategorySeq", "0"); // 공지사항 카테고리
-        noticeMap.put("fkBoardTypeSeq", "0");     // 사내게시판
-
-        List<BoardDTO> noticeList = boardService.getRecentNotices(noticeMap);
+        
+        List<DraftLine> inbox = draftLineRepository.findInbox((long) memberSeq);
+        if (inbox.size() > 5) inbox = inbox.subList(0, 5);
+        model.addAttribute("pendingLines", inbox);
+        
+        // 사내게시판(= fk_board_type_seq = 0) 공지 5개
+        List<Integer> typeSeqs = List.of(0, 1);
+        List<BoardDTO> noticeList = boardService.selectRecentNotices(typeSeqs, 5);
         model.addAttribute("noticeList", noticeList);
 
         return "index"; // /WEB-INF/views/index.jsp

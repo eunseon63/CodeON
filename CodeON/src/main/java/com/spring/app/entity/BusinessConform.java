@@ -15,6 +15,7 @@ public class BusinessConform {
     @Column(name = "conform_title", nullable = false, length = 100)
     private String conformTitle;
 
-    @Column(name = "conform_content", length = 500)
+    @Lob
+    @Column(name="CONFORM_CONTENT", columnDefinition="CLOB")
     private String conformContent;
 }
