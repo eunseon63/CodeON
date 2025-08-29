@@ -444,17 +444,14 @@ public class MemberService_imple implements MemberService {
 
 	// tbl_member 테이블에서 부서명별 인원수 및 퍼센티지 가져오기 
 	@Override
-	public List<Map<String, String>> memberCntByDeptname() {
-		List<Map<String, String>> deptnamePercentageList = mbrdao.memberCntByDeptname();
-		return deptnamePercentageList;
-	}
+    public List<Map<String, Object>> memberCntByDeptname() {
+        return mbrdao.memberCntByDeptname();
+    }
 
-	// tbl_member 테이블에서 성별별 인원수 및 퍼센티지 가져오기 
-	@Override
-	public List<Map<String, String>> memberCntByGender() {
-		List<Map<String, String>> genderPercentageList = mbrdao.memberCntByGender();
-		return genderPercentageList;
-	}
+    @Override
+    public List<Map<String, Object>> memberCntByGender() {
+        return mbrdao.memberCntByGender();
+    }
 
 	// 전체 회원 조회
 	@Override
@@ -471,5 +468,14 @@ public class MemberService_imple implements MemberService {
         return memberDtoList;
 	}
 	
+	@Override
+    public List<Map<String, Object>> memberCntByHireYear() {
+        return mbrdao.memberCntByHireYear();
+    }
+
+    @Override
+    public List<Map<String, Object>> memberCntByHireYearGender() {
+        return mbrdao.memberCntByHireYearGender();
+    }
 }
 

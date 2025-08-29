@@ -111,6 +111,13 @@ public class BoardService_imple implements BoardService {
 
 
 
+		@Override
+	    public String getDepartmentNameBySeq(Integer fkDepartmentSeq) {
+	        if (fkDepartmentSeq == null) return null;
+	        return dao.getDepartmentNameBySeq(fkDepartmentSeq);
+	    }
+
+
 		
 
 

@@ -85,6 +85,10 @@ public class BoardDAO_imple implements BoardDAO {
 		public List<BoardDTO> selectRecentNoticesFromTypes(Map<String, Object> p) {
 			return sqlSession.selectList("board.selectRecentNoticesFromTypes", p);
 		}
+		  @Override
+		    public String getDepartmentNameBySeq(Integer fkDepartmentSeq) {
+		        return sqlSession.selectOne("getDepartmentNameBySeq", fkDepartmentSeq);
+		    }
 
 
 

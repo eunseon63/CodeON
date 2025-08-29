@@ -34,6 +34,15 @@ public interface CommentService {
 
 		int editReply(ReplyDTO rdto);
 
+		// 추천 추가
+		int addRecommend(Map<String, Object> paramMap);
+
+		// 추천 수 조회
+		int getRecommendCount(Integer fkBoardSeq);
+
+		//추천한 사원 조회
+		List<String> getRecommendMemberNames(Integer fkBoardSeq);
+
 
 		
 

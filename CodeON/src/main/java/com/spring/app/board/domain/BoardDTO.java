@@ -20,6 +20,10 @@ public class BoardDTO {
     private Long boardFileSize;
     private MultipartFile attach;
 
+    // 추천 관련
+    private Integer recommendSeq;   // 특정 회원이 추천했는지 여부 (join 용)
+    private Integer recommendCount; // 추천 총 개수 (집계)
+    
     // join 용
     private String memberName;
     private String boardCategoryName;

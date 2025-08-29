@@ -37,6 +37,9 @@ public interface BoardService {
 
 
 	 void updateBoard(BoardDTO boardDto)throws Exception;
+
+
+	 String getDepartmentNameBySeq(Integer userDept);
 	
 	 // 메인 화면
 	 List<BoardDTO> selectRecentNotices(List<Integer> typeSeqs, int limit);

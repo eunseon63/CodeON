@@ -44,13 +44,16 @@ public interface MemberService {
 	public int add_memberList(List<Map<String, String>> paraMapList);
 
 	// tbl_member 테이블에서 부서명별 인원수 및 퍼센티지 가져오기 
-	public List<Map<String, String>> memberCntByDeptname();
+	List<Map<String, Object>> memberCntByDeptname();
 
 	// tbl_member 테이블에서 성별별 인원수 및 퍼센티지 가져오기 
-	public List<Map<String, String>> memberCntByGender();
+	List<Map<String, Object>> memberCntByGender();
 
 	// 직원 전체 조회
 	public List<MemberDTO> findAll();
+	
+	List<Map<String, Object>> memberCntByHireYear();
+    List<Map<String, Object>> memberCntByHireYearGender();
 
 }
 

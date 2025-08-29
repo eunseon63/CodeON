@@ -11,6 +11,7 @@
   <!-- (선택) 별칭 패키지 -->
  <typeAliases>
   <typeAlias type="com.spring.app.board.domain.BoardDTO" alias="BoardDTO"/>
+  <typeAlias type="com.spring.app.mail.domain.MailDTO" alias="MailDTO"/>
   <package name="com.spring.app.attendance.domain"/>
 </typeAliases>
 

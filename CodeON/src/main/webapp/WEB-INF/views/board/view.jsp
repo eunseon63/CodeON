@@ -6,6 +6,7 @@
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
 <%
     String ctxPath = request.getContextPath();
@@ -49,8 +50,8 @@
                                 or fn:endsWith(board.boardFileSaveName, '.png') 
                                 or fn:endsWith(board.boardFileSaveName, '.gif')}">
                         <div class="mt-3">
-                            <img src="${ctxPath}/upload/board/${board.boardFileSaveName}" 
-                                 alt="${board.boardFileOriName}" class="img-fluid rounded">
+                         <img src="${ctxPath}/resources/upload/${board.boardFileSaveName}" 
+    						 alt="${board.boardFileOriName}" class="img-fluid rounded">
                         </div>
                     </c:when>
                     <c:otherwise>
@@ -65,6 +66,35 @@
             </c:if>
         </div>
     </div>
+    
+<div class="mt-4 d-flex justify-content-between align-items-center">
+    <div class="d-flex align-items-center mt-2">
+    <button type="button" id="btnRecommend" class="btn btn-outline-success d-flex align-items-center" style="gap:6px;">
+    👍 <span id="recommendCount">${board.recommendCount}</span>
+</button>
+</div>
+</div>
+<input type="hidden" id="boardSeq" value="${board.boardSeq}">
+
+<br>
+
+
+
+<div class="modal fade" id="recommendModal" tabindex="-1" aria-labelledby="recommendModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="recommendModalLabel">추천한 사람</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <ul id="recommendMemberList" class="list-group">
+          <!-- AJAX로 추천한 사람 이름이 들어갑니다 -->
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
 
     <!-- 댓글 입력 폼 -->
     <form id="frmComment" class="mb-3">
@@ -94,6 +124,69 @@
 
 <script>
 const isLogin = <%= (session.getAttribute("loginuser") != null) %>;
+
+// 추천 시작
+$(document).ready(function() {
+	
+    $("#btnRecommend").click(function() {
+        const fkBoardSeq = $("#boardSeq").val(); // hidden input 필요
+
+        $.ajax({
+            url: "${ctxPath}/comment/recommend",
+            type: "POST",
+            data: { fkBoardSeq: fkBoardSeq },
+            success: function(response) {
+                if(response.status === "success") {
+                    // 추천 수 증가
+                    $("#recommendCount").text(response.newCount);
+                    
+                 // 2. 추천자 목록 가져오기
+                    loadRecommendMembers(fkBoardSeq);
+
+                    // 3. 댓글 목록 갱신
+                    goReadComment(1);
+                } else if(response.status === "already") {
+                    alert("이미 추천하셨습니다.");
+                } else {
+                    alert("추천 실패");
+                }
+            },
+            error: function() {
+                alert("추천 중 오류가 발생했습니다.");
+            }
+        });
+        function loadRecommendMembers(fkBoardSeq) {
+        //추천한 사람 조회
+        $.ajax({
+            url: "<%= ctxPath %>/comment/recommendMembers",
+            type: "GET",
+            data: { fkBoardSeq: fkBoardSeq },
+            dataType: "json",
+            success: function(memberList) {
+                const $list = $("#recommendMemberList");
+                $list.empty();
+                if(memberList.length === 0){
+                    $list.append('<li class="list-group-item">추천한 사람이 없습니다.</li>');
+                } else {
+                    memberList.forEach(function(name) {
+                        $list.append('<li class="list-group-item">' + name + '</li>');
+                    });
+                }
+                // 모달 띄우기
+                const recommendModal = new bootstrap.Modal(document.getElementById('recommendModal'));
+                recommendModal.show();
+            },
+            error: function() {
+                alert("추천자 목록 불러오기 실패");
+            }
+        }); 
+       }
+    });
+});
+
+
+
+
 
 function goWriteComment() {
     const content = $("#commentContent").val().trim();
