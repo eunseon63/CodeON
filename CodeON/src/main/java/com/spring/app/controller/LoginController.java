@@ -28,7 +28,6 @@ public class LoginController {
     }
 
     /** 로그인 처리 */
-    /** 로그인 처리 */
     @PostMapping("loginEnd")
     public String loginEnd(@RequestParam(name = "memberUserId") String memberUserId,
                            @RequestParam(name = "memberPwd") String memberPwd,

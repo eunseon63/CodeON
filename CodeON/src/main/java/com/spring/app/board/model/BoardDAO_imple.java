@@ -81,8 +81,11 @@ public class BoardDAO_imple implements BoardDAO {
 			
 		}
 
-		
+		@Override
+		public List<BoardDTO> selectRecentNoticesFromTypes(Map<String, Object> p) {
+			return sqlSession.selectList("board.selectRecentNoticesFromTypes", p);
+		}
 
-	   
+
 
 }

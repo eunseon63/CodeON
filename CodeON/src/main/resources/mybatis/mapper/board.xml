@@ -264,4 +264,40 @@
     DELETE FROM tbl_board
     WHERE board_seq = #{boardSeq}
 </delete>
+
+
+
+ <!-- 공지(카테고리=0) 최근 N개 -->
+<select id="selectRecentNoticesFromTypes" parameterType="map"
+        resultType="com.spring.app.board.domain.BoardDTO">
+  SELECT *
+  FROM (
+    SELECT
+      b.board_seq             AS boardSeq,
+      b.fk_board_type_seq     AS fkBoardTypeSeq,
+      b.fk_member_seq         AS fkMemberSeq,
+      b.board_title           AS boardTitle,
+      b.board_regdate         AS boardRegdate,
+      b.board_readcount       AS boardReadcount,
+      b.fk_board_category_seq AS fkBoardCategorySeq,
+      m.member_name           AS memberName,
+      c.board_category_name   AS boardCategoryName,
+      CASE b.fk_board_type_seq
+        WHEN 0 THEN '사내게시판'
+        WHEN 1 THEN '부서게시판'
+        ELSE '게시판'
+      END AS boardTypeName
+    FROM tbl_board b
+    JOIN tbl_member m ON m.member_seq = b.fk_member_seq
+    LEFT JOIN tbl_board_category c ON c.board_category_seq = b.fk_board_category_seq
+    WHERE b.fk_board_category_seq = 0
+      AND b.fk_board_type_seq IN
+      <foreach collection="typeSeqs" item="t" open="(" separator="," close=")">
+        #{t}
+      </foreach>
+    ORDER BY b.board_regdate DESC
+  )
+  WHERE ROWNUM &lt;= #{limit}
+</select>
+
 </mapper>

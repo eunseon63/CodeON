@@ -87,7 +87,7 @@ body { margin:0; background:var(--bg); font-family:system-ui,-apple-system,Segoe
           </div>
           <div class="row2">
             <div>소속</div>
-            <input class="input" id="dept" value="${sessionScope.loginuser.department.departmentName}" readonly>
+           	<input class="input" id="dept" value="${loginDeptName}" readonly>
           </div>
           <div class="row2">
             <div>기안일</div>
@@ -105,7 +105,6 @@ body { margin:0; background:var(--bg); font-family:system-ui,-apple-system,Segoe
         <div class="card-h" style="display:flex;justify-content:space-between;align-items:center">
           <span>결재라인</span>
           <div style="display:flex;gap:8px">
-            <button type="button" class="btn small" id="btnPickLine">불러오기</button>
             <button type="button" class="btn small" id="btnEditLine">선택하기</button>
           </div>
         </div>
@@ -427,7 +426,7 @@ body { margin:0; background:var(--bg); font-family:system-ui,-apple-system,Segoe
 
   // 부가: 지출행 추가/삭제 + 휴가 반차 동기화
   $(function(){
-    $("#btnPickLine,#btnEditLine").on("click", openSignlineLoadPopup);
+    $("#btnEditLine").on("click", openSignlineLoadPopup);
 
     $(document).on("input", "#expTable tbody .money", recalcSum);
     $("#btnAddRow").on("click", function(){

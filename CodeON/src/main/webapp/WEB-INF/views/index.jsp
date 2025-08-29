@@ -1,5 +1,7 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions"%>
+<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 
 <jsp:include page="header/header.jsp" />
 
@@ -121,6 +123,45 @@ body{ background:var(--bg); }
 /* 반응형 */
 @media (max-width: 1200px){ .grid-3{ grid-template-columns: 300px 1fr 360px; } }
 @media (max-width: 980px){ .grid-3{ grid-template-columns: 1fr; } }
+
+.title-link{
+  color: var(--text);
+  text-decoration: none;
+  display: inline-block;
+  cursor: pointer;
+}
+.title-link:visited,
+.title-link:hover,
+.title-link:active,
+.title-link:focus{
+  color: var(--text);
+  text-decoration: none;
+}
+
+/* 내 결재 대기 문서 리스트 */
+.doc-list{ list-style:none; margin:0; padding:0; }
+.doc-list li{ padding:12px 0; border-bottom:1px solid var(--line); }
+.doc-list li:last-child{ border-bottom:none; }
+
+.doc-link{
+  display:block;
+  font-weight:700;
+  color:var(--text);
+  text-decoration:none;
+  cursor:pointer;
+}
+.doc-link:link,
+.doc-link:visited,
+.doc-link:hover,
+.doc-link:active,
+.doc-link:focus{
+  color:var(--text);
+  text-decoration:none;
+  outline:none;
+}
+
+.doc-meta{ font-size:12px; color:var(--muted); margin-top:2px; }
+.doc-list li:hover{ background:#fafafa; }
 </style>
 
 <div class="dashboard">
@@ -135,7 +176,7 @@ body{ background:var(--bg); }
           <div>
             <div class="profile-name-row">
               <span><c:out value="${userName}"/></span>
-              <span class="suffix">사원님</span>
+              <c:out value="${gradeName}"/>님
             </div>
             <div class="inout-row">
               <div class="inout-col">
@@ -168,26 +209,61 @@ body{ background:var(--bg); }
       </div>
 
       <div class="card mt-3">
-		  <div class="card-bd" style="display:flex; align-items:center; gap:14px;">
-		    <div id="weatherIcon" style="font-size:36px;">☀️</div>
-		    <div>
-		      <div class="item-title" id="weatherDesc">날씨 로딩중...</div>
-		      <div style="font-weight:800; font-size:18px;" id="weatherTemp">-- °C</div>
-		    </div>
-		  </div>
-		</div>
-
+        <div class="card-bd" style="display:flex; align-items:center; gap:14px;">
+          <div id="weatherIcon" style="font-size:36px;">☀️</div>
+          <div>
+            <div class="item-title" id="weatherDesc">날씨 로딩중...</div>
+            <div style="font-weight:800; font-size:18px;" id="weatherTemp">-- °C</div>
+          </div>
+        </div>
+      </div>
     </aside>
 
-    <!-- 가운데: 공지 -->
+    <!-- 가운데: 공지 (사내+부서 합산 최신 5개) -->
     <section>
       <div class="notice-area">
-        <div class="item-title" style="margin-bottom:12px;">게시판 중 공지사항 불러오기</div>
-        <!-- 공지 내용 -->
+        <div class="item-title" style="margin-bottom:12px;">
+          <a class="title-link"
+             href="${ctxPath}/board/list?fkBoardCategorySeq=0">
+            📢 공지사항
+          </a>
+        </div>
+
+        <c:choose>
+          <c:when test="${empty noticeList}">
+            <div style="color:#6b7280">표시할 공지가 없습니다.</div>
+          </c:when>
+          <c:otherwise>
+            <ul class="doc-list">
+              <c:forEach var="n" items="${noticeList}">
+                <li>
+                  <a class="doc-link" href="${ctxPath}/board/view?boardSeq=${n.boardSeq}">
+                    <c:choose>
+                      <c:when test="${n.fkBoardTypeSeq == 0}">[사내게시판]</c:when>
+                      <c:when test="${n.fkBoardTypeSeq == 1}">[부서게시판]</c:when>
+                      <c:otherwise>[게시판]</c:otherwise>
+                    </c:choose>
+                    <c:out value="${n.boardTitle}"/>
+                  </a>
+                  <div class="doc-meta">
+                    <c:out value="${n.memberName}"/> ·
+                    <fmt:formatDate value="${n.boardRegdate}" pattern="yyyy-MM-dd"/>
+                    <span style="margin-left:8px;">조회 <c:out value="${n.boardReadcount}"/></span>
+                  </div>
+                </li>
+              </c:forEach>
+            </ul>
+
+            <div style="text-align:right; margin-top:10px;">
+              <!-- 더보기: 공지 카테고리(0) 전체 보러가기 -->
+              <a class="title-link" href="${ctxPath}/board/list?fkBoardCategorySeq=0">더보기 »</a>
+            </div>
+          </c:otherwise>
+        </c:choose>
       </div>
     </section>
 
-    <!-- 우측: 오늘 일정 -->
+    <!-- 우측: 오늘 일정 + 결재 대기 -->
     <aside>
       <div class="card">
         <div class="card-bd">
@@ -199,8 +275,39 @@ body{ background:var(--bg); }
           </ul>
         </div>
       </div>
-    </aside>
 
+      <div class="card" style="margin-top:18px;">
+        <div class="card-bd">
+          <a class="item-title title-link" href="${ctxPath}/sign/main" style="margin-bottom:10px;">
+            📝 내 결재 대기 문서
+          </a>
+          <c:choose>
+            <c:when test="${empty pendingLines}">
+              <div style="color:#6b7280">결재 대기 중인 문서가 없습니다.</div>
+            </c:when>
+            <c:otherwise>
+				<ul class="doc-list">
+				  <c:forEach var="dl" items="${pendingLines}">
+				    <li>
+				      <a class="doc-link" href="${ctxPath}/sign/view/${dl.draft.draftSeq}">
+				        <c:if test="${dl.draft.isEmergency == 1}">
+				          🚨
+				        </c:if>
+				        [<c:out value="${dl.draft.draftType != null ? dl.draft.draftType.draftTypeName : '문서'}"/>]
+				        <c:out value="${dl.draft.draftTitle}"/>
+				      </a>
+				      <div class="doc-meta">
+				        <c:out value="${dl.draft.member.memberName}"/> ·
+				        <c:out value="${fn:substring(dl.draft.draftRegdate,0,10)}"/>
+				      </div>
+				    </li>
+				  </c:forEach>
+				</ul>
+            </c:otherwise>
+          </c:choose>
+        </div>
+      </div>
+    </aside>
   </div>
 </div>
 

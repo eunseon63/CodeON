@@ -9,5 +9,5 @@ import com.spring.app.entity.BusinessConform;
 public interface BusinessConformRepository extends JpaRepository<BusinessConform, Long> {
 	
 	Optional<BusinessConform> findByDraftSeq(Long draftSeq);
-	
+
 }

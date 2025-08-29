@@ -38,7 +38,8 @@ public interface BoardService {
 
 	 void updateBoard(BoardDTO boardDto)throws Exception;
 	
-	
+	 // 메인 화면
+	 List<BoardDTO> selectRecentNotices(List<Integer> typeSeqs, int limit);
 	
 
 }

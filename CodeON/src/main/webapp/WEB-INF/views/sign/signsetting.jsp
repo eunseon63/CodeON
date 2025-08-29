@@ -538,37 +538,52 @@ function renderSavedLines(list){
 	    const id   = item.signlineSeq;
 	    const name = esc(item.signlineName || '이름 없음');
 	    const members = Array.isArray(item.members) ? item.members : [];
-	    const reg = item.regdate ? String(item.regdate).replace('T',' ').slice(0,19) : '';
 
 	    const chips = members.map(m =>
-	        '<li class="approver-chip">'
-	      +   '<span class="ord-badge">' + (m.lineOrder ?? '') + '</span>'
-	      +   '<strong>' + esc(m.memberName || '') + '</strong>'
-	      +   (m.title    ? '<span class="sub-tag">' + esc(m.title)    + '</span>' : '')
-	      +   (m.deptName ? '<span class="sub-tag">' + esc(m.deptName) + '</span>' : '')
+	      '<li class="approver-chip">'
+	      +  '<span class="ord-badge">' + (m.lineOrder ?? '') + '</span>'
+	      +  '<strong>' + esc(m.memberName || '') + '</strong>'
+	      +  (m.deptName ? '<span class="sub-tag">' + esc(m.deptName) + '</span>' : '')
 	      + '</li>'
 	    ).join('');
 
 	    html +=
-	        '<div class="line-card">'
-	      +   '<div class="h">'
-	      +     '<strong>' + name + '</strong>'
-	      +     '<div class="line-actions">'
-	      +       '<button type="button" class="btn small" onclick="openLinePopup(' + id + ')">편집</button>'
-	      +     '</div>'
-	      +   '</div>'
-	      +   '<div class="b">'
-	      +     '<span class="badge">결재자 ' + members.length + '명</span>'
-	      +   '</div>'
-	      +   '<ul class="approver-list">'
-	      +     (chips || '<li class="cap">결재자 없음</li>')
-	      +   '</ul>'
+	      '<div class="line-card">'
+	      +  '<div class="h">'
+	      +    '<strong>' + name + '</strong>'
+	      +    '<div class="line-actions">'
+	      +      '<button type="button" class="btn small" onclick="openLinePopup(' + id + ')">편집</button>'
+	      +      '<button type="button" class="btn small danger" onclick="deleteLine(' + id + ')">삭제</button>'
+	      +    '</div>'
+	      +  '</div>'
+	      +  '<div class="b"><span class="badge">결재자 ' + members.length + '명</span></div>'
+	      +  '<ul class="approver-list">' + (chips || '<li class="cap">결재자 없음</li>') + '</ul>'
 	      + '</div>';
 	  });
 
 	  $("#savedLines").html(html);
 	}
 
+function deleteLine(id){
+	  if (!confirm('해당 결재라인을 삭제할까요?')) return;
+
+	  $.ajax({
+	    url: "<%=ctxPath%>/sign/lines/" + encodeURIComponent(id) + "/delete",
+	    type: "POST",
+	    dataType: "json",
+	    success: function(res){
+	      if(res && res.ok){
+	        loadSavedLines(); // 목록 갱신
+	      }else{
+	        alert(res && res.msg ? res.msg : '삭제에 실패했습니다.');
+	      }
+	    },
+	    error: function(xhr, status, err){
+	      console.error(err);
+	      alert('삭제 중 오류가 발생했습니다: ' + (xhr.responseText || status));
+	    }
+	  });
+	}
 
 
 </script>

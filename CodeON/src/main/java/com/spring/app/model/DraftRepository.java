@@ -50,4 +50,16 @@ public interface DraftRepository extends JpaRepository<Draft, Long> {
 	   order by d.draftSeq desc
 	""")
 	List<Draft> findByMemberWithType(@Param("me") Long me);
+
+    @Query("""
+    	    select d
+    	      from Draft d
+    	      join fetch d.member m
+    	      left join fetch m.department
+    	      left join fetch m.grade
+    	      left join fetch d.draftType
+    	     where d.draftSeq = :seq
+    	""")
+    	Optional<Draft> findByIdWithMemberTypeAndOrg(@Param("seq") Long seq);
+    
 }

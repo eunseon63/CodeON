@@ -16,7 +16,8 @@ public class Business {
     @Column(name = "business_title", nullable = false, length = 100)
     private String businessTitle;
 
-    @Column(name = "business_content", length = 300)
+    @Lob
+    @Column(name="BUSINESS_CONTENT", columnDefinition="CLOB")
     private String businessContent;
 
     @Column(name = "business_start")

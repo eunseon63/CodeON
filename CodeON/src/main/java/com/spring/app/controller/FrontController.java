@@ -2,8 +2,12 @@ package com.spring.app.controller;
 
 import com.spring.app.attendance.domain.AttendanceRecord;
 import com.spring.app.attendance.service.AttendanceService;
+import com.spring.app.board.domain.BoardDTO;
+import com.spring.app.board.service.BoardService;
 import com.spring.app.domain.MemberDTO;
 import com.spring.app.domain.MemberProfileDTO;
+import com.spring.app.entity.DraftLine;
+import com.spring.app.model.DraftLineRepository;
 import com.spring.app.service.MyPageService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
@@ -27,6 +31,8 @@ public class FrontController {
     private final AttendanceService attendanceService;
     private final MyPageService myPageService;
     private static final ZoneId KST = ZoneId.of("Asia/Seoul");
+    private final DraftLineRepository draftLineRepository;
+    private final BoardService boardService;
 
     @GetMapping("")
     public String start() {
@@ -70,6 +76,15 @@ public class FrontController {
 
         // 출퇴근 박스에서 forEach를 그대로 쓰고 싶다면 전달
         model.addAttribute("attendanceList", monthList);
+        
+        List<DraftLine> inbox = draftLineRepository.findInbox((long) memberSeq);
+        if (inbox.size() > 5) inbox = inbox.subList(0, 5);
+        model.addAttribute("pendingLines", inbox);
+        
+        // 사내게시판(= fk_board_type_seq = 0) 공지 5개
+        List<Integer> typeSeqs = List.of(0, 1);
+        List<BoardDTO> noticeList = boardService.selectRecentNotices(typeSeqs, 5);
+        model.addAttribute("noticeList", noticeList);
 
         return "index"; // /WEB-INF/views/index.jsp
     }

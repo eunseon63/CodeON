@@ -15,9 +15,10 @@ public class Payment {
     @Column(name = "payment_title", nullable = false, length = 100)
     private String paymentTitle;
 
-    @Column(name = "payment_content", length = 200)
+    @Lob
+    @Column(name="PAYMENT_CONTENT", columnDefinition="CLOB")
     private String paymentContent;
-
+    
     @Column(name = "total_amount", nullable = false)
     private Long totalAmount;
 }

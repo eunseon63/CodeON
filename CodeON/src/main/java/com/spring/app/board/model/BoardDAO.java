@@ -39,9 +39,8 @@ public interface BoardDAO {
 
 	 void updateBoard(BoardDTO boardDto)throws Exception ;
 
-
-
-
+	// 메인 화면 공지사항 최근 n개
+	List<BoardDTO> selectRecentNoticesFromTypes(Map<String, Object> p);
 
 
 }
