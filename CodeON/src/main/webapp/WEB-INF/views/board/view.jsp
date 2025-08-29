@@ -121,6 +121,27 @@
         </tbody>
     </table>
 </div>
+<!-- 이전글 / 다음글 영역 -->
+<div class="card mt-3 p-2" style="border:1px solid #dee2e6; border-radius:8px; background:#f8f9fa;">
+    <div class="d-flex justify-content-between" style="font-size:14px;">
+        <div>
+            <c:if test="${not empty prevBoard}">
+                이전글: 
+                <a href="${ctxPath}/board/view?boardSeq=${prevBoard.boardSeq}" class="text-primary text-decoration-none">
+                    ${prevBoard.boardTitle}
+                </a>
+            </c:if>
+        </div>
+        <div>
+            <c:if test="${not empty nextBoard}">
+                다음글: 
+                <a href="${ctxPath}/board/view?boardSeq=${nextBoard.boardSeq}" class="text-primary text-decoration-none">
+                    ${nextBoard.boardTitle}
+                </a>
+            </c:if>
+        </div>
+    </div>
+</div>
 
 <script>
 const isLogin = <%= (session.getAttribute("loginuser") != null) %>;

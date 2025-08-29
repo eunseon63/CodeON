@@ -36,4 +36,9 @@ public class MemberDTO {
     private String stampImage;
     
     private Department department;
+    
+    
+    private String gradeName;       // "사원", "대리" 같은 이름
+    private int gradeSeq;           // 직급 순서
+    private String departmentName;  // 부서명
 }

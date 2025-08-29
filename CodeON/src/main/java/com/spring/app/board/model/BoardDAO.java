@@ -46,4 +46,10 @@ public interface BoardDAO {
 
 
 
+
+
+
+
+
+
 }
