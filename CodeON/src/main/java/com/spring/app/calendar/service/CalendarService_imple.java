@@ -6,6 +6,7 @@ import java.util.Map;
 import org.springframework.stereotype.Service;
 
 import com.spring.app.calendar.domain.CalendarAjaxDTO;
+import com.spring.app.calendar.domain.CalendarDTO;
 import com.spring.app.calendar.model.CalendarDAO;
 
 
@@ -50,6 +51,22 @@ public class CalendarService_imple implements CalendarService {
 			Map<String, String> map = dao.detailCalendar(calendarSeq);
 			return map;
 		}
+
+		// === 일정삭제하기 ===
+		@Override
+		public int deleteCalendar(String calendarSeq) throws Throwable {
+			int n = dao.deleteCalendar(calendarSeq);
+			return n;
+		}
+
+		// 일정 수정하기
+		@Override
+		public int editCalendar_end(CalendarDTO cvo) throws Throwable{
+			int n = dao.editCalendar_end(cvo);
+			return n;
+		}
+
+		
 
 
 

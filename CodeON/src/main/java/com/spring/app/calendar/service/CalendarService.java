@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Map;
 
 import com.spring.app.calendar.domain.CalendarAjaxDTO;
+import com.spring.app.calendar.domain.CalendarDTO;
 
 public interface CalendarService {
 
@@ -18,6 +19,15 @@ public interface CalendarService {
 
 	// === 일정 상세보기 ===
 	Map<String, String> detailCalendar(int calendarSeq);
+
+	// === 일정삭제하기 ===
+	int deleteCalendar(String calendarSeq) throws Throwable;
+
+	// 일정 수정하기
+	int editCalendar_end(CalendarDTO cvo) throws Throwable;
+
+	
+	
 
 	
 

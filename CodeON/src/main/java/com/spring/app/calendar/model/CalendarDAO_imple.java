@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Repository;
 
 import com.spring.app.calendar.domain.CalendarAjaxDTO;
+import com.spring.app.calendar.domain.CalendarDTO;
 
 import lombok.RequiredArgsConstructor;
 
@@ -49,7 +50,22 @@ public class CalendarDAO_imple implements CalendarDAO {
 		Map<String, String> map = sqlsession.selectOne("calendar.detailCalendar" , calendarSeq);
 		return map;
 	}
+	
+	// 일정 삭제하기
+	@Override
+	public int deleteCalendar(String calendarSeq) throws Throwable {
+		int n = sqlsession.delete("calendar.deleteCalendar", calendarSeq);
+		return n;
+	}
 
+	// 일정 수정하기
+	@Override
+	public int editCalendar_end(CalendarDTO cvo) throws Throwable {
+		int n = sqlsession.update("calendar.editCalendar_end", cvo);
+		return n;
+	}
+
+	
 	
 	
 

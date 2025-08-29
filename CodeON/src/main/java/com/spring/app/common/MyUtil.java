@@ -4,6 +4,7 @@ import jakarta.servlet.http.HttpServletRequest;
 
 public class MyUtil {
 
+
 	// *** ? 다음의 데이터까지 포함한 현재 URL 주소를 알려주는 메소드를 생성 *** //
 	public static String getCurrentURL(HttpServletRequest request) { 
 	
@@ -44,3 +45,6 @@ public class MyUtil {
 
 
 
+
+	
+	

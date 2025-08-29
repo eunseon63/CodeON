@@ -41,11 +41,13 @@ function validateForm() {
     const end = document.getElementById("endDate").value;
     const calendarType = document.getElementById("calendarType").value;
     const bigCategory = document.getElementById("bigCategorySeq").value;
+    // const smallCategory = document.getElementById("smallCategorySeq").value;
 
     if (!title) { alert("제목을 입력하세요."); return false; }
     if (!start || !end) { alert("시작일과 종료일을 입력하세요."); return false; }
     if (new Date(start) > new Date(end)) { alert("종료일은 시작일 이후여야 합니다."); return false; }
     if (!bigCategory) { alert("대분류를 선택하세요."); return false; }
+    // if (!smallCategory) { alert("소분류를 선택하세요."); return false; }
     if (calendarType === "SHARE") {
         const shareList = document.getElementById("shareEmployees").value.trim();
         if (!shareList) { alert("공유 캘린더의 경우 공유할 직원을 입력하세요."); return false; }

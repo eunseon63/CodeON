@@ -106,34 +106,58 @@
 
 
 	<!-- 일정 상세보기 -->
-	<!-- <resultMap id="detailCalendar_Map" type="HashMap">
-	    <result property="calendarSeq"        column="CALENDAR_SEQ"/>
-	    <result property="calendarStart"      column="CALENDAR_START"/>
-	    <result property="calendarEnd"        column="CALENDAR_END"/>
-	    <result property="calendarName"       column="CALENDAR_NAME"/>
-	    <result property="calendarColor"      column="CALENDAR_COLOR"/>
-	    <result property="calendarLocation"   column="CALENDAR_LOCATION"/>
-	    <result property="calendarContent"    column="CALENDAR_CONTENT"/>
-	    <result property="memberName"         column="MEMBER_NAME"/>
-	</resultMap> -->
+	<resultMap id="detailCalendar_Map" type="HashMap">
+	    <result property="calendarSeq"      column="CALENDAR_SEQ" 		javaType="string"/>
+	    <result property="calendarStart"    column="CALENDAR_START" 	javaType="string"/>
+	    <result property="calendarEnd"      column="CALENDAR_END" 		javaType="string"/>
+	    <result property="calendarName"     column="CALENDAR_NAME" 		javaType="string"/>
+	    <result property="calendarColor"    column="CALENDAR_COLOR" 	javaType="string"/>
+	    <result property="calendarType" 	column="CALENDAR_TYPE" 		javaType="string"/>
+	    <result property="calendarLocation" column="CALENDAR_LOCATION" 	javaType="string"/>
+	    <result property="calendarContent"  column="CALENDAR_CONTENT" 	javaType="string"/>
+	    <result property="memberName"       column="MEMBER_NAME" 		javaType="string"/>
+	    <result property="fkMemberSeq"     	column="FK_MEMBER_SEQ" 		javaType="string"/>
+	</resultMap>
+ 
+	<select id="detailCalendar" parameterType="int" resultMap="detailCalendar_Map">
+	    SELECT
+	        C.CALENDAR_SEQ,
+	        TO_CHAR(C.CALENDAR_START, 'yyyy-mm-dd hh24:mi') AS CALENDAR_START,
+	        TO_CHAR(C.CALENDAR_END, 'yyyy-mm-dd hh24:mi') AS CALENDAR_END,
+	        C.CALENDAR_NAME,
+	        C.CALENDAR_COLOR,
+	        C.CALENDAR_TYPE AS CALENDAR_TYPE,  <!-- 이제 직접 컬럼 사용 -->
+	        NVL(C.CALENDAR_LOCATION, '-') AS CALENDAR_LOCATION,
+	        NVL(C.CALENDAR_CONTENT, '') AS CALENDAR_CONTENT,
+	        M.MEMBER_NAME,
+	        C.FK_MEMBER_SEQ
+	    FROM TBL_CALENDAR C
+	    JOIN TBL_MEMBER M
+	        ON C.FK_MEMBER_SEQ = M.MEMBER_SEQ
+	    WHERE C.CALENDAR_SEQ = #{calendarSeq,jdbcType=INTEGER}
+	</select>
 
-	<!-- 일정 상세보기 -->
-    <select id="detailCalendar" parameterType="int" resultType="map">
-        SELECT
-            C.CALENDAR_SEQ,
-            TO_CHAR(C.CALENDAR_START, 'yyyy-mm-dd hh24:mi') AS CALENDAR_START,
-            TO_CHAR(C.CALENDAR_END, 'yyyy-mm-dd hh24:mi') AS CALENDAR_END,
-            C.CALENDAR_NAME,
-            C.CALENDAR_COLOR,
-            NVL(C.CALENDAR_LOCATION, '-') AS CALENDAR_LOCATION,
-            NVL(C.CALENDAR_CONTENT, '') AS CALENDAR_CONTENT,
-            M.MEMBER_NAME
-        FROM TBL_CALENDAR C
-        JOIN TBL_MEMBER M
-            ON C.FK_MEMBER_SEQ = M.MEMBER_SEQ
-        WHERE C.CALENDAR_SEQ = #{calendarSeq,jdbcType=INTEGER}
-    </select>
 
+
+	<!-- // 일정삭제하기 -->
+	<delete id="deleteCalendar" parameterType="String">
+		delete from tbl_calendar 
+		where calendar_seq = #{value}
+	</delete>
+
+
+	<!-- // 일정수정하기 -->
+	<update id="editCalendar_end" parameterType="com.spring.app.calendar.domain.CalendarDTO">
+	    UPDATE TBL_CALENDAR SET CALENDAR_NAME     = #{calendarName},
+						        CALENDAR_START    = TO_DATE(REPLACE(#{calendarStart}, 'T', ' '), 'YYYY-MM-DD HH24:MI'),
+						        CALENDAR_END      = TO_DATE(REPLACE(#{calendarEnd}, 'T', ' '), 'YYYY-MM-DD HH24:MI'),
+						        CALENDAR_COLOR    = #{calendarColor},
+						        CALENDAR_LOCATION = #{calendarLocation},
+						        CALENDAR_CONTENT  = #{calendarContent}
+	    WHERE CALENDAR_SEQ = #{calendarSeq}
+	</update>
+
+	
 
 
 	

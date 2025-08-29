@@ -17,6 +17,7 @@ import org.springframework.web.servlet.ModelAndView;
 
 import com.spring.app.calendar.domain.BigCategoryDTO;
 import com.spring.app.calendar.domain.CalendarAjaxDTO;
+import com.spring.app.calendar.domain.CalendarDTO;
 import com.spring.app.calendar.domain.SmallCategoryDTO;
 import com.spring.app.calendar.service.CalendarService;
 import com.spring.app.calendar.service.CategoryService;
@@ -139,6 +140,8 @@ public class CalendarController {
         String calendarUser = request.getParameter("fk_userid");
         List<CalendarAjaxDTO> calendarList = service.selectCalendar(calendarUser);
 
+        
+        
         JSONArray jsArr = new JSONArray();
 
         if(calendarList != null && !calendarList.isEmpty()) {
@@ -157,7 +160,7 @@ public class CalendarController {
             }
         }
 
-        System.out.println("calendarUser=" + calendarUser);
+        //System.out.println("calendarUser=" + calendarUser);
         
         return jsArr.toString();
     }
@@ -166,6 +169,7 @@ public class CalendarController {
     @GetMapping(value="detailCalendar")
     public ModelAndView detailCalendar(ModelAndView mav, HttpServletRequest request) {
         
+    	
         // 1. 요청 파라미터
     	String calendarSeqStr = request.getParameter("calendarSeq");
 
@@ -181,17 +185,121 @@ public class CalendarController {
             int calendarSeq = Integer.parseInt(calendarSeqStr); // String → int
 
             Map<String, String> map = service.detailCalendar(calendarSeq);
+            //System.out.println("calendarType 확인: " + map.get("calendarType"));
+            
             mav.addObject("map", map);
 
+            //System.out.println("calendarSeq=" + calendarSeq);
+            //System.out.println("detail map=" + map);
+
+            
             mav.setViewName("Calendar/detailCalendar");
         } catch (NumberFormatException e) {
             mav.setViewName("redirect:/calendar/calendarList");
         }
 
+        
+        
         return mav;
     }
 
-   
+    // === 일정 삭제하기 ===
+    @ResponseBody
+    @PostMapping("/deleteCalendar")
+    public String deleteCalendar(HttpServletRequest request) throws Throwable {
+        
+        String calendarSeq = request.getParameter("calendarSeq"); // 파라미터 받기
+        
+        int n = service.deleteCalendar(calendarSeq); // 삭제 실행 (성공시 1, 실패시 0)
+        
+        JSONObject jsObj = new JSONObject();
+        jsObj.put("n", n);
+        
+        return jsObj.toString();
+    }
+    
+    // === 일정 수정하기 ===
+    @PostMapping("/editCalendar")
+    public ModelAndView editCalendar(ModelAndView mav, HttpServletRequest request) {
+
+        String calendarSeqStr = request.getParameter("calendarSeq");
+        HttpSession session = request.getSession(false);
+        MemberDTO loginUser = (session != null) ? (MemberDTO) session.getAttribute("loginuser") : null;
+
+        if (loginUser == null) {
+            mav.setViewName("redirect:/login");
+            return mav;
+        }
+
+        try {
+            int calendarSeq = Integer.parseInt(calendarSeqStr);
+            String gobackURL_detailCalendar = request.getParameter("gobackURL_detailCalendar");
+
+            System.out.println(calendarSeqStr);
+            
+            Map<String, String> map = service.detailCalendar(calendarSeq);
+            int calendarUser = Integer.parseInt(map.get("fkMemberSeq").toString());
+
+            System.out.println("calendarUser 파라미터 = " + calendarUser);
+            System.out.println("상세조회 결과 = " + map);
+            System.out.println(calendarSeqStr);
+            
+            if (loginUser.getMemberSeq() != calendarUser) {
+                mav.addObject("message", "다른 사용자가 작성한 일정은 수정할 수 없습니다.");
+                mav.addObject("loc", "javascript:history.back()");
+                mav.setViewName("msg");
+            } else {
+                mav.addObject("map", map);
+                mav.addObject("gobackURL_detailCalendar", gobackURL_detailCalendar);
+                
+                mav.setViewName("Calendar/editCalendar");
+            }
+
+        } catch (NumberFormatException e) {
+            mav.setViewName("redirect:/Calendar/list");
+        }
+
+        return mav;
+    }
+
+    // === 일정 수정 완료하기 ===
+    @PostMapping("/editCalendar_end")
+    public ModelAndView editCalendar_end(CalendarDTO cvo, HttpServletRequest request, ModelAndView mav) {
+
+        try {
+            // 서비스에서 일정 수정
+            int n = service.editCalendar_end(cvo);
+
+            if(n == 1) {
+                mav.addObject("message", "일정을 수정하였습니다.");
+                // 수정 완료 후 상세페이지나 목록으로 이동
+                mav.addObject("loc", request.getContextPath() + "/Calendar/detailCalendar?calendarSeq=" + cvo.getCalendarSeq());
+            } else {
+                mav.addObject("message", "일정 수정에 실패하였습니다.");
+                mav.addObject("loc", "javascript:history.back()");
+            }
+
+            mav.setViewName("msg");
+
+        } catch (Throwable e) {
+            e.printStackTrace();
+            mav.setViewName("redirect:/Calendar/list");
+        }
+
+        
+        
+        return mav;
+    }
+
+    
+    
+    
+    
+    
+    
+    
+    
+
 
 
 

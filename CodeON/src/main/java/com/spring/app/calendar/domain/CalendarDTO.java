@@ -28,6 +28,7 @@ public class CalendarDTO {
     private String calendarName;
     private String calendarContent;
     private String calendarColor;
+    private String calendarType;
     private String calendarLocation;
 
     private String[] calendarUsers;   
