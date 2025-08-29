@@ -133,6 +133,7 @@
       <a href="<%= ctxPath %>/address">주소록</a>
       <a href="<%= ctxPath %>/mypage">마이페이지</a>
       <a href="<%= ctxPath %>/chatting/multichat">웹채팅</a>
+      <a href="<%= ctxPath %>/survey/main">설문</a>
       <a href="<%= ctxPath %>/member/register">인사(인사팀만)</a>
     </nav>
   </div>
