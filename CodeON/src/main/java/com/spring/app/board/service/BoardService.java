@@ -40,7 +40,9 @@ public interface BoardService {
 
 
 	 String getDepartmentNameBySeq(Integer userDept);
-	
+
+	//공지사항 가져오기
+	 List<BoardDTO> getRecentNotices(Map<String, String> noticeMap); 	
 	
 	
 

@@ -1,5 +1,6 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 
 <jsp:include page="header/header.jsp" />
 
@@ -103,13 +104,15 @@ body{ background:var(--bg); }
 .list li:last-child{ border-bottom:none; }
 .item-title{ font-weight:700; }
 .notice-area{
-  min-height: 420px;
   background: var(--card);
   border: 1px solid var(--line);
   border-radius: var(--radius);
-  padding: 18px;
+  padding: 12px 18px; /* 위아래 패딩을 조금 줄임 */
   box-shadow: var(--shadow);
+  
 }
+
+
 
 /* 날씨 카드 */
 .weather {
@@ -180,12 +183,40 @@ body{ background:var(--bg); }
     </aside>
 
     <!-- 가운데: 공지 -->
-    <section>
-      <div class="notice-area">
-        <div class="item-title" style="margin-bottom:12px;">게시판 중 공지사항 불러오기</div>
-        <!-- 공지 내용 -->
+<!-- 가운데: 공지 -->
+<section>
+  <div class="notice-area">
+    <div class="item-title" style="margin-bottom:12px;">📢 코드온 최근 공지사항</div>
+
+    <c:choose>
+      <c:when test="${empty noticeList}">
+        <div style="color:#6b7280; text-align:center; padding:12px 0;">등록된 공지사항이 없습니다.</div>
+      </c:when>
+      <c:otherwise>
+        <ul class="list">
+  <c:forEach var="notice" items="${noticeList}">
+    <li style="display:flex; justify-content:space-between; align-items:center;">
+      <div>
+        <a href="${ctxPath}/board/view?boardSeq=${notice.boardSeq}" 
+                 style="font-weight:700; color:#1d4ed8; text-decoration:none; 
+                        background: #e0f2fe; padding:4px 8px; border-radius:6px; transition:all 0.2s;">
+                📝 ${notice.boardTitle}
+              </a>
+        <span style="color:#6b7280; font-size:0.9em; margin-left:4px;">
+          ${notice.memberName}님
+        </span>
       </div>
-    </section>
+      <div style="color:#6b7280; font-size:0.9em;">
+        <fmt:formatDate value="${notice.boardRegdate}" pattern="yyyy-MM-dd"/>
+      </div>
+    </li>
+  </c:forEach>
+</ul>
+      </c:otherwise>
+    </c:choose>
+
+  </div>
+</section>
 
     <!-- 우측: 오늘 일정 -->
     <aside>

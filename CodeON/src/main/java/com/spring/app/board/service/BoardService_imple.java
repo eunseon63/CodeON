@@ -108,6 +108,14 @@ public class BoardService_imple implements BoardService {
 	    }
 
 
+
+		@Override
+		public List<BoardDTO> getRecentNotices(Map<String, String> noticeMap) {
+			List<BoardDTO>noticeList =dao.getRecentNotices(noticeMap);
+			return noticeList;
+		}
+
+
 		
 
 

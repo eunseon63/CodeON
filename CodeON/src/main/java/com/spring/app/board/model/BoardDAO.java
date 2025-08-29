@@ -45,6 +45,10 @@ public interface BoardDAO {
 
 
 
+	 List<BoardDTO> getRecentNotices(Map<String, String> noticeMap);
+
+
+
 
 
 

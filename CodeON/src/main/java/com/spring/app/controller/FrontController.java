@@ -2,6 +2,8 @@ package com.spring.app.controller;
 
 import com.spring.app.attendance.domain.AttendanceRecord;
 import com.spring.app.attendance.service.AttendanceService;
+import com.spring.app.board.domain.BoardDTO;
+import com.spring.app.board.service.BoardService;
 import com.spring.app.domain.MemberDTO;
 import com.spring.app.domain.MemberProfileDTO;
 import com.spring.app.service.MyPageService;
@@ -17,7 +19,9 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import java.time.LocalDate;
 import java.time.YearMonth;
 import java.time.ZoneId;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Controller
 @RequestMapping("/")
@@ -26,6 +30,7 @@ public class FrontController {
 
     private final AttendanceService attendanceService;
     private final MyPageService myPageService;
+    private final BoardService boardService;
     private static final ZoneId KST = ZoneId.of("Asia/Seoul");
 
     @GetMapping("")
@@ -35,7 +40,7 @@ public class FrontController {
 
     @GetMapping("index")
     public String index(Model model,
-                        @SessionAttribute(name = "loginuser", required = false) MemberDTO loginuser,
+                        @SessionAttribute(name = "loginuser", required = false) MemberDTO loginuser,BoardDTO boardDto,
                         HttpServletRequest request,
                         RedirectAttributes ra) {
 
@@ -53,7 +58,6 @@ public class FrontController {
         LocalDate today = LocalDate.now(KST);
         List<AttendanceRecord> monthList = attendanceService.getMonthly(memberSeq, YearMonth.now());
 
-        // 오늘 레코드(문자열 비교를 위해 workDateStr 사용)
         AttendanceRecord todayRec = monthList.stream()
                 .filter(r -> today.toString().equals(r.getWorkDateStr()))
                 .findFirst()
@@ -68,9 +72,17 @@ public class FrontController {
         model.addAttribute("startTimeStr", startTimeStr);
         model.addAttribute("endTimeStr", endTimeStr);
 
-        // 출퇴근 박스에서 forEach를 그대로 쓰고 싶다면 전달
         model.addAttribute("attendanceList", monthList);
+
+        // ===== 사내게시판 공지사항만 불러오기 =====
+        Map<String, String> noticeMap = new HashMap<>();
+        noticeMap.put("fkBoardCategorySeq", "0"); // 공지사항 카테고리
+        noticeMap.put("fkBoardTypeSeq", "0");     // 사내게시판
+
+        List<BoardDTO> noticeList = boardService.getRecentNotices(noticeMap);
+        model.addAttribute("noticeList", noticeList);
 
         return "index"; // /WEB-INF/views/index.jsp
     }
+
 }

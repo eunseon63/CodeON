@@ -101,35 +101,39 @@
     </select>
 
     <!-- 게시글 총 개수 -->
-    <select id="getTotalCount" parameterType="map" resultType="int">
-        SELECT COUNT(*)
-        FROM tbl_board b
-        LEFT JOIN tbl_member m ON b.fk_member_seq = m.member_seq
-        WHERE 1=1
-        <if test="fkBoardTypeSeq != null">
-            AND b.fk_board_type_seq = #{fkBoardTypeSeq}
-        </if>
-        <if test="fkBoardCategorySeq != null and fkBoardCategorySeq != ''">
-            AND b.fk_board_category_seq = #{fkBoardCategorySeq}
-        </if>
-        <if test="searchWord != null and searchWord != ''">
-            <choose>
-                <when test="searchType == 'boardTitle'">
-                    AND b.board_title LIKE '%' || #{searchWord} || '%'
-                </when>
-                <when test="searchType == 'boardContent'">
-                    AND b.board_content LIKE '%' || #{searchWord} || '%'
-                </when>
-                <when test="searchType == 'titleContent'">
-                    AND (b.board_title LIKE '%' || #{searchWord} || '%' 
+<select id="getTotalCount" parameterType="map" resultType="int">
+    SELECT COUNT(*)
+    FROM tbl_board b
+    LEFT JOIN tbl_member m ON b.fk_member_seq = m.member_seq
+    WHERE 1=1
+    <if test="fkBoardTypeSeq != null">
+        AND b.fk_board_type_seq = #{fkBoardTypeSeq}
+    </if>
+    <if test="fkBoardCategorySeq != null and fkBoardCategorySeq != ''">
+        AND b.fk_board_category_seq = #{fkBoardCategorySeq}
+    </if>
+    <!-- 부서 조건 추가 -->
+    <if test="fkDepartmentSeq != null and fkDepartmentSeq != ''">
+        AND m.fk_department_seq = #{fkDepartmentSeq}
+    </if>
+    <if test="searchWord != null and searchWord != ''">
+        <choose>
+            <when test="searchType == 'boardTitle'">
+                AND b.board_title LIKE '%' || #{searchWord} || '%'
+            </when>
+            <when test="searchType == 'boardContent'">
+                AND b.board_content LIKE '%' || #{searchWord} || '%'
+            </when>
+            <when test="searchType == 'titleContent'">
+                AND (b.board_title LIKE '%' || #{searchWord} || '%' 
                      OR b.board_content LIKE '%' || #{searchWord} || '%')
-                </when>
-                <when test="searchType == 'memberName'">
-                    AND m.member_name LIKE '%' || #{searchWord} || '%'
-                </when>
-            </choose>
-        </if>
-    </select>
+            </when>
+            <when test="searchType == 'memberName'">
+                AND m.member_name LIKE '%' || #{searchWord} || '%'
+            </when>
+        </choose>
+    </if>
+</select>
 
     <!-- 페이징된 게시글 목록 -->
 <select id="boardListSearch_withPaging" parameterType="map" resultType="com.spring.app.board.domain.BoardDTO">
@@ -253,6 +257,28 @@
     )
 </select>
 
+
+<!-- 최근 작성된 공지사항 5개 블러오기 (index) -->
+
+<select id="getRecentNotices" parameterType="map" resultType="com.spring.app.board.domain.BoardDTO">
+  SELECT * FROM (
+    SELECT b.board_seq,
+           b.board_title,
+           b.board_regdate,
+           c.board_category_name AS boardCategoryName,
+           m.member_name,
+           ROW_NUMBER() OVER (ORDER BY b.board_regdate DESC) AS rnum
+    FROM tbl_board b
+    JOIN tbl_board_category c ON b.fk_board_category_seq = c.board_category_seq
+    JOIN tbl_member m   ON b.fk_member_seq = m.member_seq
+    WHERE b.fk_board_category_seq = #{fkBoardCategorySeq}
+      AND b.fk_board_type_seq   = #{fkBoardTypeSeq}
+      <if test="fkDepartmentSeq != null">
+        AND m.fk_department_seq = #{fkDepartmentSeq}
+      </if>
+  ) V
+  WHERE V.rnum &lt;= 5
+</select>
 
 <!-- 글 수정 -->
 <update id="updateBoard" parameterType="com.spring.app.board.domain.BoardDTO">

@@ -134,6 +134,8 @@
       <a href="<%= ctxPath %>/mypage">마이페이지</a>
       <a href="<%= ctxPath %>/chatting/multichat">웹채팅</a>
       <a href="<%= ctxPath %>/member/register">인사(인사팀만)</a>
+      <a href="<%= ctxPath %>/company/organization">사내 조직도</a>
+      
     </nav>
   </div>
 
