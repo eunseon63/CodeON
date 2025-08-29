@@ -15,16 +15,20 @@
        values(emailSeq.nextval, #{sendMemberEmail}, #{receiveMemberEmail}, #{emailTitle}, #{emailContent}, sysdate, default, default, #{emailSendImportant}, default, default)
    </insert>
    
-	<select id="getTotalCount" resultType="int" parameterType="string">
+   <!-- === 파일첨부가 없는 글쓰기 === -->
+   <insert id="write_withFile" parameterType="MailDTO">
+       insert into TBL_EMAIL(email_seq, send_member_email, receive_member_email, email_title, email_content, email_regdate, email_send_status, email_receive_status, email_send_important, email_receive_important, email_readstatus, EMAIL_FILENAME, EMAIL_ORGFILENAME, EMAIL_FILESIZE)
+       values(emailSeq.nextval, #{sendMemberEmail}, #{receiveMemberEmail}, #{emailTitle}, #{emailContent}, sysdate, default, default, #{emailSendImportant}, default, default, #{emailFilename}, #{emailOrgFilename}, #{emailFilesize})
+   </insert>
+   
+   
+	<select id="getTotalCount" resultType="int" parameterType="HashMap">
 	    SELECT COUNT(*)
 	    FROM tbl_email
-	    <where>
-	        <if test="searchWord != null and searchWord != ''">
-	            AND LOWER(email_content) LIKE CONCAT('%', LOWER(#{searchWord}), '%')
-	        </if>
-	    </where>
+		WHERE LOWER(email_content) LIKE '%' || LOWER(#{searchWord}) || '%'
 	</select>
 
+	
 	<select id="mailListSearch_withPaging" parameterType="HashMap" resultType="MailDTO">
 		select *
 		from tbl_email
@@ -33,8 +37,54 @@
 	            AND LOWER(email_content) LIKE CONCAT('%', LOWER(#{searchWord}), '%')
 	        </if>
 	    </where>
+	    order by email_regdate desc
 		OFFSET (to_number(#{currentShowPageNo})-1)*10 ROW    
 		FETCH NEXT 10 ROW ONLY
 	</select>
+	
+	<update id="updateImportant" parameterType="map">
+	    UPDATE tbl_email
+	    SET email_send_important = #{emailSendImportant}
+	    WHERE email_seq = #{emailSeq}
+	</update>
+	
+	<update id="updateReadStatus" parameterType="map">
+	    UPDATE tbl_email
+	    SET EMAIL_READSTATUS = #{emailReadStatus}
+	    WHERE email_seq = #{emailSeq}
+	</update>
+	
+	<select id="selectOne" parameterType="map" resultType="MailDTO">
+		select *
+		from tbl_email
+		WHERE email_seq = #{emailSeq}
+	</select>
+	
+	<select id="getCount" resultType="String">
+		select count(*)
+		from tbl_email
+		where EMAIL_READSTATUS = 0
+	</select>
+	
+	<select id="totalCount" resultType="String">
+		select count(*)
+		from tbl_email
+	</select>
+	
+	<!-- === 선택한 메일 삭제 === -->
+	<delete id="deleteMails" parameterType="java.util.List">
+	    DELETE FROM tbl_email
+	    WHERE email_seq IN
+	    <foreach collection="list" item="seq" open="(" separator="," close=")">
+	        #{seq}
+	    </foreach>
+	</delete>
+
+	<!-- === 선택한 메일 삭제 === -->
+	<delete id="deleteMail" parameterType="String">
+	    DELETE FROM tbl_email
+	    WHERE email_seq = #{emailSeq}
+	</delete>
+	
 
 </mapper>

@@ -135,4 +135,4 @@ select * from tbl_email;
 desc tbl_email;
 
 select count(*)
-from tbl_email
+from tbl_email;
