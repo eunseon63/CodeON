@@ -215,4 +215,64 @@ public class CommentController {
     
     
     
+    //추천
+    @PostMapping("recommend")
+    @ResponseBody
+    public Map<String, Object> recommend(@RequestParam("fkBoardSeq") Integer fkBoardSeq,
+                                         HttpSession session) {
+        Map<String, Object> result = new HashMap<>();
+        MemberDTO loginuser = (MemberDTO) session.getAttribute("loginuser");
+
+        if(loginuser == null) {
+            result.put("status", "fail");
+            return result;
+        }
+
+        Map<String, Object> paramMap = new HashMap<>();
+        paramMap.put("fkBoardSeq", fkBoardSeq);
+        paramMap.put("fkMemberSeq", loginuser.getMemberSeq());
+
+        try {
+            int added = commentService.addRecommend(paramMap);
+            if(added > 0) {
+                int newCount = commentService.getRecommendCount(fkBoardSeq);
+                result.put("status", "success");
+                result.put("newCount", newCount);
+            } else {
+                result.put("status", "already");
+            }
+        } catch(Exception e) {
+            e.printStackTrace();
+            result.put("status", "fail");
+        }
+
+        return result;
+    }
+
+    // 게시글 추천수 조회
+    @GetMapping("recommendCount")
+    @ResponseBody
+    public Map<String, Object> getRecommendCount(@RequestParam("fkBoardSeq") Integer fkBoardSeq) {
+        Map<String, Object> result = new HashMap<>();
+        if (fkBoardSeq == null) {
+            result.put("status", "fail");
+            result.put("count", 0);
+            return result;
+        }
+
+        int count = commentService.getRecommendCount(fkBoardSeq);
+        result.put("status", "success");
+        result.put("count", count);
+
+        return result;
+    }
+    
+    //추천한 사원 조회
+    @GetMapping("recommendMembers")
+    @ResponseBody
+    public List<String> getRecommendMembers(@RequestParam("fkBoardSeq") Integer fkBoardSeq) {
+        return commentService.getRecommendMemberNames(fkBoardSeq);
+    }
+    
+    
 }

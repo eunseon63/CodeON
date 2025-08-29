@@ -57,5 +57,20 @@ public class CommentService_imple implements CommentService {
 	 public int editReply(ReplyDTO rdto) {
 		  return dao.updateReply(rdto);
 	 }
+
+	 @Override
+	 public int addRecommend(Map<String, Object> paramMap) {
+		 return dao.insertRecommend(paramMap);
+	 }
+
+	 @Override
+	 public int getRecommendCount(Integer fkBoardSeq) {
+		  return dao.selectRecommendCount(fkBoardSeq);
+	 }
+	 
+	 @Override
+	 public List<String> getRecommendMemberNames(Integer fkBoardSeq) {
+		 return dao.selectRecommendMemberNames(fkBoardSeq);
+	 }
 	 
 }

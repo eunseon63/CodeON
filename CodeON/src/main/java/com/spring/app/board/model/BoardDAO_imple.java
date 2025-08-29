@@ -81,6 +81,11 @@ public class BoardDAO_imple implements BoardDAO {
 			
 		}
 
+		  @Override
+		    public String getDepartmentNameBySeq(Integer fkDepartmentSeq) {
+		        return sqlSession.selectOne("getDepartmentNameBySeq", fkDepartmentSeq);
+		    }
+
 		
 
 	   
