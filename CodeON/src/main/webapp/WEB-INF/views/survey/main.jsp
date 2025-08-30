@@ -96,10 +96,6 @@
           <div class="text-nowrap"><span class="fw-bold">전체참여자</span> : <span class="text-muted">—</span></div>
           <div class="text-nowrap"><span class="fw-bold">참여완료</span> : <span class="text-muted">—</span></div>
           <div class="text-nowrap"><span class="fw-bold">미참여</span> : <span class="text-muted">—</span></div>
-          <div class="btn-group">
-            <button class="btn btn-warning" disabled>공유하기</button>
-            <button class="btn btn-info text-white" disabled>설문결과 다운로드</button>
-          </div>
         </div>
       </div>
     </div>
@@ -551,6 +547,8 @@
   function loadStatsAndRenderChart(surveyId, surveyMeta){
     $("#chart-placeholder").html('<canvas id="statsChart" height="140"></canvas>');
     $.getJSON(CTX + '/api/surveys/' + surveyId + '/stats', function(stats){
+    	// ▼ [추가] 요약카드 갱신
+        renderSummaryFromStats(stats);
       if (!stats || !stats.questions || !stats.questions.length) {
         $("#chart-placeholder").text('통계 데이터가 없습니다.');
         return;
@@ -602,6 +600,26 @@
     // 생성 모달 핸들러
     bindCreateHandlers();
   });
+  
+	//▼ [추가] 요약카드 렌더
+  function renderSummaryFromStats(stats){
+    const $card = $('.card.shadow-sm.card-rounded .card-body').first();
+    // 숫자 채우기
+    $card.find('.text-nowrap').eq(0).find('span.text-muted').text(stats.eligible ?? '—');
+    $card.find('.text-nowrap').eq(1).find('span.text-muted').text(stats.totalResponses ?? '—');
+    $card.find('.text-nowrap').eq(2).find('span.text-muted').text(
+      (typeof stats.notAnswered === 'number') ? stats.notAnswered : 
+      ((typeof stats.eligible === 'number' && typeof stats.totalResponses === 'number') ? Math.max(0, stats.eligible - stats.totalResponses) : '—')
+    );
+ 	// 버튼 활성화 정책: 응답 1건 이상이면 다운로드 활성
+    const $btnShare = $card.find('.btn-group .btn-warning');
+    const $btnDown  = $card.find('.btn-group .btn-info');
+    $btnShare.prop('disabled', false).off('click').on('click', function(){ /* 공유 UI 붙이면 됨 */ });
+    $btnDown.prop('disabled', !(stats.totalResponses > 0)).off('click').on('click', function(){
+      // TODO: 서버에 export 엔드포인트가 생기면 교체
+      alert('다운로드는 추후 연동합니다.');
+    });
+  }
 </script>
 
 </body>
