@@ -146,6 +146,18 @@ public class SurveyService_imple implements SurveyService {
                     }
                 }
             }
+            
+         // ------- [추가] 요약카드 숫자 계산 -------
+            int eligible = surveyDAO.countEligibleMembers(surveyId);
+            int notAnswered = Math.max(0, eligible - total);
+
+            return SurveyStatsDTO.builder()
+                    .surveyId(surveyId)
+                    .totalResponses(total)
+                    .questions(stats)
+                    .eligible(eligible)          // ★
+                    .notAnswered(notAnswered)    // ★
+                    .build();
         }
 
         return SurveyStatsDTO.builder()
@@ -187,5 +199,6 @@ public class SurveyService_imple implements SurveyService {
             return new com.fasterxml.jackson.databind.ObjectMapper().readValue(json, Object.class);
         } catch (Exception e) { return null; }
     }
+    
     
 }

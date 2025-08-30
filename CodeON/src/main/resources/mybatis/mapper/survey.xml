@@ -50,7 +50,13 @@
       s.SURVEY_ID, s.TITLE, s.OWNER_MEMBER_SEQ,
       s.START_DATE, s.END_DATE,
       TO_CHAR(s.REG_DATE,'YYYY-MM-DD"T"HH24:MI:SS.FF3') AS REG_DATE_STR,
-      s.STATUS_CODE, s.QUESTIONS_JSON
+      CASE
+        WHEN s.STATUS_CODE = 'CLOSED' THEN 'CLOSED'                
+        WHEN TRUNC(SYSDATE) &lt; TRUNC(s.START_DATE) THEN 'UPCOMING'  
+        WHEN TRUNC(SYSDATE) &gt; TRUNC(s.END_DATE)   THEN 'CLOSED'    
+        ELSE 'OPEN'                                               
+      END AS STATUS_CODE,
+      s.QUESTIONS_JSON
     FROM TBL_SURVEY s
     WHERE
       ( #{memberSeq} = s.OWNER_MEMBER_SEQ
@@ -64,7 +70,14 @@
         )
       )
       <if test="status != null and status != ''">
-        AND s.STATUS_CODE = #{status}
+        AND (
+          CASE
+            WHEN s.STATUS_CODE = 'CLOSED' THEN 'CLOSED'
+            WHEN TRUNC(SYSDATE) &lt; TRUNC(s.START_DATE) THEN 'UPCOMING'
+            WHEN TRUNC(SYSDATE) &gt; TRUNC(s.END_DATE)   THEN 'CLOSED'
+            ELSE 'OPEN'
+          END
+        ) = #{status}
       </if>
     ORDER BY s.REG_DATE DESC
   </select>
@@ -74,7 +87,13 @@
       s.SURVEY_ID, s.TITLE, s.OWNER_MEMBER_SEQ,
       s.START_DATE, s.END_DATE,
       TO_CHAR(s.REG_DATE,'YYYY-MM-DD"T"HH24:MI:SS.FF3') AS REG_DATE_STR,
-      s.STATUS_CODE, s.QUESTIONS_JSON
+      CASE
+        WHEN s.STATUS_CODE = 'CLOSED' THEN 'CLOSED'
+        WHEN TRUNC(SYSDATE) &lt; TRUNC(s.START_DATE) THEN 'UPCOMING'
+        WHEN TRUNC(SYSDATE) &gt; TRUNC(s.END_DATE)   THEN 'CLOSED'
+        ELSE 'OPEN'
+      END AS STATUS_CODE,
+      s.QUESTIONS_JSON
     FROM TBL_SURVEY s
     WHERE s.SURVEY_ID = #{surveyId}
   </select>
@@ -130,5 +149,39 @@
     FROM TBL_SURVEY_RESP
     WHERE SURVEY_ID = #{surveyId}
   </select>
+
+  <!-- ▼ [추가] 설문 대상자의 전체 인원수(ALL / DEPT / MEMBER 조합 중복 제거) -->
+  <select id="countEligibleMembers" resultType="int" parameterType="long">
+	  SELECT COUNT(*) AS CNT
+	  FROM (
+	    /* ALL이 하나라도 있으면 전체 사원 */
+	    SELECT m.MEMBER_SEQ
+	      FROM TBL_MEMBER m
+	     WHERE EXISTS (
+	            SELECT 1 FROM TBL_SURVEY_TARGET t
+	             WHERE t.SURVEY_ID = #{surveyId}
+	               AND t.TARGET_TYPE = 'ALL'
+	          )
+	    UNION
+	    /* 부서 대상 */
+	    SELECT m.MEMBER_SEQ
+	      FROM TBL_MEMBER m
+	      JOIN TBL_SURVEY_TARGET t
+	        ON t.SURVEY_ID = #{surveyId}
+	       AND t.TARGET_TYPE = 'DEPT'
+	       AND m.FK_DEPARTMENT_SEQ = t.DEPT_SEQ
+	    UNION
+	    /* 개별 멤버 대상 */
+	    SELECT t.MEMBER_SEQ
+	      FROM TBL_SURVEY_TARGET t
+	     WHERE t.SURVEY_ID = #{surveyId}
+	       AND t.TARGET_TYPE = 'MEMBER'
+	  )
+	</select>
+	
+	<!-- ▼ [추가] 설문 응답자 수 -->
+	<select id="countResponsesBySurvey" resultType="int" parameterType="long">
+	  SELECT COUNT(*) FROM TBL_SURVEY_RESP WHERE SURVEY_ID = #{surveyId}
+	</select>
 
 </mapper>
