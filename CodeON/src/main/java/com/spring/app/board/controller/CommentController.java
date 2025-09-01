@@ -59,7 +59,7 @@ public class CommentController {
 
         MemberDTO loginuser = (MemberDTO) session.getAttribute("loginuser");
         Integer loginUserSeq = (loginuser != null ? loginuser.getMemberSeq() : null);
-
+        
         for (CommentDTO comment : commentList) {
             if (loginUserSeq != null && loginUserSeq.equals(comment.getFkMemberSeq())) {
                 comment.setMine(true);

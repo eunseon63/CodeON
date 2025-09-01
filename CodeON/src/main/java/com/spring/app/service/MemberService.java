@@ -55,5 +55,7 @@ public interface MemberService {
 	List<Map<String, Object>> memberCntByHireYear();
     List<Map<String, Object>> memberCntByHireYearGender();
 
+	
+
 }
 

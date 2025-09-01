@@ -31,4 +31,8 @@ public interface SurveyDAO {
                                @Param("memberSeq") Long memberSeq);
 
     List<String> selectAnswersJsonList(@Param("surveyId") Long surveyId);
+    
+    // ▼ [추가] 요약카드 계산용
+    int countEligibleMembers(@Param("surveyId") Long surveyId);
+    int countResponsesBySurvey(@Param("surveyId") Long surveyId);
 }

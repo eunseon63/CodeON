@@ -15,34 +15,23 @@
     <title>게시판 목록</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
-    
     <style>
-        body {
-            padding-top: 70px; 
-            padding-left: 20px;
-            padding-right: 20px;
-        }
-        .sidebar {
-            min-width: 200px;
-        }
-        .file-icon {
-            color: #007bff;
-        }
-        .comment-count {
-            color: gray;
-            font-size: 0.9em;
-        }
+        body { padding-top: 70px; padding-left: 20px; padding-right: 20px; }
+        .file-icon { color: #007bff; }
+        .comment-count { color: gray; font-size: 0.9em; }
+        /* 페이지바 ul/li 스타일 */
+        .page-bar ul { list-style: none; padding: 0; margin: 0; display: inline-block; }
+        .page-bar li { display: inline-block; margin: 0 3px; font-size: 12pt; }
+        .page-bar li.active { border: 1px solid gray; color: red; padding: 2px 4px; }
     </style>
 </head>
 <body>
 
 <div class="container-fluid">
     <div class="row">
-        <!-- Sidebar -->
-        
-
         <!-- Main Content -->
-        <div class="col-md-10">
+        <div class="col-md-12">
+
             <!-- 게시판 유형 버튼 -->
             <div class="d-flex justify-content-between align-items-center mt-4 mb-3">
                 <div>
@@ -55,19 +44,21 @@
                         onclick="location.href='${ctxPath}/board/add?fkBoardTypeSeq=${param.fkBoardTypeSeq}'">글쓰기</button>
             </div>
 
-			<!-- 로그인 유저 부서 표시 -->
-			<c:if test="${param.fkBoardTypeSeq == '1'}">
-				    <div class="mb-3 text-center">
-				        <span style="font-size:1.3rem; font-weight:bold;">
-				         	현재 로그인 계정 부서 :	${loginUserDeptName} 
-				        </span>
-				    </div>
-				</c:if>
+            <!-- 로그인 유저 부서 표시 -->
+            <c:if test="${param.fkBoardTypeSeq == '1'}">
+                <div class="mb-3 text-center" style="position:relative; z-index:1;">
+                    <span style="font-size:1.3rem; font-weight:bold;">
+                        현재 로그인 계정 부서 : ${loginUserDeptName}
+                    </span>
+                </div>
+            </c:if>
+
+            <!-- clearfix로 layout 문제 방지 -->
+            <div class="clearfix mb-3"></div>
+
             <!-- 카테고리 + 검색 -->
             <form class="d-flex align-items-center mb-3" method="get" action="${ctxPath}/board/list">
                 <input type="hidden" name="fkBoardTypeSeq" value="${param.fkBoardTypeSeq}" />
-                
-                
                 
                 <label class="me-2">카테고리:</label>
                 <select name="fkBoardCategorySeq" class="form-select me-3" style="width:150px;">
@@ -80,7 +71,6 @@
                 <select class="form-select me-2" name="searchType" style="width: 150px;">
                     <option value="boardTitle" ${param.searchType=='boardTitle'?'selected':''}>제목</option>
                     <option value="boardContent" ${param.searchType=='boardContent'?'selected':''}>내용</option>
-                   
                     <option value="titleContent" ${param.searchType=='titleContent'?'selected':''}>제목+내용</option>
                     <option value="memberName" ${param.searchType=='memberName'?'selected':''}>글쓴이</option>
                 </select>
@@ -113,7 +103,6 @@
                         <c:otherwise>
                             <c:forEach var="board" items="${boardList}">
                                 <tr>
-                                	
                                     <td>${board.boardSeq}</td>
                                     <td>${board.boardCategoryName}</td>
                                     <td>
@@ -128,8 +117,9 @@
                                     </td>
                                     <td>${board.boardReadcount}</td>
                                     <td>
-                                    <c:if test="${not empty board.boardFileSaveName}"> <i class="bi bi-paperclip file-icon"></i> 
-                                    </c:if>
+                                        <c:if test="${not empty board.boardFileSaveName}">
+                                            <i class="bi bi-paperclip file-icon"></i> 
+                                        </c:if>
                                     </td>
                                 </tr>
                             </c:forEach>
@@ -139,13 +129,16 @@
             </table>
 
             <!-- 페이지네이션 -->
-            <div class="text-center mt-4">
-                ${pageBar}
+            <div class="text-center mt-5 page-bar">
+                <c:out value="${pageBar}" escapeXml="false"/>
             </div>
-        </div>
+
+        </div>  
     </div>
 </div>
 
-<jsp:include page="/WEB-INF/views/footer/footer.jsp" />
 </body>
+
+
+
 </html>

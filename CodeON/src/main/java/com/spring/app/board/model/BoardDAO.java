@@ -18,9 +18,9 @@ public interface BoardDAO {
 	List<Map<String, Object>> getBoardCategoryList();
 
 
-	int getTotalCount(Map<String, String> paraMap);
+	int getTotalCount(Map<String, Object> paraMap);
 
-	List<BoardDTO> boardListSearch_withPaging(Map<String, String> paraMap);
+	List<BoardDTO> boardListSearch_withPaging(Map<String, Object> paraMap);
 
 
 
@@ -28,10 +28,10 @@ public interface BoardDAO {
 
 	void updateReadCount(String boardSeq); //조회수 증가
 
-	BoardDTO getPrevBoard(String boardSeq);
+	BoardDTO getPrevBoard(Map<String, Object> paraMap);
 
 
-	BoardDTO getNextBoard(String boardSeq);
+	BoardDTO getNextBoard(Map<String, Object> paraMap);
 
 
 
@@ -43,6 +43,12 @@ public interface BoardDAO {
 	List<BoardDTO> selectRecentNoticesFromTypes(Map<String, Object> p);
 
 	 String getDepartmentNameBySeq(Integer fkDepartmentSeq);
+
+
+
+
+
+
 
 
 

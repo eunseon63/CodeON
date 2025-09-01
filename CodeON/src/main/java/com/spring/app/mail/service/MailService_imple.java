@@ -44,6 +44,50 @@ public class MailService_imple implements MailService {
 		List<MailDTO> mailList = dao.mailListSearch_withPaging(paraMap);
 		return mailList;
 	}
+
+	// 별 업데이트
+	@Override
+	public int updateImportant(Map<String, String> paraMap) {
+		return dao.updateImportant(paraMap);
+	}
+
+	// 읽음 업데이트
+	@Override
+	public int updateReadStatus(Map<String, String> paraMap) {
+		return dao.updateReadStatus(paraMap);
+	}
+
+	// 메일 select
+	@Override
+	public MailDTO selectOne(String emailSeq) {
+		return dao.selectOne(emailSeq);
+	}
+
+	// 읽은 메일 개수
+	@Override
+	public String getCount() {
+		return dao.getCount();
+	}
+
+	// 총 메일 개수 구하기
+	@Override
+	public String getTotalCount() {
+		return dao.totalCount();
+	}
+
+	// 메일 여러개 삭제하기
+	@Override
+	public int deleteMails(List<Long> emailSeqList) {
+		return dao.deleteMails(emailSeqList);
+	}
+
+	// 메일 하나 삭제하기
+	@Override
+	public int deleteMail(String emailSeq) {
+		return dao.deleteMail(emailSeq);
+	}
+	
+	
 	
 	
 

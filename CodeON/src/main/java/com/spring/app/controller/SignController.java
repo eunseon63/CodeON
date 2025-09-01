@@ -259,7 +259,7 @@ public class SignController {
 
     /* ===================== 결재라인 설정 ===================== */
     @GetMapping("setting/line")
-    public String linePopup(@RequestParam(required = false) Long id, Model model) {
+    public String linePopup(@RequestParam(name = "id", required = false) Long id, Model model) {
         if (id != null) model.addAttribute("signline", signlineService.getLinesWithMembers(id));
         return "sign/signlinepopup";
     }
@@ -1074,7 +1074,7 @@ public class SignController {
     }
     
     @PostMapping("/downloadExcelFile")
-    public String downloadExcel(@RequestParam Long draftSeq, Model model) {
+    public String downloadExcel(@RequestParam(name = "draftSeq") Long draftSeq, Model model) {
         signService.exportDraftToExcel(draftSeq, model);
         return "excelDownloadView"; 
     }

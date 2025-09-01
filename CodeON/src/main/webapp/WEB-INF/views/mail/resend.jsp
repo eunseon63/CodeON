@@ -68,13 +68,13 @@
 			    <label for="sendMemberEmail" class="col-sm-2 col-form-label">보내는 사람</label>
 			    <div class="col-sm-10">
 			        <input type="email" class="form-control" id="sendMemberEmail" name="sendMemberEmail"
-			               value="${sessionScope.loginuser.memberEmail}" readonly>
+			               value="${sessionScope.receiveMemberEmail}" readonly>
 			    </div>
 			</div>
             <div class="mb-3 row">
                 <label for="receiveMemberEmail" class="col-sm-2 col-form-label">받는 사람</label>
                 <div class="col-sm-10">
-                    <input type="email" class="form-control" id="receiveMemberEmail" name="receiveMemberEmail" required>
+                    <input type="email" class="form-control" id="receiveMemberEmail" name="receiveMemberEmail" value="${sessionScope.sendMemberEmail}" readonly>
                 </div>
             </div>
 
