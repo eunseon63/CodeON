@@ -135,7 +135,6 @@ public class BoardController {
         // 부서명 조회
         String loginUserDeptName = "부서없음";
         if (userDept != null) {
-            // DB에서 부서명을 가져오는 서비스 메소드 필요
             loginUserDeptName = boardService.getDepartmentNameBySeq(userDept);
             if (loginUserDeptName == null || loginUserDeptName.isEmpty()) {
                 loginUserDeptName = "부서없음";
@@ -143,28 +142,37 @@ public class BoardController {
         }
         mav.addObject("loginUserDeptName", loginUserDeptName);
 
-        // 이전 페이지 이동 시 referer 체크
+        // 이전 페이지 referer 체크
         String referer = request.getHeader("Referer");
         if (referer == null) {
             mav.setViewName("redirect:/index");
             return mav;
         }
 
-        Map<String, String> paraMap = new HashMap<>();
+        // -----------------------
+        // paraMap 수정: Map<String, Object> 사용
+        // -----------------------
+        Map<String, Object> paraMap = new HashMap<>();
         paraMap.put("searchType", searchType);
         paraMap.put("searchWord", searchword);
         paraMap.put("fkBoardCategorySeq", fkBoardCategorySeq);
-        paraMap.put("fkBoardTypeSeq", fkBoardTypeSeq);
+        paraMap.put("fkBoardTypeSeq", Integer.parseInt(fkBoardTypeSeq));
 
         // 부서게시판 필터링
         if ("1".equals(fkBoardTypeSeq) && userDept != null) {
-            paraMap.put("fkDepartmentSeq", String.valueOf(userDept));
+            paraMap.put("fkDepartmentSeq", userDept); // Integer 그대로
         }
 
+        // -----------------------
         // 페이징 계산
+        // -----------------------
         int totalCount = boardService.getTotalCount(paraMap);
+        System.out.println("totalCount 확인 >>> " + totalCount);
+        
+
         int sizePerPage = 10;
         int totalPage = (int) Math.ceil((double) totalCount / sizePerPage);
+        System.out.println(">>> totalPage = " + totalPage);
 
         int pageNo = 1;
         try {
@@ -177,9 +185,9 @@ public class BoardController {
         int startRno = ((pageNo - 1) * sizePerPage) + 1;
         int endRno = startRno + sizePerPage - 1;
 
-        paraMap.put("sizePerPage", String.valueOf(sizePerPage));
-        paraMap.put("startRno", String.valueOf(startRno));
-        paraMap.put("endRno", String.valueOf(endRno));
+        paraMap.put("sizePerPage", sizePerPage);
+        paraMap.put("startRno", startRno);
+        paraMap.put("endRno", endRno);
 
         List<BoardDTO> boardList = boardService.boardListSearch_withPaging(paraMap);
         mav.addObject("boardList", boardList);
@@ -188,7 +196,9 @@ public class BoardController {
             mav.addObject("paraMap", paraMap);
         }
 
+        // -----------------------
         // 페이징바 생성
+        // -----------------------
         int blockSize = 10;
         int loop = 1;
         int pageStart = ((pageNo - 1) / blockSize) * blockSize + 1;
@@ -197,27 +207,30 @@ public class BoardController {
 
         String pageBar = "<ul style='list-style:none;'>";
 
-        pageBar += "<li style='display:inline-block; width:70px; font-size:12pt;'><a href='" + url + "?searchType=" + searchType + "&searchword=" + searchword + fkBoardTypeParam + "&currentShowPageNo=1'>[맨처음]</a></li>";
+        if (totalPage > 0) {
+            pageBar += "<li style='display:inline-block; width:70px; font-size:12pt;'><a href='" + url + "?searchType=" + searchType + "&searchword=" + searchword + fkBoardTypeParam + "&currentShowPageNo=1'>[맨처음]</a></li>";
 
-        if (pageStart != 1) {
-            pageBar += "<li style='display:inline-block; width:50px; font-size:12pt;'><a href='" + url + "?searchType=" + searchType + "&searchword=" + searchword + fkBoardTypeParam + "&currentShowPageNo=" + (pageStart - 1) + "'>[이전]</a></li>";
-        }
-
-        while (!(loop > blockSize || pageStart > totalPage)) {
-            if (pageStart == pageNo) {
-                pageBar += "<li style='display:inline-block; width:30px; font-size:12pt; border:solid 1px gray; color:red; padding:2px 4px;'>" + pageStart + "</li>";
-            } else {
-                pageBar += "<li style='display:inline-block; width:30px; font-size:12pt;'><a href='" + url + "?searchType=" + searchType + "&searchword=" + searchword + fkBoardTypeParam + "&currentShowPageNo=" + pageStart + "'>" + pageStart + "</a></li>";
+            if (pageStart != 1) {
+                pageBar += "<li style='display:inline-block; width:50px; font-size:12pt;'><a href='" + url + "?searchType=" + searchType + "&searchword=" + searchword + fkBoardTypeParam + "&currentShowPageNo=" + (pageStart - 1) + "'>[이전]</a></li>";
             }
-            loop++;
-            pageStart++;
+
+            while (!(loop > blockSize || pageStart > totalPage)) {
+                if (pageStart == pageNo) {
+                    pageBar += "<li style='display:inline-block; width:30px; font-size:12pt; border:solid 1px gray; color:red; padding:2px 4px;'>" + pageStart + "</li>";
+                } else {
+                    pageBar += "<li style='display:inline-block; width:30px; font-size:12pt;'><a href='" + url + "?searchType=" + searchType + "&searchword=" + searchword + fkBoardTypeParam + "&currentShowPageNo=" + pageStart + "'>" + pageStart + "</a></li>";
+                }
+                loop++;
+                pageStart++;
+            }
+
+            if (pageStart <= totalPage) {
+                pageBar += "<li style='display:inline-block; width:50px; font-size:12pt;'><a href='" + url + "?searchType=" + searchType + "&searchword=" + searchword + fkBoardTypeParam + "&currentShowPageNo=" + pageStart + "'>[다음]</a></li>";
+            }
+
+            pageBar += "<li style='display:inline-block; width:70px; font-size:12pt;'><a href='" + url + "?searchType=" + searchType + "&searchword=" + searchword + fkBoardTypeParam + "&currentShowPageNo=" + totalPage + "'>[마지막]</a></li>";
         }
 
-        if (pageStart <= totalPage) {
-            pageBar += "<li style='display:inline-block; width:50px; font-size:12pt;'><a href='" + url + "?searchType=" + searchType + "&searchword=" + searchword + fkBoardTypeParam + "&currentShowPageNo=" + pageStart + "'>[다음]</a></li>";
-        }
-
-        pageBar += "<li style='display:inline-block; width:70px; font-size:12pt;'><a href='" + url + "?searchType=" + searchType + "&searchword=" + searchword + fkBoardTypeParam + "&currentShowPageNo=" + totalPage + "'>[마지막]</a></li>";
         pageBar += "</ul>";
         mav.addObject("pageBar", pageBar);
 
@@ -225,6 +238,12 @@ public class BoardController {
         mav.addObject("currentShowPageNo", pageNo);
         mav.addObject("sizePerPage", sizePerPage);
 
+        
+      
+        System.out.println(">>> totalPage = " + totalPage);
+        System.out.println(">>> pageNo = " + pageNo);
+        System.out.println("paraMap = " + paraMap);
+        System.out.println(pageBar);
         // 현재 URL 저장 (쿠키)
         String listURL = MyUtil.getCurrentURL(request);
         Cookie cookie = new Cookie("listURL", listURL);
@@ -239,6 +258,7 @@ public class BoardController {
     @GetMapping("view")
     public String view(@RequestParam("boardSeq") String boardSeq,
                        Model model,
+                       HttpServletRequest request,
                        RedirectAttributes redirectAttrs) {
 
         // 게시글 상세 조회
@@ -251,19 +271,38 @@ public class BoardController {
 
         // 추천 수 조회
         int recommendCount = commentService.getRecommendCount(Integer.valueOf(boardSeq));
-        board.setRecommendCount(recommendCount); // BoardDTO에 recommendCount 필드 있어야 함
+        board.setRecommendCount(recommendCount);
 
-        // 이전/다음 글 조회
-        BoardDTO prevBoard = boardService.getPrevBoard(boardSeq);
-        BoardDTO nextBoard = boardService.getNextBoard(boardSeq);
+        // --- [여기 추가] ---
+        HttpSession session = request.getSession();
+        MemberDTO loginUser = (MemberDTO) session.getAttribute("loginuser");
+        Integer userDept = (loginUser != null) ? loginUser.getFkDepartmentSeq() : null;
+
+        // 이전/다음 글 조회를 위한 paraMap
+        Map<String, Object> paraMap = new HashMap<>();
+        paraMap.put("boardSeq", boardSeq);
+        paraMap.put("fkBoardTypeSeq", board.getFkBoardTypeSeq());
+
+        // 부서게시판이라면 부서번호도 같이 조건으로 줌
+        if ("1".equals(board.getFkBoardTypeSeq()) && userDept != null) {
+            paraMap.put("fkDepartmentSeq", userDept);
+        }
+
+        BoardDTO prevBoard = boardService.getPrevBoard(paraMap);
+        BoardDTO nextBoard = boardService.getNextBoard(paraMap);
 
         // JSP로 데이터 전달
         model.addAttribute("board", board);
         model.addAttribute("prevBoard", prevBoard);
         model.addAttribute("nextBoard", nextBoard);
 
-        return "board/view"; // view.jsp
+        return "board/view";
     }
+
+   
+    
+    
+    
  // 1. 글 수정 페이지 이동(GET)
     @GetMapping("edit")
     public ModelAndView editForm(@RequestParam("boardSeq") String boardSeq,

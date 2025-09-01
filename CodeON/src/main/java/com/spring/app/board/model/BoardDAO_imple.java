@@ -40,12 +40,12 @@ public class BoardDAO_imple implements BoardDAO {
 		}
 
 		@Override
-		public int getTotalCount(Map<String, String> paraMap) {
+		public int getTotalCount(Map<String, Object> paraMap) {
 			return sqlSession.selectOne("board.getTotalCount",paraMap);
 		}
 
 		@Override
-		public List<BoardDTO> boardListSearch_withPaging(Map<String, String> paraMap) {
+		public List<BoardDTO> boardListSearch_withPaging(Map<String, Object> paraMap) {
 			return sqlSession.selectList("board.boardListSearch_withPaging",paraMap);
 		}
 
@@ -60,15 +60,21 @@ public class BoardDAO_imple implements BoardDAO {
 			
 		}
 		
-	    @Override
-	    public BoardDTO getPrevBoard(String boardSeq) {
-	        return sqlSession.selectOne("board.getPrevBoard", boardSeq);
-	    }
+	  
+		// 상세페이지 이전글 다음글 
+		@Override
+		public BoardDTO getPrevBoard(Map<String, Object> paraMap) {
+		    return sqlSession.selectOne("board.getPrevBoard", paraMap);
+		}
 
-	    @Override
-	    public BoardDTO getNextBoard(String boardSeq) {
-	        return sqlSession.selectOne("board.getNextBoard", boardSeq);
-	    }
+	
+		@Override
+		public BoardDTO getNextBoard(Map<String, Object> paraMap) {
+		    return sqlSession.selectOne("board.getNextBoard", paraMap);
+		}
+		
+		
+		
 
 		@Override
 		public int delete(String boardSeq) {
@@ -90,6 +96,9 @@ public class BoardDAO_imple implements BoardDAO {
 		        return sqlSession.selectOne("getDepartmentNameBySeq", fkDepartmentSeq);
 		    }
 
+	
+
+	
 
 
 }

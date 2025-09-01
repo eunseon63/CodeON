@@ -1,6 +1,7 @@
 package com.spring.app.mail.controller;
 
 import java.io.File;
+import java.io.PrintWriter;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -10,6 +11,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.ModelAndView;
 
@@ -155,10 +157,10 @@ public class MailController {
 		String url = "list";
 		
 		// === [맨처음][이전] 만들기 === // 
-		pageBar += "<li style='display: inline-block; width: 70px; font-size: 12px;'><a href='" + url + "?searchWord=" + searchWord + "&currentShowPageNo=1'>[맨처음]</a></li>";
+		pageBar += "<li style='display: inline-block; width: 70px; font-size: 12px;'><a href='" + url + "?searchWord=" + searchWord + "&currentShowPageNo=1'>[<<]</a></li>";
 		
 		if (pageNo != 1) {
-			pageBar += "<li style='display: inline-block; width: 50px; font-size: 12px;'><a href='" + url + "?searchWord=" + searchWord + "&currentShowPageNo=" + (pageNo-1) + "'>[이전]</a></li>";	
+			pageBar += "<li style='display: inline-block; width: 50px; font-size: 12px;'><a href='" + url + "?searchWord=" + searchWord + "&currentShowPageNo=" + (pageNo-1) + "'>[<]</a></li>";	
 		}
 		
 		while(!(loop > blockSize || pageNo > totalPage)) {
@@ -175,9 +177,9 @@ public class MailController {
 		
 		// === [다음][마지막] 만들기 === // 
 		if (pageNo <= totalPage) {
-			pageBar += "<li style='display: inline-block; width: 50px; font-size: 12px;'><a href='" + url + "?searchWord=" + searchWord + "&currentShowPageNo=" + pageNo + "'>[다음]</a></li>";			
+			pageBar += "<li style='display: inline-block; width: 50px; font-size: 12px;'><a href='" + url + "?searchWord=" + searchWord + "&currentShowPageNo=" + pageNo + "'>[>]</a></li>";			
 		}
-		pageBar += "<li style='display: inline-block; width: 70px; font-size: 12px;'><a href='" + url + "?searchWord=" + searchWord + "&currentShowPageNo=" + totalPage + "'>[마지막]</a></li>";			
+		pageBar += "<li style='display: inline-block; width: 70px; font-size: 12px;'><a href='" + url + "?searchWord=" + searchWord + "&currentShowPageNo=" + totalPage + "'>[>>]</a></li>";			
 		
 		pageBar += "</ul>";
 		
@@ -218,6 +220,14 @@ public class MailController {
 		return mav;
 	}
 	
+	@GetMapping("view")
+    public ModelAndView viewMail(@RequestParam("emailSeq") String emailSeq, ModelAndView mav) {
+		MailDTO mail = service.selectOne(emailSeq);
+		mav.addObject("mail", mail);
+		mav.setViewName("mail/view");
+        return mav;
+    }
+	
 	@GetMapping("send")
 	public String send() {
 		return "mail/send";
@@ -236,6 +246,7 @@ public class MailController {
 		mav.setViewName("mail/write");
 		return mav;
 	}
+	
 
 	
 	@PostMapping("write")
@@ -332,6 +343,140 @@ public class MailController {
 		
 	}
 	
+	@PostMapping("updateImportant")
+	@ResponseBody
+	public Map<String, Integer> updateImportant(@RequestParam Map<String, String> paraMap) {
+	    // 중요 표시를 변경하고 결과 값 반환
+	    int result = service.updateImportant(paraMap);
+	    
+	    // 결과 반환 (n: 1이면 성공, 0이면 실패)
+	    Map<String, Integer> response = new HashMap<>();
+	    response.put("n", result); // result가 1이면 성공, 0이면 실패
+	    
+	    return response;
+	}
 	
+	@PostMapping("updateReadStatus")
+	@ResponseBody
+	public Map<String, Integer> updateReadStatus(@RequestParam Map<String, String> paraMap) {
+		
+		int result = service.updateReadStatus(paraMap);
+		Map<String, Integer> response = new HashMap<>();
+		response.put("n", result);
+		
+		return response;
+	}
+	
+	@GetMapping("getCount")
+	@ResponseBody
+	public Map<String, String> getCount() {
+		Map<String, String> response = new HashMap<>();
+		
+		String count = service.getCount();
+		String totalCount = service.getTotalCount();
+		
+		response.put("count", count);
+		response.put("totalCount", totalCount);
+		
+		return response;
+	}
+	
+	// 메일 여러개 삭제하기
+	@PostMapping("deleteMails")
+	@ResponseBody
+	public Map<String, Object> deleteMails(@RequestParam("emailSeqList") List<Long> emailSeqList) {
+		int n = service.deleteMails(emailSeqList);
+		
+		Map<String, Object> response = new HashMap<>();
+		response.put("n", n);
+		
+		return response;
+	}
+	
+	// 메일 하나 삭제하기
+	@PostMapping("deleteMail")
+	@ResponseBody
+	public Map<String, Object> deleteMail(@RequestParam("emailSeq") String emailSeq) {
+		int n = service.deleteMail(emailSeq);
+		
+		Map<String, Object> response = new HashMap<>();
+		response.put("n", n);
+		
+		return response;
+	}
+	
+	// 첨부파일 다운로드 받기
+	@GetMapping("download")
+	public void requiredLogin_downloadComment(HttpServletRequest request,
+			   						   		  HttpServletResponse response) {
+		
+		String seq = request.getParameter("emailSeq");
 
+	    response.setContentType("text/html; charset=UTF-8");
+	    
+	    PrintWriter out = null;
+	    // out 은 웹브라우저에 기술하는 대상체라고 생각하자.
+	    
+	    Map<String, String> paraMap = new HashMap<>();
+	    paraMap.put("seq", seq);
+	    
+	    MailDTO mailDto = service.selectOne(seq);
+	    
+	    try {
+		    if (mailDto == null || (mailDto != null && mailDto.getEmailFilename() == null)) {
+		    	out = response.getWriter();
+	            // out 은 웹브라우저에 기술하는 대상체라고 생각하자.
+	            
+	            out.println("<script type='text/javascript'>alert('파일다운로드가 불가합니다.'); history.back();</script>");
+	            return;
+		    } else {
+		    	// 정상적으로 다운로드가 되어질 경우
+		    	String fileName = mailDto.getEmailFilename();
+		    	// 바로 WAS 디스크에 저장된 파일명이다.
+		    	
+		    	String orgFilename= mailDto.getEmailOrgFilename();
+		    	// 다룬로드시 보여줄 파일명
+		    	
+		    	/*
+	               첨부파일이 저장되어있는 WAS(톰캣) 디스크 경로명을 알아와야만 다운로드를 해줄 수 있다.
+	               이 경로는 우리가 파일첨부를 위해서 @PostMapping("add") 에서 설정해두었던 경로와 똑같아야 한다.    
+	            */
+	            // WAS 의 webapp 의 절대경로를 알아와야 한다.
+	            HttpSession session = request.getSession();
+	            String root = session.getServletContext().getRealPath("/");
+	            
+				// System.out.println(root);
+				// C:\NCS\worksapce_spring_boot_17\myspring\src\main\webapp\
+				
+				String path = root + "resources" + File.separator + "files";
+				// path 가 첨부파일이 저장될 WAS(톰캣)의 폴더가 된다.
+			    // System.out.println("~~~ 확인용 path ==> " + path);
+			    // ~~~ 확인용 path ==> C:\NCS\worksapce_spring_boot_17\myspring\src\main\webapp\resources\files
+				
+				// *** file 다운로드하기 *** //
+				boolean flag = false; // file 다운로드 성공, 실패인지 여부를 알려주는 용도
+				// file 다운로드 성공시 flag 는 true,
+	            // file 다운로드 실패시 flag 는 false 를 가진다.
+				flag = fileManager.doFileDownload(fileName, orgFilename, path, response);
+				
+				if(!flag) {
+	               // 다운로드가 실패한 경우 메시지를 띄운다.
+	               out = response.getWriter();
+	               // out 은 웹브라우저에 기술하는 대상체라고 생각하자.
+	               
+	               out.println("<script type='text/javascript'>alert('파일다운로드가 실패되었습니다.'); history.back();</script>");
+	            }
+		    }
+		    
+	    } catch (Exception e) {
+	    	try {
+		    	out = response.getWriter();
+	            // out 은 웹브라우저에 기술하는 대상체라고 생각하자.
+	            
+	            out.println("<script type='text/javascript'>alert('파일다운로드가 불가합니다.'); history.back();</script>");
+	    	} catch (Exception e1) {
+	    		e1.printStackTrace();
+	    	}
+	    }
+	}
 }
