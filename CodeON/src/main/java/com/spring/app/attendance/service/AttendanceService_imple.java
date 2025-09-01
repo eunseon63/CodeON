@@ -76,16 +76,17 @@ public class AttendanceService_imple implements AttendanceService {
     public List<AttendanceRecord> getMonthly(int memberSeq, YearMonth ym) {
         List<AttendanceRecord> list = attendanceDAO.selectMonthly(memberSeq, ym);
         for (AttendanceRecord att : list) {
-            if (att.getStartTime() != null && att.getEndTime() != null) {
+            if (att.getStartTime() != null && att.getEndTime() != null) {	// 출퇴근 시간이 모두 있는 경우에만
+            	// 총 근무시간 계산하여 4h 초과시 60분 차감 (점심시간 공제)
                 long minutes = Duration.between(att.getStartTime(), att.getEndTime()).toMinutes();
                 if (minutes < 0) minutes = 0;
-                long adjusted = (minutes > 240 ? minutes - 60 : minutes); // ★ 4h 초과 60분 차감
+                long adjusted = (minutes > 240 ? minutes - 60 : minutes); 
                 att.setWorkedMinutes((int) adjusted);
 
                 long h = adjusted / 60;
                 long m = adjusted % 60;
                 att.setWorkedTimeStr(String.format("%02d:%02d", h, m));
-            } else {
+            } else {	// 출퇴근 시간이 없다면 null 처리
                 att.setWorkedMinutes(null);
                 att.setWorkedTimeStr(null);
             }
