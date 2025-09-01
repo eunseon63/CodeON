@@ -41,7 +41,7 @@ public class BoardController {
     
     // 글쓰기 폼 요청(GET) 
     @GetMapping("add")
-    public ModelAndView addForm(@RequestParam(value = "fk_board_type_seq", required = false) Integer fkBoardTypeSeq,
+    public ModelAndView addForm(@RequestParam(value = "fkBoardTypeSeq", required = false) Integer fkBoardTypeSeq,
                                 HttpSession session,                    
                                 ModelAndView mav) {
         MemberDTO loginuser = (MemberDTO) session.getAttribute("loginuser");
@@ -157,7 +157,7 @@ public class BoardController {
         paraMap.put("searchWord", searchword);
         paraMap.put("fkBoardCategorySeq", fkBoardCategorySeq);
         paraMap.put("fkBoardTypeSeq", Integer.parseInt(fkBoardTypeSeq));
-
+        
         // 부서게시판 필터링
         if ("1".equals(fkBoardTypeSeq) && userDept != null) {
             paraMap.put("fkDepartmentSeq", userDept); // Integer 그대로
@@ -167,7 +167,7 @@ public class BoardController {
         // 페이징 계산
         // -----------------------
         int totalCount = boardService.getTotalCount(paraMap);
-        System.out.println("totalCount 확인 >>> " + totalCount);
+     
         
 
         int sizePerPage = 10;
@@ -190,6 +190,17 @@ public class BoardController {
         paraMap.put("endRno", endRno);
 
         List<BoardDTO> boardList = boardService.boardListSearch_withPaging(paraMap);
+        
+        // 이번 주 인기글
+        Integer deptFilter = "1".equals(fkBoardTypeSeq) ? userDept : null;
+        List<BoardDTO> weeklyPopular = boardService.getWeeklyPopularBoard(Integer.parseInt(fkBoardTypeSeq), deptFilter);
+        mav.addObject("weeklyPopular", weeklyPopular);
+        
+        for (BoardDTO board : boardList) {
+            int recommendCount = commentService.getRecommendCount(board.getBoardSeq());
+            board.setRecommendCount(recommendCount);
+        } //추천수 recommendCount 가져와서 boardList에 추가 
+        
         mav.addObject("boardList", boardList);
 
         if (!"".equals(searchType)) {
@@ -239,16 +250,11 @@ public class BoardController {
         mav.addObject("sizePerPage", sizePerPage);
 
         
-      
-        System.out.println(">>> totalPage = " + totalPage);
-        System.out.println(">>> pageNo = " + pageNo);
-        System.out.println("paraMap = " + paraMap);
-        System.out.println(pageBar);
         // 현재 URL 저장 (쿠키)
         String listURL = MyUtil.getCurrentURL(request);
         Cookie cookie = new Cookie("listURL", listURL);
         cookie.setMaxAge(24 * 60 * 60);
-        cookie.setPath("/myspring/board/");
+        cookie.setPath("/CodeOn/board/");
         response.addCookie(cookie);
 
         mav.setViewName("board/list");
@@ -273,7 +279,7 @@ public class BoardController {
         int recommendCount = commentService.getRecommendCount(Integer.valueOf(boardSeq));
         board.setRecommendCount(recommendCount);
 
-        // --- [여기 추가] ---
+        
         HttpSession session = request.getSession();
         MemberDTO loginUser = (MemberDTO) session.getAttribute("loginuser");
         Integer userDept = (loginUser != null) ? loginUser.getFkDepartmentSeq() : null;
@@ -457,5 +463,4 @@ public class BoardController {
         return result;
     }
 
-    
 }

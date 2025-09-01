@@ -121,6 +121,20 @@ public class BoardService_imple implements BoardService {
 
 	
 
+
+
+		@Override
+		public List<BoardDTO> getWeeklyPopularBoard(int fkBoardTypeSeq, Integer fkDepartmentSeq) {
+			 Map<String,Object> paraMap = new HashMap<>();
+			    paraMap.put("fkBoardTypeSeq", fkBoardTypeSeq);
+			    paraMap.put("fkDepartmentSeq", fkDepartmentSeq); // null이면 전체
+			    return dao.selectWeeklyPopularBoard(paraMap);
+		}
+
+
+
+	
+
 		
 
 

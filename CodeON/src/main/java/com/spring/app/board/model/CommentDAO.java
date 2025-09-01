@@ -29,8 +29,16 @@ public interface CommentDAO {
 
 		int insertRecommend(Map<String, Object> paramMap);
 
+		int removeRecommend(Map<String, Object> paramMap);
+		
 		int selectRecommendCount(Integer fkBoardSeq);
 
 		List<String> selectRecommendMemberNames(Integer fkBoardSeq);
+
+		int existsRecommend(Map<String, Object> paramMap);
+
+	
+
+		
 	    
 }

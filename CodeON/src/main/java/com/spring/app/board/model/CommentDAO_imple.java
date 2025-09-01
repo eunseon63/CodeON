@@ -98,6 +98,20 @@ public class CommentDAO_imple implements CommentDAO {
 		public List<String> selectRecommendMemberNames(Integer fkBoardSeq) {
 			return sqlSession.selectList("comment.selectRecommendMemberNames", fkBoardSeq);
 		}
+
+
+
+		@Override
+		public int removeRecommend(Map<String, Object> paramMap) {
+			 return sqlSession.delete("comment.deleteRecommend", paramMap);
+		}
+
+
+
+		@Override
+		public int existsRecommend(Map<String, Object> paramMap) {
+			  return sqlSession.selectOne("comment.existsRecommend", paramMap);
+		}
 		
 		
 		

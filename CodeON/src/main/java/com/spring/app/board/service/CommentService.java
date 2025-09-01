@@ -34,14 +34,24 @@ public interface CommentService {
 
 		int editReply(ReplyDTO rdto);
 
+		// 유저의 추천 상태 판별
+		boolean existsRecommend(Map<String, Object> paramMap);
+		
+		
 		// 추천 추가
 		int addRecommend(Map<String, Object> paramMap);
+		
 
+		// 추천 지우기
+		int removeRecommend(Map<String, Object> paramMap);
+
+		
 		// 추천 수 조회
 		int getRecommendCount(Integer fkBoardSeq);
 
 		//추천한 사원 조회
 		List<String> getRecommendMemberNames(Integer fkBoardSeq);
+
 
 
 		
