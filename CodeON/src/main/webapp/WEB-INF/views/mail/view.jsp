@@ -18,13 +18,13 @@
     // 중요 표시 토글
     function toggleImportant(icon) {
         const emailSeq = $(icon).data('emailseq');
-        const currentStatus = $(icon).data('emailimportant');
+        const currentStatus = $(icon).data('importantStatus');
         const newStatus = currentStatus == 1 ? 0 : 1;
 
         $.ajax({
             url: "<%= ctxPath%>/mail/updateImportant",
             type: "POST",
-            data: { emailSeq: emailSeq, emailSendImportant: newStatus },
+            data: { emailSeq: emailSeq, importantStatus: newStatus },
             success: function(response) {
                 if (response.n == 1) {
                     if (newStatus == 1) {
@@ -32,7 +32,7 @@
                     } else {
                         $(icon).removeClass('bi-star-fill text-warning').addClass('bi-star');
                     }
-                    $(icon).data('emailimportant', newStatus);
+                    $(icon).data('importantStatus', newStatus);
                 } else {
                     alert("중요 표시 변경 실패");
                 }
@@ -69,33 +69,41 @@
 <!-- 메일 상세 페이지 -->
 <main style="margin-left: 240px; padding-top: 20px;">
     <div class="container-fluid">
+		<div class="mb-3">
+			<span class="text-primary fw-bold" style="cursor:pointer;"
+			      onclick="location.href='${prevPage}'">
+			   < 목록보기
+			</span>
+		</div>
+    
         <div class="card shadow-sm">
-            <!-- 헤더 -->
-            <div class="card-header d-flex justify-content-between align-items-center">
-                <div>
-                    <i class="bi ${mail.emailSendImportant == 1 ? 'bi-star-fill text-warning' : 'bi-star'}"
-                       style="cursor:pointer;"
-                       data-emailseq="${mail.emailSeq}"
-                       data-emailimportant="${mail.emailSendImportant}"
-                       title="중요"
-                       onclick="toggleImportant(this)"></i>
-                    <span class="ms-2 fw-bold">${mail.emailTitle}</span>
-                </div>
-                <div>
-                    <button class="btn btn-sm btn-primary"
-                            onclick="location.href='${ctxPath}/mail/resend?sendMemberEmail=${mail.sendMemberEmail}&emailSeq=${mail.emailSeq}'">
-                        답장
-                    </button>
-                    <button class="btn btn-sm btn-danger" onclick="deleteMail(${mail.emailSeq})">
-                        삭제
-                    </button>
-                </div>
-            </div>
+			<!-- 헤더 -->
+			<div class="card-header d-flex justify-content-between align-items-center">
+			    <div>
+			        <i class="bi ${mail.importantStatus == 1 ? 'bi-star-fill text-warning' : 'bi-star'}"
+			           style="cursor:pointer;"
+			           data-emailseq="${mail.emailSeq}"
+			           data-importantStatus="${mail.importantStatus}"
+			           title="중요"
+			           onclick="toggleImportant(this)"></i>
+			        <span class="ms-2 fw-bold">${mail.emailTitle}</span>
+			    </div>
+			    <div>
+			        <button class="btn btn-sm btn-primary"
+			                onclick="location.href='${ctxPath}/mail/resend?sendMemberEmail=${mail.sendMemberEmail}&emailSeq=${mail.emailSeq}'">
+			            답장
+			        </button>
+			        <button class="btn btn-sm btn-danger" onclick="deleteMail(${mail.emailSeq})">
+			            삭제
+			        </button>
+			    </div>
+			</div>
+
 
             <!-- 본문 -->
             <div class="card-body">
                 <p class="mb-1"><strong>보낸 사람:</strong> ${mail.sendMemberEmail}</p>
-                <p class="mb-1"><strong>받는 사람:</strong> ${mail.receiveMemberEmail}</p>
+                <p class="mb-1"><strong>받는 사람:</strong> ${mail.receiveMemberEmail}</p>	
                 <p class="text-muted"><small>${mail.emailRegdate}</small></p>
                 <hr>
                 <div>

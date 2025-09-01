@@ -4,8 +4,10 @@ import java.util.List;
 import java.util.Map;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.spring.app.mail.domain.MailDTO;
+import com.spring.app.mail.domain.MailUserStatusDTO;
 import com.spring.app.mail.model.MailDAO;
 
 import lombok.RequiredArgsConstructor;
@@ -19,16 +21,59 @@ public class MailService_imple implements MailService {
 	
 	// 파일첨부가 없는 글쓰기
 	@Override
+	@Transactional
 	public int write(MailDTO mailDto) {
-		int n = dao.write(mailDto);
-		return n;
+		
+		int n = 0;
+		
+	    // 1. 시퀀스 가져오기
+	    long emailSeq = dao.getEmailSeq();
+	    mailDto.setEmailSeq(String.valueOf(emailSeq));
+	    
+	    if(mailDto.getUserStatusList() != null) {
+	        for(MailUserStatusDTO status : mailDto.getUserStatusList()) {
+	            status.setEmailSeq(String.valueOf(emailSeq));
+	        }
+	    }
+
+	    // 2. 메일 저장
+	    dao.insertMail(mailDto);
+
+	    // 3. 수신자/발신자 상태 저장
+	    if(mailDto.getUserStatusList() != null && !mailDto.getUserStatusList().isEmpty()) {
+	    	dao.insertMailUser(mailDto);
+	    	n = 1;
+	    }
+
+	    return n;
 	}
 
 	// 파일첨부가 있는 글쓰기 
 	@Override
 	public int write_withFile(MailDTO mailDto) {
-		int n = dao.write_withFile(mailDto);
-		return n;
+		
+		int n = 0;
+		
+	    // 1. 시퀀스 가져오기
+	    long emailSeq = dao.getEmailSeq();
+	    mailDto.setEmailSeq(String.valueOf(emailSeq));
+	    
+	    if(mailDto.getUserStatusList() != null) {
+	        for(MailUserStatusDTO status : mailDto.getUserStatusList()) {
+	            status.setEmailSeq(String.valueOf(emailSeq));
+	        }
+	    }
+
+	    // 2. 메일 저장
+	    dao.insertMail_withFile(mailDto);
+
+	    // 3. 수신자 상태 저장
+	    if(mailDto.getUserStatusList() != null && !mailDto.getUserStatusList().isEmpty()) {
+	    	dao.insertMailUser(mailDto);
+	    	n = 1;
+	    }
+
+	    return n;
 	}
 
 	// 총 메일 (totalCount) 구하기
@@ -41,9 +86,17 @@ public class MailService_imple implements MailService {
 	// 메일목록 가져오기
 	@Override
 	public List<MailDTO> mailListSearch_withPaging(Map<String, String> paraMap) {
-		List<MailDTO> mailList = dao.mailListSearch_withPaging(paraMap);
-		return mailList;
+		return dao.mailListSearch_withPaging(paraMap);
+		
 	}
+	
+	@Override
+	public List<MailUserStatusDTO> MailUserList() {
+		long emailSeq = dao.getEmailSeq();
+		
+		return dao.MailUserList(String.valueOf(emailSeq));
+	}
+
 
 	// 별 업데이트
 	@Override
@@ -65,14 +118,14 @@ public class MailService_imple implements MailService {
 
 	// 읽은 메일 개수
 	@Override
-	public String getCount() {
-		return dao.getCount();
+	public String getCount(String loginUserEmail) {
+		return dao.getCount(loginUserEmail);
 	}
 
 	// 총 메일 개수 구하기
 	@Override
-	public String getTotalCount() {
-		return dao.totalCount();
+	public String getTotalCount(String loginUserEmail) {
+		return dao.totalCount(loginUserEmail);
 	}
 
 	// 메일 여러개 삭제하기
@@ -86,9 +139,26 @@ public class MailService_imple implements MailService {
 	public int deleteMail(String emailSeq) {
 		return dao.deleteMail(emailSeq);
 	}
-	
-	
-	
-	
+
+	@Override
+	public int getSentMailTotalCount(Map<String, String> paraMap) {
+		return dao.getSentMailTotalCount(paraMap);
+	}
+
+	@Override
+	public List<MailDTO> getSentMailListWithPaging(Map<String, String> paraMap) {
+		return dao.getSentMailListWithPaging(paraMap);
+	}
+
+	@Override
+	public int getReceivedMailTotalCount(Map<String, String> paraMap) {
+		return dao.getReceivedMailTotalCount(paraMap);
+	}
+
+	@Override
+	public List<MailDTO> getReceivedMailListWithPaging(Map<String, String> paraMap) {
+		return dao.getReceivedMailListWithPaging(paraMap);
+	}
+
 
 }

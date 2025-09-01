@@ -2,11 +2,13 @@ package com.spring.app.mail.controller;
 
 import java.io.File;
 import java.io.PrintWriter;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -17,7 +19,9 @@ import org.springframework.web.servlet.ModelAndView;
 
 import com.spring.app.common.FileManager;
 import com.spring.app.common.MyUtil;
+import com.spring.app.domain.MemberDTO;
 import com.spring.app.mail.domain.MailDTO;
+import com.spring.app.mail.domain.MailUserStatusDTO;
 import com.spring.app.mail.service.MailService;
 
 import jakarta.servlet.http.Cookie;
@@ -36,207 +40,275 @@ public class MailController {
 	
 	@GetMapping("list")
 	public ModelAndView list(ModelAndView mav, HttpServletRequest request,
-			HttpServletResponse response,
-			@RequestParam(name="searchWord", defaultValue = "") String searchWord,
-			@RequestParam(name="currentShowPageNo", defaultValue = "1") String currentShowPageNo) {
+	        HttpServletResponse response,
+	        @RequestParam(name="searchWord", defaultValue = "") String searchWord,
+	        @RequestParam(name="filter", defaultValue = "all") String filter,
+	        @RequestParam(name="currentShowPageNo", defaultValue = "1") String currentShowPageNo) {
 
-		List<MailDTO> mailList = null;
-		
-		/* ======================================================== 
-		글조회수(readCount)증가 (DML문 update)는 
-		반드시 목록보기에 와서 해당 글제목을 클릭했을 경우에만 증가되고,
-		웹브라우저에서 새로고침(F5)을 했을 경우에는 증가가 되지 않도록 해야 한다. 
-		이것을 하기 위해서는 session 을 사용하여 처리하면 된다.
-		=========================================================
-		*/
-		HttpSession session = request.getSession();
-		session.setAttribute("readCountPermission", "yes");
-		/*
-		session 에  "readCountPermission" 키값으로 저장된 value값은 "yes" 이다.
-		session 에  "readCountPermission" 키값에 해당하는 value값 "yes"를 얻으려면 
-		반드시 웹브라우저에서 주소창에 "/board/list" 이라고 입력해야만 얻어올 수 있다. 
-		*/
-		
-		
-		// ==== 페이징 처리를 안한 검색어가 없는 전체 글목록 보여주기 ==== //
-		//boardList = service.boardListNoSearch();
-		
-		// ==== 페이징 처리를 "안한" 검색어가 있는 전체 글목록 보여주기 ==== //
-		// GET 방식인데 검색어가 있으므로 사용자가 URL 주소에 검색어를 직접 입력하여 장난칠 수 있으므로 이것을 방지하고자 Referer 를 사용하도록 한다.
-		String referer = request.getHeader("Referer");
-		if (referer == null) {
-			mav.setViewName("redirect:/index");
-			return mav;
-		}
-		
-		Map<String, String> paraMap = new HashMap<>();
-		paraMap.put("searchWord", searchWord);
-		
-		// 페이징 처리를 안한것
-		//boardList = service.boardListSearch(paraMap); // <== 페이징 처리를 "안한" 검색어가 있는 전체 글목록 보여주기
-		
-		// ==== 페이징 처리를 "한" 검색어가 없는 전체 글목록 보여주기 ==== //
-		
-		// 먼저, 총 게시물 건수(totalCount)를 구해와야 한다.
-		// 총 게시물 건수(totalCount)는 검색조건이 있을 때와 검색조건이 없을때로 나뉘어진다.
-		int totalCount = 0; // 총 게시물 건수
-		int sizePerPage = 10; // 한 페이지당 보여줄 게시물 건수
-		int totalPage = 0; // 총 페이지수(웹브라우저상에서 보여줄 총 페이지 개수, 페이지바)
-		
-		// 총 게시물 건수(totalCount)
-		totalCount = service.getTotalCount(paraMap);
-		// System.out.println("~~~ 확인용 totalCount : " + totalCount);
-		
-		// 만약에 총 게시물 건수(totalCount)가 124 개 이라면 총 페이지수(totalPage)는 13 페이지가 되어야 한다.
-		// 만약에 총 게시물 건수(totalCount)가 120 개 이라면 총 페이지수(totalPage)는 12 페이지가 되어야 한다. 
-		totalPage = (int) Math.ceil((double) totalCount/sizePerPage);
-		// (double) 124/10 ==> 12.4 ==> Math.ceil(12.0) ==> 13.0 ==> 13
-		// (double) 120/10 ==> 12.0 ==> Math.ceil(12.0) ==> 12.0 ==> 12
-		
-		paraMap.put("currentShowPageNo", currentShowPageNo); // Oracle 12c 이상으로 사용하는 것.
-		
-		// 글목록 가져오기(페이징 처리했으먀, 검색어가 있는 것 또는 검색어가 없는 것 모두 포함한 것이다.
-		mailList = service.mailListSearch_withPaging(paraMap); // <== 페이징 처리를 "한" 검색어가 있는 전체 글목록 보여주기
-		
-		mav.addObject("mailList", mailList);
-		
-		// === 페이지바 만들기 시작 === //
-		int blockSize = 10;
-		// blockSize 는 1개 블럭(토막)당 보여지는 페이지번호의 개수이다.
-		/*
-		      1  2  3  4  5  6  7  8  9 10 [다음][마지막]  -- 1개블럭
-		[맨처음][이전]  11 12 13 14 15 16 17 18 19 20 [다음][마지막]  -- 1개블럭
-		[맨처음][이전]  21 22 23
-		*/
-		int loop = 1;
-		/*
-		loop는 1부터 증가하여 1개 블럭을 이루는 페이지번호의 개수[ 지금은 10개(== blockSize) ] 까지만 증가하는 용도이다.
-		*/
-		
-		int pageNo = ((Integer.parseInt(currentShowPageNo) - 1)/blockSize) * blockSize + 1;
-		// *** !! 공식이다. !! *** //
-		
-		/*
-		1  2  3  4  5  6  7  8  9  10  -- 첫번째 블럭의 페이지번호 시작값(pageNo)은 1 이다.
-		11 12 13 14 15 16 17 18 19 20  -- 두번째 블럭의 페이지번호 시작값(pageNo)은 11 이다.
-		21 22 23 24 25 26 27 28 29 30  -- 세번째 블럭의 페이지번호 시작값(pageNo)은 21 이다.
-		
-		currentShowPageNo         pageNo
-		----------------------------------
-		  1                      1 = ((1 - 1)/10) * 10 + 1
-		  2                      1 = ((2 - 1)/10) * 10 + 1
-		  3                      1 = ((3 - 1)/10) * 10 + 1
-		  4                      1
-		  5                      1
-		  6                      1
-		  7                      1 
-		  8                      1
-		  9                      1
-		  10                     1 = ((10 - 1)/10) * 10 + 1
-		 
-		  11                    11 = ((11 - 1)/10) * 10 + 1
-		  12                    11 = ((12 - 1)/10) * 10 + 1
-		  13                    11 = ((13 - 1)/10) * 10 + 1
-		  14                    11
-		  15                    11
-		  16                    11
-		  17                    11
-		  18                    11 
-		  19                    11 
-		  20                    11 = ((20 - 1)/10) * 10 + 1
-		  
-		  21                    21 = ((21 - 1)/10) * 10 + 1
-		  22                    21 = ((22 - 1)/10) * 10 + 1
-		  23                    21 = ((23 - 1)/10) * 10 + 1
-		  ..                    ..
-		  29                    21
-		  30                    21 = ((30 - 1)/10) * 10 + 1
-		*/
-		
-		String pageBar = "<ul style='list-style:none;'>";
-		String url = "list";
-		
-		// === [맨처음][이전] 만들기 === // 
-		pageBar += "<li style='display: inline-block; width: 70px; font-size: 12px;'><a href='" + url + "?searchWord=" + searchWord + "&currentShowPageNo=1'>[<<]</a></li>";
-		
-		if (pageNo != 1) {
-			pageBar += "<li style='display: inline-block; width: 50px; font-size: 12px;'><a href='" + url + "?searchWord=" + searchWord + "&currentShowPageNo=" + (pageNo-1) + "'>[<]</a></li>";	
-		}
-		
-		while(!(loop > blockSize || pageNo > totalPage)) {
-			
-			if (pageNo == Integer.parseInt(currentShowPageNo)) {
-				pageBar += "<li style='display: inline-block; width: 30px; font-size: 12px; border: solid 1px gray; color: red; padding: 2px 4px;'>" + pageNo + "</li>";
-			} else {
-				pageBar += "<li style='display: inline-block; width: 30px; font-size: 12px;'><a href='" + url + "?searchWord=" + searchWord + "&currentShowPageNo=" + pageNo + "'>" + pageNo + "</a></li>";
-			}
-			
-			loop++;
-			pageNo++;
-		} // end of while()--------
-		
-		// === [다음][마지막] 만들기 === // 
-		if (pageNo <= totalPage) {
-			pageBar += "<li style='display: inline-block; width: 50px; font-size: 12px;'><a href='" + url + "?searchWord=" + searchWord + "&currentShowPageNo=" + pageNo + "'>[>]</a></li>";			
-		}
-		pageBar += "<li style='display: inline-block; width: 70px; font-size: 12px;'><a href='" + url + "?searchWord=" + searchWord + "&currentShowPageNo=" + totalPage + "'>[>>]</a></li>";			
-		
-		pageBar += "</ul>";
-		
-		mav.addObject("pageBar",pageBar);
-		// === 페이지바 만들기 끝 === //
-		
-		// =============== 페이징 처리시 보여주는 순번을 나타내기 위한 것임. =============== //
-		mav.addObject("totalCount", totalCount);
-		mav.addObject("currentShowPageNo", currentShowPageNo);
-		mav.addObject("sizePerPage", sizePerPage);
-		// ==================================================================== //
-		
-		// 페이징 처리되어진 후 특정 글제목을 클릭하여 상세내용을 본 이후
-		// 사용자가 "검색된결과목록보기" 버튼을 클릭했을때 돌아갈 페이지를 알려주기 위해
-		// 현재 페이지 URL 주소를 쿠키에 저장한다.
-		String listURL = MyUtil.getCurrentURL(request);
-		//	System.out.println("~~~ 확인용 listURL : " + listURL);
-		// ~~~ 확인용 listURL : /board/list
-		// ~~~ 확인용 listURL : /board/list?searchType=&searchWord=&currentShowPageNo=7
-		// ~~~ 확인용 listURL : /board/list?searchType=subject&searchWord=입니다&currentShowPageNo=7
-		
-		Cookie cookie = new Cookie("listURL", listURL);
-		// new Cookie(쿠키명, 쿠키값); 
-		// Cookie 클래스 임포트시 jakarta.servlet.http.Cookie 임.
-		
-		cookie.setMaxAge(24*60*60); // 쿠키수명은 1일로 함.
-		cookie.setPath("/mail/"); // 쿠키가 브라우저에서 전송될 URL 경로 범위(Path)를 지정하는 설정임.
-		/* 
-		Path를 /myspring/board/ 로 설정하면:
-		/myspring/board/view_2, /myspring/board/view 등 /myspring/board/ 로 시작하는 경로에서만 쿠키가 전송된다. 
-		/myspring/, /myspring/index, /myspring/login 등의 다른 경로에서는 이 쿠키는 사용되지 않음.   
-		*/
-		response.addCookie(cookie); // 접속한 클라이언트 PC로 쿠키를 보내줌
-		
-		mav.setViewName("/mail/list");
-		//  /WEB-INF/views/mycontent1/board/list.jsp 파일을 만들어야 한다.
-		
-		return mav;
+	    List<MailDTO> mailList = null;
+
+	    HttpSession session = request.getSession();
+	    MemberDTO loginuser = (MemberDTO) session.getAttribute("loginuser");
+	    
+	    // 로그인 확인
+	    if(loginuser == null) {
+	        mav.setViewName("redirect:/index");
+	        return mav;
+	    }
+
+	    Map<String, String> paraMap = new HashMap<>();
+	    paraMap.put("searchWord", searchWord);
+	    paraMap.put("filter", filter);
+	    paraMap.put("loginUserEmail", loginuser.getMemberEmail());
+
+	    // === 페이징 처리 ===
+	    int totalCount = service.getTotalCount(paraMap);  // 검색어 + 필터 조건 반영된 총 게시물 수
+	    int sizePerPage = 10;
+	    int totalPage = (int) Math.ceil((double) totalCount/sizePerPage);
+
+	    paraMap.put("currentShowPageNo", currentShowPageNo);
+
+	    mailList = service.mailListSearch_withPaging(paraMap); 
+
+	    mav.addObject("mailList", mailList);
+
+	    // === 페이지바 만들기 ===
+	    int blockSize = 10;
+	    int loop = 1;
+	    int pageNo = ((Integer.parseInt(currentShowPageNo) - 1)/blockSize) * blockSize + 1;
+
+	    String pageBar = "<ul style='list-style:none;'>";
+	    String url = "list";
+
+	    // [맨처음][이전]
+	    pageBar += "<li style='display:inline-block; width:70px; font-size:12px;'>"
+	            + "<a href='" + url + "?searchWord=" + searchWord 
+	            + "&filter=" + filter
+	            + "&currentShowPageNo=1'>[<<]</a></li>";
+
+	    if (pageNo != 1) {
+	        pageBar += "<li style='display:inline-block; width:50px; font-size:12px;'>"
+	                + "<a href='" + url + "?searchWord=" + searchWord 
+	                + "&filter=" + filter
+	                + "&currentShowPageNo=" + (pageNo-1) + "'>[<]</a></li>";
+	    }
+
+	    while(!(loop > blockSize || pageNo > totalPage)) {
+	        if (pageNo == Integer.parseInt(currentShowPageNo)) {
+	            pageBar += "<li style='display:inline-block; width:30px; font-size:12px; border:1px solid gray; color:red; padding:2px 4px;'>"
+	                    + pageNo + "</li>";
+	        } else {
+	            pageBar += "<li style='display:inline-block; width:30px; font-size:12px;'>"
+	                    + "<a href='" + url + "?searchWord=" + searchWord 
+	                    + "&filter=" + filter
+	                    + "&currentShowPageNo=" + pageNo + "'>" + pageNo + "</a></li>";
+	        }
+	        loop++;
+	        pageNo++;
+	    }
+
+	    // [다음][마지막]
+	    if (pageNo <= totalPage) {
+	        pageBar += "<li style='display:inline-block; width:50px; font-size:12px;'>"
+	                + "<a href='" + url + "?searchWord=" + searchWord 
+	                + "&filter=" + filter
+	                + "&currentShowPageNo=" + pageNo + "'>[>]</a></li>";
+	    }
+	    
+	    pageBar += "<li style='display:inline-block; width:70px; font-size:12px;'>"
+	            + "<a href='" + url + "?searchWord=" + searchWord 
+	            + "&filter=" + filter
+	            + "&currentShowPageNo=" + totalPage + "'>[>>]</a></li>";
+
+	    pageBar += "</ul>";
+
+	    mav.addObject("pageBar", pageBar);
+	    mav.addObject("totalCount", totalCount);
+	    mav.addObject("currentShowPageNo", currentShowPageNo);
+	    mav.addObject("sizePerPage", sizePerPage);
+
+	    String listURL = MyUtil.getCurrentURL(request);
+	    Cookie cookie = new Cookie("listURL", listURL);
+	    cookie.setMaxAge(24*60*60);
+	    cookie.setPath("/mail/");
+	    response.addCookie(cookie);
+
+	    mav.setViewName("/mail/list");
+	    return mav;
 	}
+
+	@GetMapping("send")
+	public ModelAndView send(
+	        ModelAndView mav,
+	        HttpServletRequest request,
+	        HttpServletResponse response,
+	        @RequestParam(name="searchWord", defaultValue="") String searchWord,
+	        @RequestParam(name="currentShowPageNo", defaultValue="1") String currentShowPageNo) {
+
+	    HttpSession session = request.getSession();
+	    MemberDTO loginuser = (MemberDTO) session.getAttribute("loginuser");
+
+	    // 로그인 확인
+	    if(loginuser == null) {
+	        mav.setViewName("redirect:/index");
+	        return mav;
+	    }
+
+	    // 검색 및 로그인 사용자 이메일 기준
+	    Map<String, String> paraMap = new HashMap<>();
+	    paraMap.put("searchWord", searchWord);
+	    paraMap.put("loginUserEmail", loginuser.getMemberEmail());
+	    paraMap.put("currentShowPageNo", currentShowPageNo);
+
+	    // === 페이징 처리 ===
+	    int totalCount = service.getSentMailTotalCount(paraMap); // 로그인 사용자 보낸 메일 총 개수
+	    int sizePerPage = 10;
+	    int totalPage = (int)Math.ceil((double) totalCount / sizePerPage);
+
+	    List<MailDTO> mailList = service.getSentMailListWithPaging(paraMap);
+
+	    mav.addObject("mailList", mailList);
+
+	    // === 페이지바 생성 ===
+	    int blockSize = 10;
+	    int loop = 1;
+	    int pageNo = ((Integer.parseInt(currentShowPageNo)-1)/blockSize)*blockSize + 1;
+
+	    String pageBar = "<ul style='list-style:none;'>";
+	    String url = "sendlist";
+
+	    // [처음][이전]
+	    pageBar += "<li style='display:inline-block; width:70px;'><a href='" + url + "?searchWord=" + searchWord + "&currentShowPageNo=1'>[<<]</a></li>";
+	    if(pageNo != 1){
+	        pageBar += "<li style='display:inline-block; width:50px;'><a href='" + url + "?searchWord=" + searchWord + "&currentShowPageNo=" + (pageNo-1) + "'>[<]</a></li>";
+	    }
+
+	    while(!(loop > blockSize || pageNo > totalPage)) {
+	        if(pageNo == Integer.parseInt(currentShowPageNo)) {
+	            pageBar += "<li style='display:inline-block; width:30px; border:1px solid gray; color:red; text-align:center;'>" + pageNo + "</li>";
+	        } else {
+	            pageBar += "<li style='display:inline-block; width:30px; text-align:center;'><a href='" + url + "?searchWord=" + searchWord + "&currentShowPageNo=" + pageNo + "'>" + pageNo + "</a></li>";
+	        }
+	        loop++;
+	        pageNo++;
+	    }
+
+	    // [다음][마지막]
+	    if(pageNo <= totalPage){
+	        pageBar += "<li style='display:inline-block; width:50px;'><a href='" + url + "?searchWord=" + searchWord + "&currentShowPageNo=" + pageNo + "'>[>]</a></li>";
+	    }
+	    pageBar += "<li style='display:inline-block; width:70px;'><a href='" + url + "?searchWord=" + searchWord + "&currentShowPageNo=" + totalPage + "'>[>>]</a></li>";
+	    pageBar += "</ul>";
+
+	    mav.addObject("pageBar", pageBar);
+	    mav.addObject("totalCount", totalCount);
+	    mav.addObject("currentShowPageNo", currentShowPageNo);
+	    mav.addObject("sizePerPage", sizePerPage);
+
+	    // 현재 URL 쿠키 저장
+	    String listURL = request.getRequestURL().toString() + "?" + request.getQueryString();
+	    Cookie cookie = new Cookie("listURL", listURL);
+	    cookie.setMaxAge(24*60*60);
+	    cookie.setPath("/mail/");
+	    response.addCookie(cookie);
+
+	    mav.setViewName("/mail/send"); // JSP 경로
+	    return mav;
+	}
+
+	
 	
 	@GetMapping("view")
-    public ModelAndView viewMail(@RequestParam("emailSeq") String emailSeq, ModelAndView mav) {
+    public ModelAndView viewMail(@RequestParam("emailSeq") String emailSeq, HttpServletRequest request, ModelAndView mav) {
+		
+	    String referer = request.getHeader("Referer"); // 이전 페이지 URL
+	    mav.addObject("prevPage", referer);
+	    
 		MailDTO mail = service.selectOne(emailSeq);
 		mav.addObject("mail", mail);
 		mav.setViewName("mail/view");
         return mav;
     }
 	
-	@GetMapping("send")
-	public String send() {
-		return "mail/send";
+	@GetMapping("receive")
+	public ModelAndView receive(
+	        ModelAndView mav,
+	        HttpServletRequest request,
+	        HttpServletResponse response,
+	        @RequestParam(name="searchWord", defaultValue="") String searchWord,
+	        @RequestParam(name="currentShowPageNo", defaultValue="1") String currentShowPageNo) {
+
+	    HttpSession session = request.getSession();
+	    MemberDTO loginuser = (MemberDTO) session.getAttribute("loginuser");
+
+	    // 로그인 확인
+	    if (loginuser == null) {
+	        mav.setViewName("redirect:/index");
+	        return mav;
+	    }
+
+	    // 검색어 + 로그인 사용자 이메일 기준
+	    Map<String, String> paraMap = new HashMap<>();
+	    paraMap.put("searchWord", searchWord);
+	    paraMap.put("loginUserEmail", loginuser.getMemberEmail());
+	    paraMap.put("currentShowPageNo", currentShowPageNo);
+
+	    // === 페이징 처리 ===
+	    int totalCount = service.getReceivedMailTotalCount(paraMap); // 받은 메일 총 개수
+	    int sizePerPage = 10;
+	    int totalPage = (int) Math.ceil((double) totalCount / sizePerPage);
+
+	    List<MailDTO> mailList = service.getReceivedMailListWithPaging(paraMap);
+
+	    mav.addObject("mailList", mailList);
+
+	    // === 페이지바 생성 ===
+	    int blockSize = 10;
+	    int loop = 1;
+	    int pageNo = ((Integer.parseInt(currentShowPageNo) - 1) / blockSize) * blockSize + 1;
+
+	    String pageBar = "<ul style='list-style:none;'>";
+	    String url = "receive";
+
+	    // [처음][이전]
+	    pageBar += "<li style='display:inline-block; width:70px;'><a href='" + url + "?searchWord=" + searchWord + "&currentShowPageNo=1'>[<<]</a></li>";
+	    if (pageNo != 1) {
+	        pageBar += "<li style='display:inline-block; width:50px;'><a href='" + url + "?searchWord=" + searchWord + "&currentShowPageNo=" + (pageNo - 1) + "'>[<]</a></li>";
+	    }
+
+	    while (!(loop > blockSize || pageNo > totalPage)) {
+	        if (pageNo == Integer.parseInt(currentShowPageNo)) {
+	            pageBar += "<li style='display:inline-block; width:30px; border:1px solid gray; color:red; text-align:center;'>" + pageNo + "</li>";
+	        } else {
+	            pageBar += "<li style='display:inline-block; width:30px; text-align:center;'><a href='" + url + "?searchWord=" + searchWord + "&currentShowPageNo=" + pageNo + "'>" + pageNo + "</a></li>";
+	        }
+	        loop++;
+	        pageNo++;
+	    }
+
+	    // [다음][마지막]
+	    if (pageNo <= totalPage) {
+	        pageBar += "<li style='display:inline-block; width:50px;'><a href='" + url + "?searchWord=" + searchWord + "&currentShowPageNo=" + pageNo + "'>[>]</a></li>";
+	    }
+	    pageBar += "<li style='display:inline-block; width:70px;'><a href='" + url + "?searchWord=" + searchWord + "&currentShowPageNo=" + totalPage + "'>[>>]</a></li>";
+	    pageBar += "</ul>";
+
+	    mav.addObject("pageBar", pageBar);
+	    mav.addObject("totalCount", totalCount);
+	    mav.addObject("currentShowPageNo", currentShowPageNo);
+	    mav.addObject("sizePerPage", sizePerPage);
+
+	    // 현재 URL 쿠키 저장 (상세보기에서 뒤로가기 활용)
+	    String listURL = request.getRequestURL().toString() + "?" + request.getQueryString();
+	    Cookie cookie = new Cookie("listURL", listURL);
+	    cookie.setMaxAge(24 * 60 * 60);
+	    cookie.setPath("/mail/");
+	    response.addCookie(cookie);
+
+	    mav.setViewName("/mail/receive"); // JSP 경로
+	    return mav;
 	}
-	
-	@GetMapping("important")
-	public String important() {
-		return "mail/important";
-	}
+
 	
 	@GetMapping("write")
 	public ModelAndView write(HttpServletRequest request,
@@ -250,7 +322,8 @@ public class MailController {
 
 	
 	@PostMapping("write")
-	public ModelAndView write(ModelAndView mav, MailDTO mailDto, HttpServletRequest request) {
+	public ModelAndView write(ModelAndView mav, MailDTO mailDto,
+			 @RequestParam(value="importantStatus", required=false) String importantStatus, HttpServletRequest request) {
 
 		MultipartFile attach = mailDto.getAttach();
 
@@ -323,29 +396,45 @@ public class MailController {
 	        
 		}
 		
-		int n = 0;
-		
-		if (attach.isEmpty()) {
-			// 첨부파일이 없는 경우라면
-			// System.out.println("~~~ 확인용 : 첨부파일이 없군요!!");
-			n = service.write(mailDto); // <== 파일첨부가 없는 글쓰기
-		} else {
-			// 첨부파일이 있는 경우라면
-			// System.out.println("~~~ 확인용 : 첨부파일이 있군요!!");
-			n = service.write_withFile(mailDto); // <== 파일첨부가 있는 글쓰기 
-		}
-		
-		if(n==1) {
-			mav.setViewName("redirect:/mail/list");
-		}
-		
-		return mav;
-		
+	    // 발신자/수신자 상태 리스트 세팅
+	    List<MailUserStatusDTO> statusList = new ArrayList<>();
+
+	    // 발신자
+	    MailUserStatusDTO sender = new MailUserStatusDTO();
+	    sender.setMemberEmail(mailDto.getSendMemberEmail());
+	    sender.setReadStatus("1"); // 발신자는 읽음
+	    sender.setImportantStatus(importantStatus);
+	    statusList.add(sender);
+
+	    // 수신자
+	    MailUserStatusDTO receiver = new MailUserStatusDTO();
+	    receiver.setMemberEmail(mailDto.getReceiveMemberEmail());
+	    receiver.setReadStatus("0"); // 수신자는 안읽음
+	    receiver.setImportantStatus(importantStatus); 
+	    statusList.add(receiver);
+
+	    mailDto.setUserStatusList(statusList);
+
+	    int n;
+	    if (attach.isEmpty()) {
+	        n = service.write(mailDto);          // 파일 없는 경우
+	    } else {
+	        n = service.write_withFile(mailDto); // 파일 있는 경우
+	    }
+
+	    if (n == 1) {
+	        mav.setViewName("redirect:/mail/list");
+	    }
+	    return mav;
 	}
 	
 	@PostMapping("updateImportant")
 	@ResponseBody
-	public Map<String, Integer> updateImportant(@RequestParam Map<String, String> paraMap) {
+	public Map<String, Integer> updateImportant(HttpSession session, @RequestParam Map<String, String> paraMap) {
+		
+		MemberDTO loginuser = (MemberDTO) session.getAttribute("loginuser");
+		String loginUserEmail = loginuser.getMemberEmail();
+		paraMap.put("memberEmail", loginUserEmail);
 	    // 중요 표시를 변경하고 결과 값 반환
 	    int result = service.updateImportant(paraMap);
 	    
@@ -358,7 +447,10 @@ public class MailController {
 	
 	@PostMapping("updateReadStatus")
 	@ResponseBody
-	public Map<String, Integer> updateReadStatus(@RequestParam Map<String, String> paraMap) {
+	public Map<String, Integer> updateReadStatus(HttpSession session, @RequestParam Map<String, String> paraMap) {
+		MemberDTO loginuser = (MemberDTO) session.getAttribute("loginuser");
+		String loginUserEmail = loginuser.getMemberEmail();
+		paraMap.put("memberEmail", loginUserEmail);
 		
 		int result = service.updateReadStatus(paraMap);
 		Map<String, Integer> response = new HashMap<>();
@@ -369,17 +461,35 @@ public class MailController {
 	
 	@GetMapping("getCount")
 	@ResponseBody
-	public Map<String, String> getCount() {
+	public Map<String, String> getCount(HttpSession session) {
+		
+		MemberDTO loginuser = (MemberDTO) session.getAttribute("loginuser");
+		String loginUserEmail = loginuser.getMemberEmail();
+		
 		Map<String, String> response = new HashMap<>();
 		
-		String count = service.getCount();
-		String totalCount = service.getTotalCount();
+		String count = service.getCount(loginUserEmail);
+		String totalCount = service.getTotalCount(loginUserEmail);
 		
 		response.put("count", count);
 		response.put("totalCount", totalCount);
 		
 		return response;
 	}
+	
+//	@GetMapping("getReceiveCount")
+//	@ResponseBody
+//	public Map<String, String> getReceiveCount() {
+//		Map<String, String> response = new HashMap<>();
+//		
+//		String receiveCount = service.getReceiveCount();
+//		String totalReceiveCount = service.getTotalReceiveCount();
+//		
+//		response.put("receiveCount", receiveCount);
+//		response.put("totalReceiveCount", totalReceiveCount);
+//		
+//		return response;
+//	}
 	
 	// 메일 여러개 삭제하기
 	@PostMapping("deleteMails")
@@ -479,4 +589,25 @@ public class MailController {
 	    	}
 	    }
 	}
+	
+    // 답장 화면으로 이동
+    @GetMapping("resend")
+    public String resendMail(@RequestParam("emailSeq") String emailSeq,
+                             @RequestParam("sendMemberEmail") String sendMemberEmail,
+                             Model model) {
+
+        // 원본 메일 불러오기
+        MailDTO originalMail = service.selectOne(emailSeq);
+
+        // 답장용 기본값 세팅
+        MailDTO replyMail = new MailDTO();
+        replyMail.setReceiveMemberEmail(sendMemberEmail); // 받는사람 = 원본 보낸사람
+        replyMail.setEmailTitle("RE: " + originalMail.getEmailTitle()); // 제목 앞에 "RE:" 붙이기
+
+        // JSP로 넘겨줌
+        model.addAttribute("replyMail", replyMail);
+        model.addAttribute("originalMail", originalMail);
+
+        return "mail/resend";
+    }
 }
