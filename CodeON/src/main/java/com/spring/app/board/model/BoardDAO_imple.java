@@ -96,7 +96,12 @@ public class BoardDAO_imple implements BoardDAO {
 		        return sqlSession.selectOne("getDepartmentNameBySeq", fkDepartmentSeq);
 		    }
 
-	
+		  @Override
+		  public List<BoardDTO> selectWeeklyPopularBoard(Map<String, Object> paraMap) {
+			  return sqlSession.selectList("board.selectWeeklyPopularBoard", paraMap);
+		  }
+
+		
 
 	
 

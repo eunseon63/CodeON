@@ -267,6 +267,7 @@
 </select>
   
 
+
   <!-- 글 수정 -->
   <update id="updateBoard" parameterType="com.spring.app.board.domain.BoardDTO">
     UPDATE tbl_board
@@ -317,4 +318,31 @@
     WHERE ROWNUM &lt;= #{limit}
   </select>
 
+	<select id="selectWeeklyPopularBoard" parameterType="map" resultType="com.spring.app.board.domain.BoardDTO">
+    SELECT *
+FROM (
+    SELECT 
+        b.board_seq       AS boardSeq,
+        b.board_title     AS boardTitle,
+        b.board_readcount AS boardReadcount,
+        COALESCE(r.recommend_count,0) AS recommendCount,
+        b.board_regdate   AS boardRegdate
+    FROM tbl_board b
+    LEFT JOIN (
+        SELECT fk_board_seq, COUNT(*) AS recommend_count
+        FROM tbl_recommend
+        GROUP BY fk_board_seq
+    ) r ON b.board_seq = r.fk_board_seq
+    LEFT JOIN tbl_member m ON b.fk_member_seq = m.member_seq
+    WHERE b.board_regdate >= TRUNC(SYSDATE,'IW')
+      AND b.fk_board_type_seq = #{fkBoardTypeSeq}
+      <if test="fkDepartmentSeq != null">
+         AND m.fk_department_seq = #{fkDepartmentSeq}
+      </if>
+    ORDER BY COALESCE(r.recommend_count,0) DESC
+)
+WHERE ROWNUM &lt;= 5
+</select>
+	
+	
 </mapper>
