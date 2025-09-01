@@ -23,14 +23,58 @@
         .page-bar ul { list-style: none; padding: 0; margin: 0; display: inline-block; }
         .page-bar li { display: inline-block; margin: 0 3px; font-size: 12pt; }
         .page-bar li.active { border: 1px solid gray; color: red; padding: 2px 4px; }
+
+        /* 사이드바 sticky */
+        .sidebar {
+            position: sticky;
+            top: 80px; /* 헤더 높이 고려 */
+        }
+
+        /* 인기글 badge 스타일 */
+        .popular-badge {
+            font-size: 0.8rem;
+        }
+
+        /* 테이블 제목 badge spacing */
+        .table-title-badge {
+            margin-left: 5px;
+        }
+        
+        
+        .list-group-item:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    }
+    .sidebar h5 {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: #333;
+    }
+    .popular-badge {
+        font-size: 0.85rem;
+    }
     </style>
 </head>
 <body>
 
 <div class="container-fluid">
     <div class="row">
+
+        <!-- 왼쪽 사이드바: 이번 주 인기글 -->
+<div class="col-md-3 sidebar">
+    <h5 class="mt-4 mb-3">이번 주 인기글 TOP 5 (월요일 자정)</h5>
+    <div class="list-group">
+        <c:forEach var="board" items="${weeklyPopular}">
+            <a href="${ctxPath}/board/view?boardSeq=${board.boardSeq}" class="list-group-item list-group-item-action mb-2 shadow-sm rounded d-flex justify-content-between align-items-center" style="transition: transform 0.2s;">
+                <span class="fw-semibold">${board.boardTitle}</span>
+                <span class="badge bg-primary rounded-pill ms-2">👍 ${board.recommendCount}</span>
+            </a>
+        </c:forEach>
+    </div>
+</div>
+
         <!-- Main Content -->
-        <div class="col-md-12">
+        <div class="col-md-9">
 
             <!-- 게시판 유형 버튼 -->
             <div class="d-flex justify-content-between align-items-center mt-4 mb-3">
@@ -40,21 +84,18 @@
                     <a href="${ctxPath}/board/list?fkBoardTypeSeq=1" 
                        class="btn ${param.fkBoardTypeSeq=='1'?'btn-primary':'btn-outline-primary'}">부서게시판</a>
                 </div>
-                <button type="button" class="btn btn-success" 
-                        onclick="location.href='${ctxPath}/board/add?fkBoardTypeSeq=${param.fkBoardTypeSeq}'">글쓰기</button>
+              <button type="button" class="btn btn-success" 
+        onclick="location.href='${ctxPath}/board/add?fkBoardTypeSeq=${param.fkBoardTypeSeq != null ? param.fkBoardTypeSeq : 0}'"> 글쓰기	</button>
             </div>
 
             <!-- 로그인 유저 부서 표시 -->
             <c:if test="${param.fkBoardTypeSeq == '1'}">
-                <div class="mb-3 text-center" style="position:relative; z-index:1;">
+                <div class="mb-3 text-center">
                     <span style="font-size:1.3rem; font-weight:bold;">
                         현재 로그인 계정 부서 : ${loginUserDeptName}
                     </span>
                 </div>
             </c:if>
-
-            <!-- clearfix로 layout 문제 방지 -->
-            <div class="clearfix mb-3"></div>
 
             <!-- 카테고리 + 검색 -->
             <form class="d-flex align-items-center mb-3" method="get" action="${ctxPath}/board/list">
@@ -109,7 +150,10 @@
                                         <a href="${ctxPath}/board/view?boardSeq=${board.boardSeq}">
                                             ${board.boardTitle}
                                         </a>
-                                        <span class="badge bg-secondary">${board.commentCount}</span>
+                                        <span class="badge bg-secondary table-title-badge">${board.commentCount}</span>
+                                        <span class="badge bg-success table-title-badge">
+                                            👍 ${board.recommendCount}
+                                        </span>
                                     </td>
                                     <td>${board.memberName}</td>
                                     <td>
@@ -138,7 +182,4 @@
 </div>
 
 </body>
-
-
-
 </html>

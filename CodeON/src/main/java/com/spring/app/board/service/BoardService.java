@@ -46,5 +46,13 @@ public interface BoardService {
 	 List<BoardDTO> selectRecentNotices(List<Integer> typeSeqs, int limit);
 
 
+	 List<BoardDTO> getWeeklyPopularBoard(int fkBoardTypeSeq, Integer fkDepartmentSeq);
+
+
+
+
+
+	 
+
 
 }

@@ -125,7 +125,7 @@ public class SurveyService_imple implements SurveyService {
                     .build());
         }
 
-        // 집계
+        // 집계 (모든 응답 누적)
         for (String ansJson : answersList) {
             Map<String,Object> ans = parseJsonToMap(ansJson);
             for (int i = 0; i < stats.size(); i++) {
@@ -146,24 +146,18 @@ public class SurveyService_imple implements SurveyService {
                     }
                 }
             }
-            
-         // ------- [추가] 요약카드 숫자 계산 -------
-            int eligible = surveyDAO.countEligibleMembers(surveyId);
-            int notAnswered = Math.max(0, eligible - total);
-
-            return SurveyStatsDTO.builder()
-                    .surveyId(surveyId)
-                    .totalResponses(total)
-                    .questions(stats)
-                    .eligible(eligible)          // ★
-                    .notAnswered(notAnswered)    // ★
-                    .build();
         }
+
+        // ------- [추가] 요약카드 숫자 계산 -------
+        int eligible = surveyDAO.countEligibleMembers(surveyId);
+        int notAnswered = Math.max(0, eligible - total);
 
         return SurveyStatsDTO.builder()
                 .surveyId(surveyId)
                 .totalResponses(total)
                 .questions(stats)
+                .eligible(eligible)          // ★
+                .notAnswered(notAnswered)    // ★
                 .build();
     }
 

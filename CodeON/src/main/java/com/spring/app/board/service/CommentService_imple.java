@@ -58,11 +58,23 @@ public class CommentService_imple implements CommentService {
 		  return dao.updateReply(rdto);
 	 }
 
+	 
 	 @Override
 	 public int addRecommend(Map<String, Object> paramMap) {
 		 return dao.insertRecommend(paramMap);
 	 }
+	
+	 @Override
+	 public boolean existsRecommend(Map<String, Object> paramMap) {
+		 int count = dao.existsRecommend(paramMap);
+	        return count > 0;
+	 }
 
+	 @Override
+	 public int removeRecommend(Map<String, Object> paramMap) {
+		 return dao.removeRecommend(paramMap);
+	 }
+	 
 	 @Override
 	 public int getRecommendCount(Integer fkBoardSeq) {
 		  return dao.selectRecommendCount(fkBoardSeq);
@@ -72,5 +84,7 @@ public class CommentService_imple implements CommentService {
 	 public List<String> getRecommendMemberNames(Integer fkBoardSeq) {
 		 return dao.selectRecommendMemberNames(fkBoardSeq);
 	 }
+
+	 
 	 
 }
