@@ -18,19 +18,19 @@ public interface BoardService {
 	List<Map<String, Object>> getBoardCategoryList();
 
 
-	int getTotalCount(Map<String, String> paraMap);
+	int getTotalCount(Map<String, Object> paraMap);
 
 	
-	List<BoardDTO> boardListSearch_withPaging(Map<String, String> paraMap);
+	List<BoardDTO> boardListSearch_withPaging(Map<String, Object> paraMap);
 
 
 	BoardDTO getBoardDetail(String boardSeq);
 
 
-	BoardDTO getPrevBoard(String boardSeq);
+	BoardDTO getPrevBoard(Map<String, Object> paraMap);
 
 
-	BoardDTO getNextBoard(String boardSeq);
+	BoardDTO getNextBoard(Map<String, Object> paraMap);
 
 	//글 삭제
 	 int delete(String boardSeq);

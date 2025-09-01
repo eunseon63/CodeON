@@ -121,30 +121,62 @@
         </tbody>
     </table>
 </div>
+
+
 <!-- 이전글 / 다음글 영역 -->
-<div class="card mt-3 p-2" style="border:1px solid #dee2e6; border-radius:8px; background:#f8f9fa;">
-    <div class="d-flex justify-content-between" style="font-size:14px;">
-        <div>
-            <c:if test="${not empty prevBoard}">
-                이전글: 
-                <a href="${ctxPath}/board/view?boardSeq=${prevBoard.boardSeq}" class="text-primary text-decoration-none">
-                    ${prevBoard.boardTitle}
-                </a>
-            </c:if>
-        </div>
-        <div>
-            <c:if test="${not empty nextBoard}">
-                다음글: 
-                <a href="${ctxPath}/board/view?boardSeq=${nextBoard.boardSeq}" class="text-primary text-decoration-none">
+<div class="card mt-3 p-3" 
+     style="border:1px solid #dee2e6; border-radius:10px; background:#ffffff; box-shadow:0 2px 6px rgba(0,0,0,0.05);">
+
+    <ul class="list-unstyled mb-0 text-center" style="font-size:14px; line-height:1.6;">
+
+        <!-- 다음글 (위쪽) -->
+        <c:if test="${not empty nextBoard}">
+            <li class="mb-2" style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
+                <span class="fw-bold text-secondary">다음글</span> :
+                <a href="${ctxPath}/board/view?boardSeq=${nextBoard.boardSeq}" 
+                   class="text-primary text-decoration-none" 
+                   style="display:inline-block; max-width:70%; vertical-align:middle; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
                     ${nextBoard.boardTitle}
                 </a>
-            </c:if>
-        </div>
-    </div>
+            </li>
+        </c:if>
+
+        <!-- 이전글 (아래쪽) -->
+        <c:if test="${not empty prevBoard}">
+            <li style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
+                <span class="fw-bold text-secondary">이전글</span> :
+                <a href="${ctxPath}/board/view?boardSeq=${prevBoard.boardSeq}" 
+                   class="text-primary text-decoration-none" 
+                   style="display:inline-block; max-width:70%; vertical-align:middle; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
+                    ${prevBoard.boardTitle}
+                </a>
+            </li>
+        </c:if>
+
+    </ul>
 </div>
 
 <script>
 const isLogin = <%= (session.getAttribute("loginuser") != null) %>;
+
+
+
+$("#commentContent").on("keypress", function(e) {
+    if(e.key === "Enter" && !e.shiftKey) { // Shift+Enter는 줄바꿈
+        e.preventDefault(); // 줄바꿈 방지
+        goWriteComment();   // 댓글 등록
+    }
+});
+
+
+$(document).on("keypress", "[id^=replyContent-]", function(e) {
+    if(e.key === "Enter" && !e.shiftKey) {
+        e.preventDefault();
+        const parentCommentSeq = $(this).attr("id").split("-")[1];
+        goWriteReply(parentCommentSeq); // 대댓글 등록
+    }
+});
+
 
 // 추천 시작
 $(document).ready(function() {

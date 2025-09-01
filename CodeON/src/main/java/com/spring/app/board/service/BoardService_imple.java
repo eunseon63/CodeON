@@ -48,7 +48,7 @@ public class BoardService_imple implements BoardService {
 
 
 		@Override
-		public int getTotalCount(Map<String, String> paraMap) {
+		public int getTotalCount(Map<String, Object> paraMap) {
 			int totalCount = dao.getTotalCount(paraMap);
 			return totalCount;
 		}
@@ -56,7 +56,7 @@ public class BoardService_imple implements BoardService {
 
 
 		@Override
-		public List<BoardDTO> boardListSearch_withPaging(Map<String, String> paraMap) {
+		public List<BoardDTO> boardListSearch_withPaging(Map<String, Object> paraMap) {
 			List<BoardDTO> boardList= dao.boardListSearch_withPaging(paraMap);
 			return boardList;
 		}
@@ -70,18 +70,18 @@ public class BoardService_imple implements BoardService {
 		}
 
 
-
 		@Override
-		public BoardDTO getPrevBoard(String boardSeq) {
-			 return dao.getPrevBoard(boardSeq);
+		public BoardDTO getPrevBoard(Map<String, Object> paraMap) {
+			return dao.getPrevBoard(paraMap);
 		}
 
 
 
 		@Override
-		public BoardDTO getNextBoard(String boardSeq) {
-			return dao.getNextBoard(boardSeq);
+		public BoardDTO getNextBoard(Map<String, Object> paraMap) {
+			return dao.getNextBoard(paraMap);
 		}
+
 
 
 
@@ -117,6 +117,9 @@ public class BoardService_imple implements BoardService {
 	        return dao.getDepartmentNameBySeq(fkDepartmentSeq);
 	    }
 
+
+
+	
 
 		
 

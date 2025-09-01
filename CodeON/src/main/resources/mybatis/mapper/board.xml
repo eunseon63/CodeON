@@ -102,34 +102,37 @@
 
   <!-- 총 개수 -->
   <select id="getTotalCount" parameterType="map" resultType="int">
-    SELECT COUNT(*)
+    SELECT COUNT(DISTINCT b.board_seq) AS totalCount
     FROM tbl_board b
     LEFT JOIN tbl_member m ON b.fk_member_seq = m.member_seq
     WHERE 1=1
       <if test="fkBoardTypeSeq != null">
-        AND b.fk_board_type_seq = #{fkBoardTypeSeq}
+        AND b.fk_board_type_seq = #{fkBoardTypeSeq, jdbcType=NUMERIC}
       </if>
       <if test="fkBoardCategorySeq != null and fkBoardCategorySeq != ''">
-        AND b.fk_board_category_seq = #{fkBoardCategorySeq}
+        AND b.fk_board_category_seq = #{fkBoardCategorySeq, jdbcType=NUMERIC}
+      </if>
+      <if test="fkDepartmentSeq != null and fkDepartmentSeq != ''">
+        AND m.fk_department_seq = #{fkDepartmentSeq, jdbcType=NUMERIC}
       </if>
       <if test="searchWord != null and searchWord != ''">
         <choose>
           <when test="searchType == 'boardTitle'">
-            AND b.board_title LIKE '%' || #{searchWord} || '%'
+            AND b.board_title LIKE '%' || #{searchWord, jdbcType=VARCHAR} || '%'
           </when>
           <when test="searchType == 'boardContent'">
-            AND b.board_content LIKE '%' || #{searchWord} || '%'
+            AND b.board_content LIKE '%' || #{searchWord, jdbcType=VARCHAR} || '%'
           </when>
           <when test="searchType == 'titleContent'">
-            AND (b.board_title LIKE '%' || #{searchWord} || '%'
-             OR  b.board_content LIKE '%' || #{searchWord} || '%')
+            AND (b.board_title LIKE '%' || #{searchWord, jdbcType=VARCHAR} || '%'
+             OR  b.board_content LIKE '%' || #{searchWord, jdbcType=VARCHAR} || '%')
           </when>
           <when test="searchType == 'memberName'">
-            AND m.member_name LIKE '%' || #{searchWord} || '%'
+            AND m.member_name LIKE '%' || #{searchWord, jdbcType=VARCHAR} || '%'
           </when>
         </choose>
       </if>
-  </select>
+</select>
 
   <!-- 페이징 목록 -->
   <select id="boardListSearch_withPaging" parameterType="map"
@@ -227,19 +230,42 @@
   </select>
 
   <!-- 이전글/다음글 -->
-  <select id="getPrevBoard" parameterType="string"
-          resultType="com.spring.app.board.domain.BoardDTO">
+  <select id="getPrevBoard" parameterType="map"
+        resultType="com.spring.app.board.domain.BoardDTO">
     SELECT b.board_seq AS boardSeq, b.board_title AS boardTitle
-      FROM tbl_board b
-     WHERE b.board_seq = (SELECT MAX(board_seq) FROM tbl_board WHERE board_seq &lt; #{boardSeq})
-  </select>
+    FROM tbl_board b
+    LEFT JOIN tbl_member m ON b.fk_member_seq = m.member_seq
+    WHERE b.board_seq = (
+        SELECT MAX(board_seq)
+        FROM tbl_board
+        WHERE board_seq &lt; #{boardSeq}
+        <if test="fkBoardTypeSeq != null"> 
+            AND fk_board_type_seq = #{fkBoardTypeSeq}
+        </if>
+        <if test="fkDepartmentSeq != null"> 
+            AND m.fk_department_seq = #{fkDepartmentSeq}
+        </if>
+    )
+</select>
 
-  <select id="getNextBoard" parameterType="string"
-          resultType="com.spring.app.board.domain.BoardDTO">
+<select id="getNextBoard" parameterType="map"
+        resultType="com.spring.app.board.domain.BoardDTO">
     SELECT b.board_seq AS boardSeq, b.board_title AS boardTitle
-      FROM tbl_board b
-     WHERE b.board_seq = (SELECT MIN(board_seq) FROM tbl_board WHERE board_seq &gt; #{boardSeq})
-  </select>
+    FROM tbl_board b
+    LEFT JOIN tbl_member m ON b.fk_member_seq = m.member_seq
+    WHERE b.board_seq = (
+        SELECT MIN(board_seq)
+        FROM tbl_board
+        WHERE board_seq &gt; #{boardSeq}
+        <if test="fkBoardTypeSeq != null"> 
+            AND fk_board_type_seq = #{fkBoardTypeSeq}
+        </if>
+        <if test="fkDepartmentSeq != null"> 
+            AND m.fk_department_seq = #{fkDepartmentSeq}
+        </if>
+    )
+</select>
+  
 
   <!-- 글 수정 -->
   <update id="updateBoard" parameterType="com.spring.app.board.domain.BoardDTO">
