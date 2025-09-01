@@ -99,7 +99,7 @@ public class SignService_imple implements SignService {
         int r = 0;
 
         // ---------- 문서 머리 ----------
-        r = makeMergedTitle(sheet, r, sTitle, docTypeName + " 상세");
+        r = makeMergedTitle(sheet, r, sTitle, docTypeName);
 
         // ---------- 메타 ----------
         r = writeMetaTable(sheet, r, sHead, sCell, sWrapTop, draft);

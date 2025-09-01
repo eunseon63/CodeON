@@ -29,6 +29,7 @@ import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.spring.app.chatting.controller.WebsocketEchoHandler;
 import com.spring.app.common.FileManager;
 import com.spring.app.domain.MemberDTO;
 import com.spring.app.domain.SignlineDTO;
@@ -86,6 +87,8 @@ public class SignController {
     private final SignService signService;
     private final SignlineService signlineService;
     private final MemberService memberService;
+    private final WebsocketEchoHandler wsHandler;
+
 
     /* ===================== 메인/요약 ===================== */
     @GetMapping("main")
@@ -684,6 +687,7 @@ public class SignController {
     }
 
     /* ===================== 승인/반려 & 연차 반영 ===================== */
+    /* ===================== 승인 ===================== */
     @PostMapping("lines/{draftLineSeq}/approve")
     @Transactional
     @ResponseBody
@@ -702,7 +706,8 @@ public class SignController {
         Draft d = anyLine.getDraft();
         int prevStatus = (d.getDraftStatus()==null ? 0 : d.getDraftStatus());
 
-        boolean editing = !Integer.valueOf(0).equals(mine.getSignStatus());
+        // 편집모드(이미 승인/반려했던 라인)면 순번 체크 패스
+        boolean editing = (mine.getSignStatus()!=null && mine.getSignStatus()!=0);
         if (!editing) {
             Integer nextOrd = draftLineRepository.findNextOrder(draftSeq);
             if (nextOrd == null || !mine.getLineOrder().equals(nextOrd)) {
@@ -710,11 +715,17 @@ public class SignController {
             }
         }
 
+        // 변경 전 상태/코멘트 저장(수정 여부 판단용)
+        Integer oldStatus  = mine.getSignStatus();  // 0|1|9
+        String  oldComment = mine.getSignComment();
+
+        // 승인 반영
         mine.setSignStatus(1);
         mine.setSignComment(comment);
         mine.setSignDate(java.time.LocalDateTime.now());
         draftLineRepository.save(mine);
 
+        // 전체 상태 재계산
         List<DraftLine> lines = draftLineRepository
             .findByDraft_DraftSeqOrderByLineOrderAscDraftLineSeqAsc(draftSeq);
         boolean anyReject  = lines.stream().anyMatch(l -> Integer.valueOf(9).equals(l.getSignStatus()));
@@ -723,14 +734,69 @@ public class SignController {
         d.setDraftStatus(anyReject ? 9 : (allApprove ? 1 : 0));
         draftRepository.save(d);
 
+        // 연차 반영 (최종 승인/취소 전환 시)
         if (prevStatus == 1 && !allApprove) {
             revertVacationDeductionIfNeeded(d);
         } else if (prevStatus != 1 && allApprove) {
             applyVacationDeductionIfNeeded(d);
         }
 
+        // 알림
+        try {
+            String link = "/sign/view/" + draftSeq;
+            String docTitle = d.getDraftTitle();
+            String approverName = ((MemberDTO)session.getAttribute("loginuser")).getMemberName();
+            boolean edited = (oldStatus != null && oldStatus != 0);
+            boolean commentChanged = !java.util.Objects.equals(oldComment, comment);
+
+            // (A) 기안자: 단계 승인 / 최종 승인 / 반려→승인 전환
+            if (allApprove) {
+                pushToUser(d.getMember(),
+                    (edited && oldStatus == 9) ? "전자결재 최종 승인(반려→승인)" : "전자결재 최종 승인",
+                    "「" + docTitle + "」 문서가 최종 승인되었습니다.",
+                    link,
+                    "appr_final_" + draftSeq
+                );
+            } else {
+                String title = (edited && oldStatus == 9) ? "전자결재 승인(반려→승인)" : "전자결재 승인";
+                pushToUser(d.getMember(),
+                    title,
+                    approverName + " 님이 「" + docTitle + "」 문서를 승인했습니다.",
+                    link,
+                    "appr_step_" + draftSeq + "_" + mine.getLineOrder()
+                );
+
+                // (선택) 승인 상태에서 의견만 수정
+                if (edited && oldStatus == 1 && commentChanged) {
+                    pushToUser(d.getMember(),
+                        "결재 의견 수정",
+                        approverName + " 님이 「" + docTitle + "」 의견을 수정했습니다.",
+                        link,
+                        "appr_comment_update_" + draftSeq + "_" + mine.getLineOrder()
+                    );
+                }
+            }
+
+            // (B) 다음 결재자: 결재 요청 도착 (최종 승인 아니면)
+            Integer nextOrdAfter = draftLineRepository.findNextOrder(draftSeq);
+            if (!allApprove && nextOrdAfter != null) {
+                DraftLine nextLine = lines.stream()
+                    .filter(l -> nextOrdAfter.equals(l.getLineOrder()))
+                    .findFirst().orElse(null);
+                if (nextLine != null && nextLine.getApprover() != null) {
+                    pushToUser(nextLine.getApprover(),
+                        (edited && oldStatus == 9) ? "결재 요청 도착(재개)" : "결재 요청 도착",
+                        "「" + docTitle + "」 결재 대기 (" + nextOrdAfter + "단계)",
+                        link,
+                        "req_" + draftSeq + "_" + nextOrdAfter
+                    );
+                }
+            }
+        } catch (Exception ignore) {}
+
         return Map.of("ok", true, "lineSeq", mine.getDraftLineSeq());
     }
+
 
     private void applyVacationDeductionIfNeeded(Draft draft) {
         var optVac = vacationRepository.findByDraftSeq(draft.getDraftSeq());
@@ -746,6 +812,8 @@ public class SignController {
         ).setParameter("d", useDays)
          .setParameter("m", draft.getMember().getMemberSeq())
          .executeUpdate();
+        
+        
     }
 
     private void revertVacationDeductionIfNeeded(Draft draft) {
@@ -770,6 +838,7 @@ public class SignController {
         return new java.math.BigDecimal(days);
     }
 
+    /* ===================== 반려 ===================== */
     @PostMapping("lines/{draftLineSeq}/reject")
     @Transactional
     @ResponseBody
@@ -788,7 +857,8 @@ public class SignController {
         Draft d = anyLine.getDraft();
         int prevStatus = (d.getDraftStatus()==null ? 0 : d.getDraftStatus());
 
-        boolean editing = !Integer.valueOf(0).equals(mine.getSignStatus());
+        // 편집모드(이미 승인/반려했던 라인)면 순번 체크 패스
+        boolean editing = (mine.getSignStatus()!=null && mine.getSignStatus()!=0);
         if (!editing) {
             Integer nextOrd = draftLineRepository.findNextOrder(draftSeq);
             if (nextOrd == null || !mine.getLineOrder().equals(nextOrd)) {
@@ -796,11 +866,17 @@ public class SignController {
             }
         }
 
+        // 변경 전 상태/코멘트 저장(수정 여부 판단용)
+        Integer oldStatus  = mine.getSignStatus();  // 0|1|9
+        String  oldComment = mine.getSignComment();
+
+        // 반려 반영
         mine.setSignStatus(9);
         mine.setSignComment(comment);
         mine.setSignDate(java.time.LocalDateTime.now());
         draftLineRepository.save(mine);
 
+        // 전체 상태 재계산
         List<DraftLine> lines = draftLineRepository
             .findByDraft_DraftSeqOrderByLineOrderAscDraftLineSeqAsc(draftSeq);
         boolean anyReject  = lines.stream().anyMatch(l -> Integer.valueOf(9).equals(l.getSignStatus()));
@@ -809,9 +885,58 @@ public class SignController {
         d.setDraftStatus(anyReject ? 9 : (allApprove ? 1 : 0));
         draftRepository.save(d);
 
+        // 연차 복구(최종승인 → 취소)
         if (prevStatus == 1 && !allApprove) {
             revertVacationDeductionIfNeeded(d);
         }
+
+        // 알림
+        try {
+            String link = "/sign/view/" + draftSeq;
+            String docTitle = d.getDraftTitle();
+            String approverName = ((MemberDTO)session.getAttribute("loginuser")).getMemberName();
+            boolean edited = (oldStatus != null && oldStatus != 0);
+            boolean commentChanged = !java.util.Objects.equals(oldComment, comment);
+
+            // (A) 기안자: 반려 / 승인→반려 전환 / 반려 의견 수정
+            String reason = (comment == null || comment.isBlank()) ? ""
+                          : (" (사유: " + (comment.length() > 60 ? comment.substring(0,60) + "…" : comment) + ")");
+
+            String title;
+            String body;
+            String notiId;
+            if (edited && oldStatus == 1) {
+                title = "전자결재 반려(승인→반려)";
+                body  = approverName + " 님이 「" + docTitle + "」 문서를 승인에서 반려로 변경했습니다." + reason;
+                notiId = "reject_change_" + draftSeq;
+            } else if (edited && oldStatus == 9 && commentChanged) {
+                title = "전자결재 반려 의견 수정";
+                body  = approverName + " 님이 「" + docTitle + "」 반려 의견을 수정했습니다." + reason;
+                notiId = "reject_update_" + draftSeq;
+            } else {
+                title = "전자결재 반려";
+                body  = approverName + " 님이 「" + docTitle + "」 문서를 반려했습니다." + reason;
+                notiId = "reject_" + draftSeq;
+            }
+
+            pushToUser(d.getMember(), title, body, link, notiId);
+
+            // (B) 다음 결재자에게 '요청 취소' (승인에서 반려로 바꾼 경우에 한해)
+            if (edited && oldStatus == 1) {
+                DraftLine nextCandidate = lines.stream()
+                    .filter(l -> Integer.valueOf(0).equals(l.getSignStatus()))
+                    .sorted(java.util.Comparator.comparing(DraftLine::getLineOrder))
+                    .findFirst().orElse(null);
+                if (nextCandidate != null && nextCandidate.getApprover() != null) {
+                    pushToUser(nextCandidate.getApprover(),
+                        "결재 요청 취소",
+                        "「" + docTitle + "」 결재 요청이 상위 단계에서 반려되어 취소되었습니다.",
+                        link,
+                        "req_cancel_" + draftSeq + "_" + nextCandidate.getLineOrder()
+                    );
+                }
+            }
+        } catch (Exception ignore) {}
 
         return Map.of("ok", true, "lineSeq", mine.getDraftLineSeq());
     }
@@ -953,5 +1078,34 @@ public class SignController {
         signService.exportDraftToExcel(draftSeq, model);
         return "excelDownloadView"; 
     }
+    
+    // 승인, 반려 알림
+    private void pushToUser(Member target, String title, String body, String link, String notiId) {
+        if (target == null) return;
+
+        // Member 엔티티에 사용자 아이디(로그인 ID)가 들어있는 getter 이름이 다를 수 있어요.
+        // 일반적으로 getMemberUserid() 또는 getMemberId() 형태일 것.
+        String userid = null;
+        try {
+            // 가장 흔한 케이스
+            userid = (String) Member.class.getMethod("getMemberUserid").invoke(target);
+        } catch (Exception ignore) {
+            try { userid = (String) Member.class.getMethod("getMemberId").invoke(target); }
+            catch (Exception ignore2) {}
+        }
+        if (userid == null || userid.isBlank()) return;
+
+        wsHandler.pushNotify(userid,
+            new WebsocketEchoHandler.NotifyPayload(
+                "notify",
+                title,
+                body,
+                link,                      // ex) "/sign/view/123"
+                notiId,                    // 중복 방지용 ID
+                java.time.OffsetDateTime.now().toString()
+            )
+        );
+    }
+
     
 }

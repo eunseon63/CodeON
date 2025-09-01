@@ -6,7 +6,9 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.springframework.stereotype.Component;
 import org.springframework.web.socket.CloseStatus;
@@ -14,6 +16,7 @@ import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.handler.TextWebSocketHandler;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.spring.app.chatting.domain.MessageDTO;
 import com.spring.app.chatting.domain.Mongo_messageDTO;
 import com.spring.app.chatting.service.ChattingMongoOperations;
@@ -41,6 +44,23 @@ public class WebsocketEchoHandler extends TextWebSocketHandler {
 	
     // init-method
     public void init() throws Exception{}
+    
+ // 사용자별 세션 관리(알림 1:1 전송용)
+    private final Map<String, Set<WebSocketSession>> userSessions = new ConcurrentHashMap<>();
+
+    // JSON 직렬화
+    private final ObjectMapper om = new ObjectMapper();
+
+    // 알림 페이로드(JSON으로 보냄)
+    @lombok.Getter @lombok.Setter @lombok.NoArgsConstructor @lombok.AllArgsConstructor
+    public static class NotifyPayload {
+        private String kind = "notify"; // 고정 구분자
+        private String title;           // 예: 전자결재 승인
+        private String body;            // 예: 문서 #123 이(가) 승인되었습니다.
+        private String link;            // 예: /approval/detail?docId=123
+        private String notiId;          // 중복 방지/읽음처리용 ID(선택)
+        private String createdAt;       // ISO-8601 문자열(선택)
+    }
     
     
     // === 클라이언트가 웹소켓서버에 연결했을때의 작업 처리하기 ===
@@ -123,6 +143,12 @@ public class WebsocketEchoHandler extends TextWebSocketHandler {
     			memberDto_list.add(loginuser);
     		}
     		// === 웹소켓 서버에 접속시 채팅에 접속한 사용자ID, 성명, 이메일 정보를 보여주기 위한 것 끝 === //
+    		
+    		if (loginuser != null) {
+    		    userSessions
+    		      .computeIfAbsent(loginuser.getMemberUserid(), k -> ConcurrentHashMap.newKeySet())
+    		      .add(webSocketSession /* 또는 wsession. 여기서는 각 루프의 세션 대신, 현재 세션 등록은 wsession에 대해 한 번만 수행해도 충분합니다 */);
+    		}
     		
     	}// end of for----------------------------------
     	
@@ -429,8 +455,33 @@ public class WebsocketEchoHandler extends TextWebSocketHandler {
              }
      		// >>>> 접속을 끊을시 현재 남아있는 채팅에 접속한 사용자ID, 성명, 이메일 정보를 보여주기 위한 것 끝 <<<< //
         
+     	if (loginuser != null) {
+     	    Set<WebSocketSession> set = userSessions.get(loginuser.getMemberUserid());
+     	    if (set != null) {
+     	        set.remove(wsession);
+     	        if (set.isEmpty()) userSessions.remove(loginuser.getMemberUserid());
+     	    }
+     	}
+
+     	
     }// end of public void afterConnectionClosed(WebSocketSession wsession, CloseStatus status) throws Exception 
-	    
+
+    // 특정 사용자에게 알림 푸시
+    public void pushNotify(String memberUserid, NotifyPayload payload) {
+        Set<WebSocketSession> sessions = userSessions.get(memberUserid);
+        if (sessions == null || sessions.isEmpty()) return;
+
+        try {
+            String json = om.writeValueAsString(payload); // JSON 직렬화
+            TextMessage msg = new TextMessage(json);
+            for (WebSocketSession s : sessions) {
+                if (s.isOpen()) {
+                    try { s.sendMessage(msg); } catch (Exception ignore) {}
+                }
+            }
+        } catch (Exception ignore) {}
+    }
+    
 }
 
 
