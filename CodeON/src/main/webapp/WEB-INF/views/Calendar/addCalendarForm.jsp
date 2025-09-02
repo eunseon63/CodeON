@@ -1,24 +1,20 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
-<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
-
+<%@ taglib prefix="c"  uri="http://java.sun.com/jsp/jstl/core" %>
 <%
-    String ctxPath  = request.getContextPath();
-    String role     = (String) session.getAttribute("role");     // "ADMIN", "TEAM_LEADER", ...
-    String loginId  = (String) session.getAttribute("loginId");
+    String ctxPath = request.getContextPath();
 %>
-
 <html>
 <head>
 <jsp:include page="/WEB-INF/views/header/header.jsp" />
-
 <meta charset="UTF-8">
 <title>일정 등록</title>
 
+<!-- jQuery UI (자동완성용) -->
+<link rel="stylesheet" href="https://code.jquery.com/ui/1.13.2/themes/base/jquery-ui.css">
+<script src="https://code.jquery.com/ui/1.13.2/jquery-ui.js"></script>
+
 <style>
-:root{
-  --bg:#f4f6f8; --card:#ffffff; --line:#e5e7eb; --text:#111827; --muted:#6b7280; --brand:#22c55e;
-  --radius:12px; --shadow:0 8px 20px rgba(0,0,0,.08);
-}
+:root{ --bg:#f4f6f8; --card:#ffffff; --line:#e5e7eb; --text:#111827; --muted:#6b7280; --brand:#22c55e; --shadow:0 8px 20px rgba(0,0,0,.08); }
 *{box-sizing:border-box}
 body{margin:0; background:var(--bg); color:var(--text); font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Noto Sans KR",Arial,Helvetica,sans-serif;}
 .container{max-width:760px; margin:46px auto; background:var(--card); border:1px solid var(--line); border-radius:16px; box-shadow:var(--shadow); padding:28px 34px;}
@@ -29,115 +25,26 @@ input:focus, textarea:focus, select:focus{outline:none; border-color:#8b5cf6; ba
 textarea{resize:vertical; min-height:110px}
 .row{display:grid; grid-template-columns:1fr 1fr; gap:14px}
 .helper{font-size:12px; color:var(--muted); margin-top:6px}
-.inline{display:flex; gap:10px; align-items:center}
 .btn-submit{margin-top:22px; width:100%; padding:12px; background:linear-gradient(90deg,#22c55e,#16a34a); border:none; border-radius:10px; color:#fff; font-size:16px; font-weight:700; cursor:pointer}
-.btn-submit:hover{filter:brightness(.98)}
+.alert{margin-top:12px; padding:12px; border:1px solid #fecaca; background:#fff1f2; color:#991b1b; border-radius:10px; font-size:13px}
 .hidden{display:none}
+
+/* 공유자 태그 스타일 */
+span.plusUser{
+    float:left;
+    background-color:#737373;
+    color:white;
+    border-radius: 6px;
+    padding: 6px 10px;
+    margin: 3px;
+    font-size:13px;
+}
+span.plusUser > i {
+    cursor: pointer;
+    margin-left:6px;
+}
+.displayUserList{margin-top:8px; min-height:24px;}
 </style>
-
-<script>
-// === 타입 ↔ 대분류 텍스트 매핑 ===
-const TYPE_TO_BIG_TEXT = {
-  COMPANY:    '사내',
-  DEPARTMENT: '부서',
-  PERSONAL:   '개인',
-  SHARE:      '공유'
-};
-
-// 대분류 <select>에서 라벨 텍스트로 선택
-function selectBigByText(keyword){
-  const sel = document.getElementById('bigCategorySeq');
-  const kw  = (keyword||'').toLowerCase();
-  for(const opt of sel.options){
-    const txt = (opt.textContent||opt.innerText||'').toLowerCase();
-    if(txt.includes(kw)){ sel.value = opt.value; return true; }
-  }
-  return false;
-}
-
-// 소분류: data-fk로 대분류 필터링
-function filterSmallByBig(){
-  const bigVal = document.getElementById('bigCategorySeq').value;
-  const smSel  = document.getElementById('smallCategorySeq');
-  const opts   = smSel.querySelectorAll('option[data-fk]');
-  smSel.value = ''; // 초기화
-  opts.forEach(o=>{
-    const match = !bigVal || o.getAttribute('data-fk') === bigVal;
-    o.style.display = match ? '' : 'none';
-  });
-}
-
-// 타입 변경 시: 대분류 자동맞춤, 공유필드 토글, 대분류 잠금
-function onCalendarTypeChange(){
-  const type = document.getElementById('calendarType').value;
-  const want = TYPE_TO_BIG_TEXT[type];
-  if (want){
-    selectBigByText(want);
-    filterSmallByBig();
-    // 공유 입력 토글
-    document.getElementById('shareEmployeesGroup').classList.toggle('hidden', type!=='SHARE');
-    // 대분류 잠금: SHARE만 직접 고를 수 있게
-    document.getElementById('bigCategorySeq').disabled = (type!=='SHARE');
-  }
-  // 타입 기본색 가이드(선택): DB에서 색을 관리한다면 주석 가능
-  const colorInput = document.getElementById('calendarColor');
-  if(!colorInput.value){
-    const def = defaultColorByType(type);
-    if(def) colorInput.value = def;
-  }
-}
-
-// 타입별 기본색(미입력/플레이스홀더일 때만 힌트용)
-function defaultColorByType(type){
-  switch(type){
-    case 'COMPANY':    return '#6b46c1';
-    case 'DEPARTMENT': return '#2563eb';
-    case 'PERSONAL':   return '#16a34a';
-    case 'SHARE':      return '#f59e0b';
-    default: return '';
-  }
-}
-
-// 제출 전 최종 검증 (타입/대분류 일치, 공유 입력, 시간 범위 등)
-function validateForm(){
-  const title = document.getElementById('title').value.trim();
-  const start = document.getElementById('startDate').value;
-  const end   = document.getElementById('endDate').value;
-  const type  = document.getElementById('calendarType').value;
-  const bigSel= document.getElementById('bigCategorySeq');
-  const bigTxt= (bigSel.options[bigSel.selectedIndex]?.textContent || '').trim();
-
-  if(!title){ alert('제목을 입력하세요.'); return false; }
-  if(!start || !end){ alert('시작/종료 일시를 모두 입력하세요.'); return false; }
-  if(new Date(start) > new Date(end)){ alert('종료일은 시작일 이후여야 합니다.'); return false; }
-
-  const want = TYPE_TO_BIG_TEXT[type] || '';
-  if(!want || !bigTxt.includes(want)){
-    alert(`선택한 "캘린더 선택"(${type})과 "대분류"가 일치해야 합니다. (예: ${want})`);
-    return false;
-  }
-
-  if(type==='SHARE'){
-    const share = document.getElementById('shareEmployees').value.trim();
-    if(!share){ alert('공유 캘린더는 공유할 직원을 입력하세요.'); return false; }
-  }
-  return true;
-}
-
-document.addEventListener('DOMContentLoaded', ()=>{
-  // 초기 진입: 타입 기본값 결정 (권한에 따라)
-  const typeSel = document.getElementById('calendarType');
-  if(!typeSel.value){ typeSel.value = 'PERSONAL'; }
-  onCalendarTypeChange();
-
-  // 이벤트 바인딩
-  typeSel.addEventListener('change', onCalendarTypeChange);
-  document.getElementById('bigCategorySeq').addEventListener('change', filterSmallByBig);
-
-  // 초기 소분류 필터
-  filterSmallByBig();
-});
-</script>
 </head>
 
 <body>
@@ -145,39 +52,39 @@ document.addEventListener('DOMContentLoaded', ()=>{
   <h2>일정 등록</h2>
 
   <form action="<%= ctxPath %>/Calendar/addCalendarForm" method="post" onsubmit="return validateForm();">
-    <!-- 캘린더 선택 (권한별 노출) -->
-    <label>캘린더 선택</label>
-    <select name="calendarType" id="calendarType" required>
-      <c:if test="${role == 'ADMIN'}">
-        <option value="COMPANY">사내 캘린더</option>
-      </c:if>
-      <c:if test="${role == 'TEAM_LEADER'}">
-        <option value="DEPARTMENT">부서 캘린더</option>
-      </c:if>
-      <option value="PERSONAL">내 캘린더</option>
-      <option value="SHARE">공유 캘린더</option>
-    </select>
-    <div class="helper">선택한 캘린더에 맞춰 대분류가 자동으로 매칭됩니다.</div>
 
-    <!-- 대분류 / 소분류 -->
-    <label>대분류 선택</label>
-    <select name="bigCategorySeq" id="bigCategorySeq" required>
-      <option value="">-- 선택하세요 --</option>
-      <c:forEach var="bigCat" items="${bigCategoryList}">
-        <option value="${bigCat.bigCategorySeq}">${bigCat.bigCategoryName}</option>
-      </c:forEach>
-    </select>
+    <!-- 대분류 -->
+	<label>캘린더 선택</label>
+	<select name="bigCategorySeq" id="bigCategorySeq" required>
+	  <option value="">-- 선택하세요 --</option>
+	  <c:forEach var="bigCat" items="${bigCategoryList}">
+	    <c:choose>
+	     
+	      <c:when test="${bigCat.bigCategoryName eq '부서 캘린더' && sessionScope.loginuser.fkGradeSeq lt 3}">
+	      
+	      </c:when>
+	      <c:otherwise>
+	        <option value="${bigCat.bigCategorySeq}">${bigCat.bigCategoryName}</option>
+	      </c:otherwise>
+	    </c:choose>
+	  </c:forEach>
+	</select>
+	<div class="helper">예: 사내 / 부서 / 내 캘린더 등</div>
 
-    <label>소분류 선택</label>
-    <select name="smallCategorySeq" id="smallCategorySeq">
-      <option value="">-- 선택하세요 --</option>
+    <!-- 소분류 -->
+    <label>일정 선택</label>
+    <select name="smallCategorySeq" id="smallCategorySeq" required>
+      <option value="">-- 캘린더를 먼저 선택하세요 --</option>
       <c:forEach var="smallCat" items="${smallCategoryList}">
-        <!-- fk_big_category_seq를 data-fk로 실어 필터링 -->
         <option value="${smallCat.smallCategorySeq}" data-fk="${smallCat.fkBigCategorySeq}">
           ${smallCat.smallCategoryName}
         </option>
       </c:forEach>
     </select>
+    <div id="noSmallAlert" class="alert hidden">
+      선택한 대분류에 연결된 소분류가 없습니다.
+    </div>
+
 
     <!-- 제목/내용 -->
     <label>일정 제목</label>
@@ -190,11 +97,11 @@ document.addEventListener('DOMContentLoaded', ()=>{
     <div class="row">
       <div>
         <label>시작 날짜</label>
-        <input type="datetime-local" id="startDate" name="startDate" required>
+        <input type="datetime-local" id="startDate" name="startDate" value="${param.date}T09:00" required>
       </div>
       <div>
         <label>종료 날짜</label>
-        <input type="datetime-local" id="endDate" name="endDate" required>
+        <input type="datetime-local" id="endDate" name="endDate" value="${param.date}T10:00" required>
       </div>
     </div>
 
@@ -207,15 +114,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
       <div>
         <label>색상</label>
         <input type="color" id="calendarColor" name="calendarColor" value="">
-        <div class="helper">미선택 시 서버/DB 기본 정책을 따릅니다.</div>
       </div>
-    </div>
-
-    <!-- 공유 입력 -->
-    <div id="shareEmployeesGroup" class="hidden">
-      <label>공유할 직원</label>
-      <input type="text" id="shareEmployees" name="shareEmployees" placeholder="사원번호 또는 사원이름, 쉼표(,)로 구분">
-      <div class="helper">예: 101, 205, 김철수</div>
     </div>
 
     <!-- 반복 -->
@@ -227,9 +126,67 @@ document.addEventListener('DOMContentLoaded', ()=>{
       <option value="MONTHLY">매월</option>
     </select>
 
-    <button type="submit" class="btn-submit">등록하기</button>
+    <button type="submit" id="btnSubmit" class="btn-submit">등록하기</button>
   </form>
 </div>
+
+<script>
+
+	function validateForm() {
+		  // 제목 필수
+		  if (!$("#title").val().trim()) {
+		    alert("일정 제목을 입력하세요.");
+		    $("#title").focus();
+		    return false;
+		  }
+
+		  // 대분류 필수
+		  if (!$("#bigCategorySeq").val()) {
+		    alert("캘린더(대분류)를 선택하세요.");
+		    $("#bigCategorySeq").focus();
+		    return false;
+		  }
+
+		  // 소분류 필수
+		  if (!$("#smallCategorySeq").val()) {
+		    alert("일정을 선택하세요.");
+		    $("#smallCategorySeq").focus();
+		    return false;
+		  }
+
+		  // 시작 / 종료 날짜 검사
+		  const start = $("#startDate").val();
+		  const end = $("#endDate").val();
+		  if (!start || !end) {
+		    alert("시작일과 종료일을 입력하세요.");
+		    return false;
+		  }
+		  if (start > end) {
+		    alert("종료일은 시작일 이후여야 합니다.");
+		    $("#endDate").focus();
+		    return false;
+		  }
+
+		  // 장소 (선택이지만 길이 제한)
+		  if ($("#calendarLocation").val().length > 50) {
+		    alert("장소는 50자 이내로 입력하세요.");
+		    $("#calendarLocation").focus();
+		    return false;
+		  }
+
+		  // 내용 (선택이지만 길이 제한)
+		  if ($("textarea[name=content]").val().length > 500) {
+		    alert("내용은 500자 이내로 입력하세요.");
+		    $("textarea[name=content]").focus();
+		    return false;
+		  }
+
+		  return true; // 통과 시 submit 진행
+		}
+
+
+
+</script>
 
 <jsp:include page="../footer/footer.jsp" />
 </body>

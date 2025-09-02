@@ -35,7 +35,6 @@ body{margin:0; background:var(--bg); color:var(--text); font-family:-apple-syste
 
 .main{background:var(--card); border:1px solid var(--line); border-radius:var(--radius); box-shadow:var(--shadow); padding:16px; position:relative}
 
-/* FullCalendar 미세 스타일 */
 .fc .fc-toolbar-title{font-size:18px; font-weight:700}
 .fc .fc-button{border-radius:10px !important; border:none !important; background:#eef2ff !important; color:#1f2937 !important}
 .fc .fc-button-primary:not(:disabled).fc-button-active,.fc .fc-button-primary:not(:disabled):active{background:#e0e7ff !important}
@@ -53,24 +52,16 @@ body{margin:0; background:var(--bg); color:var(--text); font-family:-apple-syste
 <body>
 
 <input type="hidden" value="${sessionScope.loginuser.memberSeq}" id="fk_userid" />
-<input type="hidden" value="${sessionScope.loginuser.department}" id="memberDept" />
+<input type="hidden" value="${sessionScope.loginuser.fkDepartmentSeq}" id="memberDept" />
 
 <div class="wrapper">
   <div class="layout">
 
     <aside class="aside">
       <h2>캘린더</h2>
-      <!-- '전체' 제거, 기본은 '사내' -->
       <button class="btn-nav" data-cat="사내"><span>🏢</span><span>사내 일정</span></button>
       <button class="btn-nav" data-cat="부서"><span>👥</span><span>부서 일정</span></button>
       <button class="btn-nav" data-cat="개인"><span>🧑</span><span>개인 일정</span></button>
-      <button class="btn-nav" data-cat="공유"><span>🔗</span><span>공유 일정</span></button>
-
-      <!-- 안내용 범례(실제 색은 DB→플레이스홀더면 타입색) -->
-      <div class="badge"><span class="dot" style="background:#6b46c1"></span>사내(기본)</div>
-      <div class="badge"><span class="dot" style="background:#2563eb"></span>부서(기본)</div>
-      <div class="badge"><span class="dot" style="background:#16a34a"></span>개인(기본)</div>
-      <div class="badge"><span class="dot" style="background:#f59e0b"></span>공유(기본)</div>
     </aside>
 
     <main class="main">
@@ -83,39 +74,32 @@ body{margin:0; background:var(--bg); color:var(--text); font-family:-apple-syste
 
 <script>
 let calendar;
-let currentCategory = '개인';  // 기본 탭
+let currentCategory = '사내';  // 기본은 사내 일정
 
-// === 유틸: 타입 정규화(사내/부서/개인/공유) ===
 function normalizeCategory(raw){
-  const x=(raw||'').toString().trim().toLowerCase().replace(/\s+/g,'');
-  if(x.includes('사내')||['company','corp'].includes(x))return'사내';
-  if(x.includes('부서')||x.includes('팀')||['department','dept'].includes(x))return'부서';
-  if(x.includes('개인')||x==='내'||['my','personal','me'].includes(x))return'개인';
-  if(x.includes('공유')||['share','shared'].includes(x))return'공유';
+  const x=(raw||'').toString().trim().toLowerCase();
+  if(x.includes('사내')) return '사내';
+  if(x.includes('부서')) return '부서';
+  if(x.includes('개인')||x.includes('내')) return '개인';
   return raw||'';
 }
 
-// === 타입 기본색(플레이스홀더일 때만) ===
 function defaultColorByType(normType){
   switch(normType){
     case '사내': return '#6b46c1';
     case '부서': return '#2563eb';
     case '개인': return '#16a34a';
-    case '공유': return '#f59e0b';
     default: return '#3788d8';
   }
 }
 
-// === DB 색이 '플레이스홀더'인지 판정 ===
-// (매퍼/DB를 건드리지 않고, 전부 같은 색(#3788d8 등)으로 내려올 때만 타입색으로 보정)
-const PLACEHOLDER_SET = new Set(['', '#', '#000000', '#3788d8', 'transparent', 'inherit', 'auto', 'null', 'undefined']);
+const PLACEHOLDER_SET = new Set(['', '#000000', '#3788d8', 'transparent', 'null']);
 function resolveColor(dbColor, normType){
-  const c = (dbColor||'').toString().trim().toLowerCase();
-  if(!c || PLACEHOLDER_SET.has(c)) return defaultColorByType(normType); // ★ 보정
-  return dbColor; // ★ DB 색 그대로 사용
+  const c=(dbColor||'').toString().trim().toLowerCase();
+  if(!c || PLACEHOLDER_SET.has(c)) return defaultColorByType(normType);
+  return dbColor;
 }
 
-// === 버튼 active UI ===
 function updateActiveButtons(){
   document.querySelectorAll('.btn-nav').forEach(btn=>{
     btn.classList.toggle('active', btn.dataset.cat===currentCategory);
@@ -131,64 +115,49 @@ function initCalendar(){
     locale:'ko',
     height:'auto',
     headerToolbar:{left:'prev,next today',center:'title',right:'dayGridMonth,timeGridWeek,timeGridDay'},
-
-    // 대한민국 공휴일
     googleCalendarApiKey:"AIzaSyASM5hq3PTF2dNRmliR_rXpjqNqC-6aPbQ",
     eventSources:[{googleCalendarId:'ko.south_korea#holiday@group.v.calendar.google.com',color:'white',textColor:'red'}],
-
     loading:isLoading=>{loadingEl.style.display=isLoading?'flex':'none'},
 
-    // DB 연동
     events:function(fetchInfo,successCallback,failureCallback){
-      const userid=String(document.getElementById('fk_userid').value||'').trim();
+      const userid=$("#fk_userid").val();
+      const dept=$("#memberDept").val();
+      let url="";
+      let data={_:Date.now()};
+
+      if(currentCategory==='개인'){
+        url='<%= ctxPath %>/Calendar/selectCalendar';
+        data.calendarUser=userid;
+      }
+      else if(currentCategory==='부서'){
+        url='<%= ctxPath %>/Calendar/selectDeptCalendar';
+        data.fkDepartmentSeq=dept;
+      }
+      else if(currentCategory==='사내'){
+        url='<%= ctxPath %>/Calendar/selectCompanyCalendar';
+      }
 
       $.ajax({
-        url:'<%= ctxPath %>/Calendar/selectCalendar',
-        type:'GET',
-        data:{fk_userid:userid, _:Date.now()},
-        dataType:'json',
-        cache:false,
+        url:url, type:'GET', data:data, dataType:'json',
         success:function(json){
-          const events=[];
-          json.forEach(function(item){
-            const typeRaw = item.type || item.calendarType;
-            const normType = normalizeCategory(typeRaw);
-            if(normType!==currentCategory) return;
-
-            // ★ 매퍼 수정 없이: DB색을 그대로 쓰되, '플레이스홀더'면 타입색으로만 보정
-            const dbColor = (item.color || item.calendarColor || '').toString().trim();
-            const colorToUse = resolveColor(dbColor, normType);
-
-            const id    = item.id ?? item.calendarSeq;
-            const title = item.title ?? item.calendarName;
-            const start = item.start ?? item.calendarStart;
-            const end   = item.end ?? item.calendarEnd;
-
-            const evt = {
-              id, title, start, end,
-              url:'<%= ctxPath %>/Calendar/detailCalendar?calendarSeq='+id,
+          const events=json.map(item=>{
+            const normType=normalizeCategory(item.calendarType);
+            const color=resolveColor(item.calendarColor,normType);
+            return {
+              id:item.calendarSeq, title:item.calendarName,
+              start:item.calendarStart, end:item.calendarEnd,
+              url:'<%= ctxPath %>/Calendar/detailCalendar?calendarSeq='+item.calendarSeq,
+              color:color, backgroundColor:color, borderColor:color,
               extendedProps:{
                 type:normType,
-                department:item.department ?? '',
-                ownerId:item.ownerId ?? item.calendarUser ?? '',
-                location:item.location ?? item.calendarLocation ?? '',
-                content:item.content ?? item.calendarContent ?? ''
+                location:item.calendarLocation,
+                content:item.calendarContent
               }
             };
-
-            // 색 적용
-            evt.color = colorToUse;
-            evt.backgroundColor = colorToUse;
-            evt.borderColor = colorToUse;
-
-            events.push(evt);
           });
           successCallback(events);
         },
-        error:function(request,status,error){
-          console.error("Ajax 오류:",request.responseText,error);
-          failureCallback(error);
-        }
+        error:function(req){ console.error("Ajax 오류:",req.responseText); failureCallback(req);}
       });
     },
 
@@ -198,7 +167,12 @@ function initCalendar(){
     },
 
     dateClick:function(info){
-      window.location.href="<%= ctxPath %>/Calendar/addCalendarForm?date="+info.dateStr;
+    	 let seq="";
+    	 if(currentCategory==='사내') seq=1;
+    	 else if(currentCategory==='부서') seq=2;
+    	 else if(currentCategory==='개인') seq=3;
+    	
+    	window.location.href="<%= ctxPath %>/Calendar/addCalendarForm?date=" + info.dateStr + "&bigCategorySeq=" + seq;
     }
   });
 
@@ -207,7 +181,7 @@ function initCalendar(){
 }
 
 document.addEventListener('click',function(e){
-  const btn=e.target.closest('.btn-nav'); if(!btn) return;2
+  const btn=e.target.closest('.btn-nav'); if(!btn) return;
   const cat=btn.dataset.cat; if(!cat||cat===currentCategory) return;
   currentCategory=cat; updateActiveButtons(); calendar.refetchEvents();
 });
