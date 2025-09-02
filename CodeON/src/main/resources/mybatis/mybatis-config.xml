@@ -13,6 +13,8 @@
   <typeAlias type="com.spring.app.board.domain.BoardDTO" alias="BoardDTO"/>
   <typeAlias type="com.spring.app.mail.domain.MailDTO" alias="MailDTO"/>
   <typeAlias type="com.spring.app.mail.domain.MailUserStatusDTO" alias="MailUserStatusDTO"/>
+  <typeAlias type="com.spring.app.calendar.domain.CalendarDTO" alias="CalendarDTO" />
+  <typeAlias type="com.spring.app.calendar.domain.CalendarAjaxDTO" alias="CalendarAjaxDTO" />
   
   <package name="com.spring.app.attendance.domain"/>
 </typeAliases>
