@@ -41,6 +41,33 @@
             }
         });
     });
+    
+    // 읽음 상태 아이콘 클릭
+    $(document).on('click', '.read-icon', function(event) {
+        event.stopPropagation();
+        var icon = $(this);
+        var row = icon.closest('tr');
+        var emailSeq = icon.data('emailseq');
+        var currentStatus = String(icon.data('readstatus'));
+        var newStatus = currentStatus === '1' ? '0' : '1';
+
+        $.ajax({
+            url: "<%= ctxPath %>/mail/updateReadStatus",
+            type: 'POST',
+            dataType: "json",
+            data: { emailSeq: emailSeq, readStatus: newStatus },
+            success: function(json) {
+                if (json.n === 1) {
+                    icon.removeClass('bi-envelope-fill bi-envelope-open-fill text-primary text-secondary');
+                    if (newStatus === '1') icon.addClass('bi-envelope-open-fill text-secondary');
+                    else icon.addClass('bi-envelope-fill text-primary');
+                    icon.data('readstatus', newStatus);
+                    updateRowReadStatus(row, newStatus);
+                    updateMailCount();
+                }
+            }
+        });
+    });
 
     // 행 클릭 시 상세보기
     $(document).on('click', 'tr.mail-row', function() {

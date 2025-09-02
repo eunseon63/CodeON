@@ -134,8 +134,9 @@
 	           ON e.email_seq = us.email_seq
 	          AND us.member_email = #{loginUserEmail}
 	    WHERE 1=1
-	      AND ( e.send_member_email = #{loginUserEmail}
-	         OR e.receive_member_email = #{loginUserEmail} )
+		AND ( e.send_member_email = #{loginUserEmail}
+		   OR ',' || e.receive_member_email || ',' LIKE '%,' || #{loginUserEmail} || ',%' )
+
 	      
 	      <if test="searchWord != null and searchWord != ''">
 	        AND LOWER(e.email_title) LIKE CONCAT('%', LOWER(#{searchWord}), '%')
