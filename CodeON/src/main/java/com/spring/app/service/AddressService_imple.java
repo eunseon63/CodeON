@@ -24,13 +24,17 @@ public class AddressService_imple implements AddressService {
 
     @Override
     public List<Department> departments() {
+    	// 부서 목록을 departmentSeq 기준 오름차순 정렬해서 조회
         return departmentRepository.findAll(Sort.by(Sort.Order.asc("departmentSeq")));
     }
 
     @Override
     public Page<AddressDTO> search(Integer dept, String kw, int page, int size) {
+    	// PageRequest.of()는 0-based 인덱스 → page-1 처리
         Pageable pageable = PageRequest.of(Math.max(page - 1, 0), size);
+        // dept가 null일 경우를 위해 Long 변환
         Long deptParam = (dept == null ? null : dept.longValue());
+        // MemberRepository의 커스텀 검색 쿼리 실행
         return memberRepository.searchAddress(deptParam, kw, pageable);
     }
 

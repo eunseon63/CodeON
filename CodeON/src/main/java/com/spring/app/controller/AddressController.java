@@ -25,18 +25,18 @@ public class AddressController {
                        @RequestParam(value="q",    required=false) String kw,
                        @RequestParam(value="page", required=false, defaultValue="1") int page,
                        Model model) {
+    	
+    	// 부서 목록 조회(드롭다운 용)
+        var departments = addressService.departments();	
+        // 조건(부서, 키워드)에 맞는 주소록 검색 + 페이징
+        var result = addressService.search(dept, kw, page, PAGE_SIZE);	
 
-        var departments = addressService.departments();
-        var result = addressService.search(dept, kw, page, PAGE_SIZE);
-
-        model.addAttribute("departments", departments);
-        model.addAttribute("selectedDept", dept);	
-        model.addAttribute("keyword", kw);	
-
-        model.addAttribute("items", result.getContent());
-        model.addAttribute("page", result.getNumber() + 1); // 1-based
-        model.addAttribute("totalPages", result.getTotalPages());
-
-        return "address/list"; // 기존 JSP 그대로
+        model.addAttribute("departments", departments);			  // 부서 목록
+        model.addAttribute("selectedDept", dept);			      // 선택된 부서
+        model.addAttribute("keyword", kw);				          // 검색 키워드
+        model.addAttribute("items", result.getContent()); 		  // 조회된 데이터 목록
+        model.addAttribute("page", result.getNumber() + 1); 	  // 현재 페이지
+        model.addAttribute("totalPages", result.getTotalPages()); // 전체 페이지 수
+        return "address/list"; 
     }
 }

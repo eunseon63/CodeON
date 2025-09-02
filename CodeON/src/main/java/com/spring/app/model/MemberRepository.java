@@ -43,11 +43,11 @@ public interface MemberRepository extends JpaRepository<Member, Integer> {
 	@Query("select m from Member m left join fetch m.department d where m.fkGradeSeq <> 1 order by m.fkDepartmentSeq asc, m.memberName asc")
 	List<Member> getSignlineMember();
 	
-
+	// 부서정보, 사원정보, 직급 조회
 	@Query("""
 			  select new com.spring.app.domain.AddressDTO(
-			    d.departmentSeq, d.departmentName,
-			    m.memberSeq, m.memberName, m.memberEmail, m.memberMobile, m.memberUserid,
+			    d.departmentSeq, d.departmentName,	
+			    m.memberSeq, m.memberName, m.memberEmail, m.memberMobile, m.memberUserid,	
 			    g.gradeName
 			  )
 			  from Member m
