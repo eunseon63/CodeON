@@ -59,7 +59,6 @@
 	</insert>
 	
 	<!-- 발신자/수신자 상태 저장 -->
-
 	<insert id="insertMailUser" parameterType="MailDTO">
 	    INSERT ALL
 	    <foreach collection="userStatusList" item="status">
@@ -77,6 +76,7 @@
 	    </foreach>
 	    SELECT * FROM dual
 	</insert>
+
    
    
    <insert id="write_withFile" parameterType="MailDTO">

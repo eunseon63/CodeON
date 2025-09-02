@@ -3,7 +3,7 @@
     String ctxPath = request.getContextPath();
 %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
-<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
+<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 
 <!-- Bootstrap & Icons -->
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -150,9 +150,17 @@
 	                                        </c:if>
 	                                    </div>
 	                                </td>
-	                                <td class="align-middle ${mail.readStatus == '1' ? 'text-secondary' : 'text-dark'}">
-	                                    ${mail.receiveMemberEmail}
-	                                </td>
+									<td class="align-middle ${mail.readStatus == '1' ? 'text-secondary' : 'text-dark'}">
+									    <c:set var="emails" value="${fn:split(mail.receiveMemberEmail, ',')}" />
+									    <c:choose>
+									        <c:when test="${fn:length(emails) == 1}">
+									            ${emails[0]}
+									        </c:when>
+									        <c:otherwise>
+									            ${emails[0]} 외 ${fn:length(emails) - 1}명
+									        </c:otherwise>
+									    </c:choose>
+									</td>
 	                                <td class="align-middle ${mail.readStatus == '1' ? 'text-secondary' : 'text-dark'}">
 	                                    ${mail.emailTitle}
 	                                </td>
