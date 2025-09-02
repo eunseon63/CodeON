@@ -1,4 +1,3 @@
-
 package com.spring.app.entity;
 
 import java.time.LocalDate;
@@ -103,5 +102,6 @@ public class Member {
     			.build();
     }
 }
+
 
 

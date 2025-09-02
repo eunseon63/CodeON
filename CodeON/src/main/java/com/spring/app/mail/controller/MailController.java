@@ -406,13 +406,18 @@ public class MailController {
 	    sender.setImportantStatus(importantStatus);
 	    statusList.add(sender);
 
-	    // 수신자
-	    MailUserStatusDTO receiver = new MailUserStatusDTO();
-	    receiver.setMemberEmail(mailDto.getReceiveMemberEmail());
-	    receiver.setReadStatus("0"); // 수신자는 안읽음
-	    receiver.setImportantStatus(importantStatus); 
-	    statusList.add(receiver);
+	    // 수신자 (콤마 구분 여러 명)
+	    String[] receivers = mailDto.getReceiveMemberEmail().split(",");
+	    for(String rEmail : receivers) {
+	        rEmail = rEmail.trim();
+	        if(rEmail.isEmpty()) continue;
 
+	        MailUserStatusDTO receiver = new MailUserStatusDTO();
+	        receiver.setMemberEmail(rEmail);
+	        receiver.setReadStatus("0"); // 수신자는 안읽음
+	        receiver.setImportantStatus(importantStatus);
+	        statusList.add(receiver);
+	    }
 	    mailDto.setUserStatusList(statusList);
 
 	    int n;
