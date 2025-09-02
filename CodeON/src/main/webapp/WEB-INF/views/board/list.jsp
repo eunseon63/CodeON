@@ -61,11 +61,13 @@
     <div class="row">
 
         <!-- 왼쪽 사이드바: 이번 주 인기글 -->
-<div class="col-md-3 sidebar">
-    <h5 class="mt-4 mb-3">이번 주 인기글 TOP 5 (월요일 자정)</h5>
+<div class="col-md-3 sidebar mt-5">
+    <h5 class="mb-3">이번 주 인기글 TOP 5 (월요일 자정)</h5>
     <div class="list-group">
         <c:forEach var="board" items="${weeklyPopular}">
-            <a href="${ctxPath}/board/view?boardSeq=${board.boardSeq}" class="list-group-item list-group-item-action mb-2 shadow-sm rounded d-flex justify-content-between align-items-center" style="transition: transform 0.2s;">
+            <a href="${ctxPath}/board/view?boardSeq=${board.boardSeq}" 
+               class="list-group-item list-group-item-action mb-2 shadow-sm rounded d-flex justify-content-between align-items-center" 
+               style="transition: transform 0.2s;">
                 <span class="fw-semibold">${board.boardTitle}</span>
                 <span class="badge bg-primary rounded-pill ms-2">👍 ${board.recommendCount}</span>
             </a>

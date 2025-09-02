@@ -73,8 +73,6 @@ public class BoardDAO_imple implements BoardDAO {
 		    return sqlSession.selectOne("board.getNextBoard", paraMap);
 		}
 		
-		
-		
 
 		@Override
 		public int delete(String boardSeq) {
