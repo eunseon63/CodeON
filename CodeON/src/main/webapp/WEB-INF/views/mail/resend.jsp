@@ -28,7 +28,7 @@
            }
        });
 
-       $('button#btnWrite').click(function(){
+       $('button#btnReply').click(function(e){
            oEditors.getById["emailContent"].exec("UPDATE_CONTENTS_FIELD", []);
 
            // 제목 유효성 검사
@@ -50,44 +50,49 @@
                return false;
            }
 
-	        // 폼(form)을 전송(submit)
-	        const frm = document.writeFrm;
-	        frm.method = "post";
-	        frm.action = "<%= ctxPath%>/mail/write";
-	        frm.submit();
+           // 폼 전송
+           const frm = document.replyFrm;
+           frm.method = "post";
+           frm.action = "<%= ctxPath%>/mail/write";
+           frm.submit();
        });
    });
 </script>
 
 <main style="margin-left: 240px; padding-top: 20px;">
     <div class="container-fluid">
-        <h3 class="mb-4">메일 작성</h3>
+        <h3 class="mb-4">메일 답장</h3>
 
-        <form id="mailForm" name="writeFrm" enctype="multipart/form-data">
-			<div class="mb-3 row">
-			    <label for="sendMemberEmail" class="col-sm-2 col-form-label">보내는 사람</label>
-			    <div class="col-sm-10">
-			        <input type="email" class="form-control" id="sendMemberEmail" name="sendMemberEmail"
-			               value="${sessionScope.receiveMemberEmail}" readonly>
-			    </div>
-			</div>
+        <form id="replyForm" name="replyFrm" enctype="multipart/form-data">
             <div class="mb-3 row">
-                <label for="receiveMemberEmail" class="col-sm-2 col-form-label">받는 사람</label>
+                <label for="sendMemberEmail" class="col-sm-2 col-form-label">보내는 사람</label>
                 <div class="col-sm-10">
-                    <input type="email" class="form-control" id="receiveMemberEmail" name="receiveMemberEmail" value="${sessionScope.sendMemberEmail}" readonly>
+                    <input type="email" class="form-control"
+                           id="sendMemberEmail" name="sendMemberEmail"
+                           value="${sessionScope.loginuser.memberEmail}" readonly>
                 </div>
             </div>
 
-			<div class="mb-3 row align-items-center">
-			    <label for="emailTitle" class="col-sm-2 col-form-label">
-			        제목
-			        <input type="checkbox" id="emailSendImportant" name="emailSendImportant" value="1" class="ms-2">
-			        <span class="small" >중요 *</span>
-			    </label>
-			    <div class="col-sm-10">
-			        <input type="text" class="form-control" id="emailTitle" name="emailTitle" required>
-			    </div>
-			</div>
+            <div class="mb-3 row">
+                <label for="receiveMemberEmail" class="col-sm-2 col-form-label">받는 사람</label>
+                <div class="col-sm-10">
+                    <input type="email" class="form-control"
+                           id="receiveMemberEmail" name="receiveMemberEmail"
+                           value="${replyMail.receiveMemberEmail}" readonly>
+                </div>
+            </div>
+
+            <div class="mb-3 row align-items-center">
+                <label for="emailTitle" class="col-sm-2 col-form-label">
+                    제목
+                    <input type="checkbox" id="emailSendImportant" name="emailSendImportant" value="1" class="ms-2">
+                    <span class="small">중요 *</span>
+                </label>
+                <div class="col-sm-10">
+                    <input type="text" class="form-control" id="emailTitle" name="emailTitle"
+                           value="${replyMail.emailTitle}" required>
+                </div>
+            </div>
 
             <div class="mb-3 row">
                 <label for="emailFile" class="col-sm-2 col-form-label">첨부파일</label>
@@ -99,12 +104,22 @@
             <div class="mb-3 row">
                 <label for="emailContent" class="col-sm-2 col-form-label">내용</label>
                 <div class="col-sm-10">
-                    <textarea id="emailContent" name="emailContent"></textarea>
+                    <textarea id="emailContent" name="emailContent">
+						<br><br>
+						-----------------------------<br>
+						보낸사람: ${originalMail.sendMemberEmail}<br>
+						받는사람: ${originalMail.receiveMemberEmail}<br>
+						보낸시간: ${originalMail.emailRegdate}<br>
+						제목: ${originalMail.emailTitle}<br>
+						-----------------------------<br>
+						내용: ${originalMail.emailContent}<br>
+
+                    </textarea>
                 </div>
             </div>
 
             <div class="text-end">
-                <button type="button" class="btn btn-primary" id="btnWrite">보내기</button>
+                <button type="button" class="btn btn-primary" id="btnReply">보내기</button>
                 <button type="reset" class="btn btn-secondary">초기화</button>
             </div>
         </form>

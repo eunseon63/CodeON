@@ -1,12 +1,9 @@
 package com.spring.app.mail.domain;
 
-import org.springframework.web.multipart.MultipartFile;
+import lombok.*;
+import java.util.List;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import org.springframework.web.multipart.MultipartFile;
 
 @Getter
 @Setter
@@ -15,24 +12,25 @@ import lombok.Setter;
 @Builder
 public class MailDTO {
 
+    // --- 메일 정보 ---
     private String emailSeq;
     private String sendMemberEmail;
     private String receiveMemberEmail;
-    private String emailSendOrgno;
-    private String emailReceiveOrgno;
     private String emailTitle;
     private String emailContent;
     private String emailRegdate;
-    private String emailSendStatus;
-    private String emailReceiveStatus;
     
     private MultipartFile attach;
     
     private String emailFilename;
     private String emailOrgFilename;
     private String emailFilesize;
+
+    // --- 사용자별 상태 ---
+    private List<MailUserStatusDTO> userStatusList;
     
-    private String emailSendImportant;
-    private String emailReceiveImportant;
-    private String emailReadStatus;
+    private String readStatus;
+    private String importantStatus;
 }
+
+

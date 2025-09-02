@@ -32,7 +32,7 @@
 
 <div class="sidebar">
   <a href="<%= request.getContextPath() %>/mail/write">메일쓰기</a>
-  <a href="<%= request.getContextPath() %>/mail/list">받은 메일함</a>
+  <a href="<%= request.getContextPath() %>/mail/list">전체 메일함</a>
   <a href="<%= request.getContextPath() %>/mail/send">보낸 메일함</a>
-  <a href="<%= request.getContextPath() %>/mail/important">중요 메일함</a>
+  <a href="<%= request.getContextPath() %>/mail/receive">받은 메일함</a>
 </div>

@@ -76,6 +76,22 @@
         VALUES (seq_recommend.nextval, #{fkBoardSeq}, #{fkMemberSeq})
     </insert>
 
+<!-- 추천 취소 -->
+<delete id="deleteRecommend" parameterType="map">
+    DELETE FROM tbl_recommend
+    WHERE fk_board_seq = #{fkBoardSeq}
+      AND fk_member_seq = #{fkMemberSeq}
+</delete>
+
+<!-- 추천 여부 확인 -->
+<select id="existsRecommend" parameterType="map" resultType="int">
+    SELECT COUNT(*) 
+    FROM tbl_recommend
+    WHERE fk_board_seq = #{fkBoardSeq}
+      AND fk_member_seq = #{fkMemberSeq}
+</select>
+
+
     <!-- 추천 수 조회 -->
     <select id="selectRecommendCount" parameterType="int" resultType="int">
         SELECT COUNT(*) 
@@ -119,6 +135,10 @@
     WHERE reply_seq = #{replySeq}
       AND fk_member_seq = #{fkMemberSeq}  <!-- 본인 체크 -->
 </update>
+
+
+
+
 
 
 </mapper>

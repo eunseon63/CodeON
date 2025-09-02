@@ -5,48 +5,60 @@
 <jsp:include page="../header/header.jsp"/>
 <jsp:include page="signsidebar.jsp"/>
 
-<div class="main-content" style="margin-left:220px;padding:20px 28px 64px;background:#f6f7fb;min-height:100vh">
-  <div class="page-wrap" style="max-width:1200px;margin:24px auto">
+<style>
+  .doc-wrap{ margin-left:220px;padding:20px 28px 64px;background:#f6f7fb;min-height:100vh }
+  .doc-page{ max-width:1200px;margin:24px auto }
+  .doc-card{ background:#fff;border:1px solid #e5e7eb;border-radius:16px }
+  .doc-body{ padding:14px }
+
+  .doc-table{ width:100%; border-collapse:collapse; }
+  .doc-th, .doc-td{ border:1px solid #e5e7eb; padding:10px; }
+  .doc-th{ background:#f9fafb; font-weight:700; }
+  .rowlink{ cursor:pointer; }
+  .rowlink:hover{ background:#fbfdff; }
+  .rowlink:focus{ outline:2px solid #93c5fd; outline-offset:-2px; }
+
+  .badge{ padding:2px 8px; border-radius:999px; font-size:12px; white-space:nowrap; }
+  .b-type{ background:#f3f4f6; color:#374151; }
+  .b-emg { background:#fff5f5; color:#b91c1c; border:1px solid #fecaca; }
+</style>
+
+<div class="main-content doc-wrap">
+  <div class="doc-page">
     <h2 style="margin:0 0 14px;font-weight:800">결재하기</h2>
 
-    <div class="card" style="background:#fff;border:1px solid #e5e7eb;border-radius:16px">
-      <div class="card-b" style="padding:14px">
-        <table style="width:100%;border-collapse:collapse">
+    <div class="doc-card">
+      <div class="doc-body">
+        <table class="doc-table">
           <thead>
-            <tr style="background:#f9fafb">
-              <th style="border:1px solid #e5e7eb;padding:8px;width:90px">문서번호</th>
-              <th style="border:1px solid #e5e7eb;padding:8px;width:100px">유형</th>
-              <th style="border:1px solid #e5e7eb;padding:8px">제목</th>
-              <th style="border:1px solid #e5e7eb;padding:8px;width:120px">기안자</th>
-              <th style="border:1px solid #e5e7eb;padding:8px;width:120px">기안일</th>
-              <th style="border:1px solid #e5e7eb;padding:8px;width:80px">긴급</th>
+            <tr>
+              <th class="doc-th" style="width:90px">문서번호</th>
+              <th class="doc-th" style="width:120px">유형</th>
+              <th class="doc-th">제목</th>
+              <th class="doc-th" style="width:120px">기안자</th>
+              <th class="doc-th" style="width:120px">기안일</th>
+              <th class="doc-th" style="width:80px">긴급</th>
             </tr>
           </thead>
           <tbody>
           <c:choose>
             <c:when test="${empty rows}">
-              <tr><td colspan="7" style="border:1px solid #e5e7eb;padding:16px;text-align:center;color:#6b7280">대기 중인 결재가 없습니다.</td></tr>
+              <tr><td class="doc-td" colspan="6" style="text-align:center;color:#6b7280">대기 중인 결재가 없습니다.</td></tr>
             </c:when>
             <c:otherwise>
               <c:forEach var="r" items="${rows}">
-                <!-- ▼ 행 전체 클릭 이동용 data-href 만 추가 -->
-                <tr class="rowlink"
-                    data-href="${pageContext.request.contextPath}/sign/view/${r.draftSeq}"
-                    style="cursor:pointer">
-                  <td style="border:1px solid #e5e7eb;padding:8px;text-align:center">${r.draftSeq}</td>
-                  <td style="border:1px solid #e5e7eb;padding:8px;text-align:center">${r.docType}</td>
-                  <td style="border:1px solid #e5e7eb;padding:8px">
-                    <!-- 제목은 기존처럼 링크 유지 -->
-                    <a href="${pageContext.request.contextPath}/sign/view/${r.draftSeq}"
-                       style="text-decoration:none;color:#111">${r.title}</a>
+                <tr class="rowlink" tabindex="0"
+                    data-href="${pageContext.request.contextPath}/sign/view/${r.draftSeq}">
+                  <td class="doc-td" style="text-align:center">${r.draftSeq}</td>
+                  <td class="doc-td" style="text-align:center"><span class="badge b-type"><c:out value="${r.docType}"/></span></td>
+                  <td class="doc-td">
+                    <a href="${pageContext.request.contextPath}/sign/view/${r.draftSeq}" style="color:#111;font-weight:600;text-decoration:none">
+                      <c:out value="${r.title}"/>
+                    </a>
                   </td>
-                  <td style="border:1px solid #e5e7eb;padding:8px;text-align:center">${r.drafterName}</td>
-                  <td style="border:1px solid #e5e7eb;padding:8px;text-align:center">
-                    <fmt:formatDate value="${r.regdate}" pattern="yyyy-MM-dd"/>
-                  </td>
-                  <td style="border:1px solid #e5e7eb;padding:8px;text-align:center">
-                    <c:if test="${r.isEmergency==1}">✅</c:if>
-                  </td>
+                  <td class="doc-td" style="text-align:center">${r.drafterName}</td>
+                  <td class="doc-td" style="text-align:center"><fmt:formatDate value="${r.regdate}" pattern="yyyy-MM-dd"/></td>
+                  <td class="doc-td" style="text-align:center"><c:if test="${r.isEmergency==1}"><span class="badge b-emg">긴급</span></c:if></td>
                 </tr>
               </c:forEach>
             </c:otherwise>
@@ -60,26 +72,17 @@
 
 <script>
 const ctx='${pageContext.request.contextPath}';
-
-// 행 전체 클릭 → view 로 이동 (버튼/링크 클릭은 제외)
-document.addEventListener('click', (e) => {
-  const tr = e.target.closest('tr.rowlink');
-  if (!tr) return;
-  if (e.target.closest('button') || e.target.closest('a')) return;
-  location.href = tr.dataset.href;
+// 행 전체 클릭/엔터 이동 (버튼/링크 클릭은 제외)
+document.addEventListener('click',(e)=>{
+  const tr=e.target.closest('tr.rowlink'); if(!tr) return;
+  if(e.target.closest('a,button')) return;
+  location.href=tr.dataset.href;
 });
-
-async function approve(id){
-  const comment = prompt('의견(선택):')??'';
-  const res = await fetch(`${ctx}/sign/lines/${id}/approve`, {method:'POST', body:new URLSearchParams({comment})});
-  const j = await res.json(); if(!j.ok){ alert(j.msg||'실패'); return; } location.reload();
-}
-async function reject(id){
-  const comment = prompt('반려 사유(필수):');
-  if(!comment || !comment.trim()){ alert('반려 사유를 입력하세요.'); return; }
-  const res = await fetch(`${ctx}/sign/lines/${id}/reject`, {method:'POST', body:new URLSearchParams({comment})});
-  const j = await res.json(); if(!j.ok){ alert(j.msg||'실패'); return; } location.reload();
-}
+document.addEventListener('keydown',(e)=>{
+  if(e.key!=='Enter') return;
+  const tr=e.target.closest('tr.rowlink'); if(!tr) return;
+  location.href=tr.dataset.href;
+});
 </script>
 
 <jsp:include page="../footer/footer.jsp"/>

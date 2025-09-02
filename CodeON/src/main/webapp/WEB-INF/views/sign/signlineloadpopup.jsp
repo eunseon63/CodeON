@@ -14,78 +14,92 @@
   <style>
 /* ---- 레이아웃/컴포넌트 ---- */
 body { margin:0; font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial; }
-.wrap { display:grid; grid-template-rows:auto auto 1fr auto; min-height:100vh; background:#f6f7fb; }
+.wrap { display:grid; grid-template-rows:auto 1fr auto; height:100vh; background:#f6f7fb; }
+
 header,footer{ padding:10px 12px; border-bottom:1px solid #e5e7eb; background:#f9fafb; }
 footer{ border-top:1px solid #e5e7eb; border-bottom:none; }
-main{ display:grid; grid-template-columns:1.2fr 1fr; gap:0; min-height:0; background:#f6f7fb; }
-.pane{ min-height:0; }
-.left{ border-right:1px solid #e5e7eb; background:#fff; }
-.right{ padding:10px; display:flex; flex-direction:column; gap:12px; overflow:auto; }
 
-.btn { height:34px; padding:0 12px; border:1px solid #e5e7eb; border-radius:8px; background:#fff; cursor:pointer; }
+.content{
+  /* 헤더~푸터 사이를 하나로 묶고 내부에서만 스크롤 */
+  min-height:0;
+  display:grid;
+  grid-template-rows:auto 1fr;
+  gap:10px;
+  padding:10px 12px;
+  overflow:hidden;
+  background:#f6f7fb;
+}
+
+main{
+  min-height:0;
+  display:grid;
+  grid-template-columns:1.1fr 1fr;
+  gap:12px;
+  overflow:hidden;   /* 각 pane이 스크롤 */
+  background:#f6f7fb;
+}
+
+.pane{ min-height:0; overflow:auto; background:#fff; border:1px solid #e5e7eb; border-radius:12px; }
+
+.btn { height:32px; padding:0 10px; border:1px solid #e5e7eb; border-radius:8px; background:#fff; cursor:pointer; }
 .btn:hover{ filter:brightness(0.98); }
 .btn.brand{ border-color:#2563eb; background:#2563eb; color:#fff; }
-.btn.small{ height:28px; padding:0 10px; border-radius:8px; }
+.btn.small{ height:26px; padding:0 8px; }
+.cap{ font-size:12px; color:#6b7280; }
 
-/* ---- 카드 ---- */
-.card { background:#fff; border:1px solid #e5e7eb; border-radius:14px; margin:12px; overflow:hidden; }
-.card-h { padding:12px 14px; font-weight:700; border-bottom:1px solid #e5e7eb; display:flex; align-items:center; justify-content:space-between; background:#fff; }
-.card-b { padding:12px 14px; background:#fff; }
-.controls { display:flex; gap:8px; align-items:center; }
+/* ---- 카드(저장된 결재라인) ---- */
+.card { background:#fff; border:1px solid #e5e7eb; border-radius:12px; overflow:hidden; }
+.card-h { padding:10px 12px; font-weight:700; border-bottom:1px solid #e5e7eb; display:flex; align-items:center; justify-content:space-between; background:#fff; }
+.card-b { padding:8px 10px; background:#fff; }
 
-/* 표 공통: sticky 헤더 안정화 */
-.table-wrap{ overflow:auto; max-height:340px; -webkit-overflow-scrolling:touch; }
+.table-wrap{
+  max-height: 220px;   /* ⬅️ 한 화면에 들어오도록 제한 */
+  overflow:auto;
+  -webkit-overflow-scrolling:touch;
+}
 table { width:100%; border-collapse:separate; border-spacing:0; }
-thead th {
+thead th{
   position:sticky; top:0; z-index:50; background:#fff;
-  border-bottom:1px solid #e5e7eb; padding:12px 14px; text-align:left; font-size:13px; color:#374151;
+  border-bottom:1px solid #e5e7eb; padding:10px 12px; text-align:left; font-size:13px; color:#374151;
   box-shadow:0 1px 0 #e5e7eb;
 }
-tbody td { border-bottom:1px solid #e5e7eb; padding:12px 14px; vertical-align:middle; background:#fff; }
-.empty { text-align:center; color:#6b7280; padding:20px 8px; }
-.pagination { display:flex; gap:8px; align-items:center; }
+tbody td{ border-bottom:1px solid #e5e7eb; padding:10px 12px; vertical-align:middle; background:#fff; }
+.empty { text-align:center; color:#6b7280; padding:16px 8px; }
+.pagination { display:flex; gap:6px; align-items:center; }
 
-/* ---- “저장된 결재라인” 전용 ---- */
-.table-wrap .tpl-table { min-width:1100px; }
-.tpl-table th.sel-col      { width:80px;  text-align:center; }
-.tpl-table th.name-col     { width:260px; }
-.tpl-table th.count-col    { width:140px; text-align:center; }
-.tpl-table td.sel-cell     { text-align:center; }
-.tpl-table td.count-cell   { text-align:center; }
+/* ---- 저장된 결재라인 표 컬럼 ---- */
+.tpl-table th.sel-col   { width:80px;  text-align:center; }
+.tpl-table th.name-col  { width:260px; }
+.tpl-table th.count-col { width:120px; text-align:center; }
+.tpl-table td.sel-cell  { text-align:center; }
+.tpl-table td.count-cell{ text-align:center; }
+
 .chips{ display:flex; gap:6px; flex-wrap:wrap; }
 .chip{ display:inline-flex; align-items:center; gap:6px; border:1px solid #e5e7eb; background:#fff; border-radius:999px; padding:4px 10px; font-size:12px; }
 .avatar{ width:20px; height:20px; border-radius:50%; background:#e8eefc; display:inline-flex; align-items:center; justify-content:center; font-size:11px; font-weight:700; color:#2b3a63; }
-.cap{ font-size:12px; color:#6b7280; }
 
-/* ---- 직원 리스트 (카드 느낌 + 헤더 최상위 고정) ---- */
-.tree{
-  position:relative;             /* ✅ 헤더 z-index 기준 컨텍스트 */
-  padding:16px 18px;
-  overflow:auto; max-height:calc(100vh - 320px);
-  -webkit-overflow-scrolling:touch; background:#fff;
-  scroll-padding-top:44px;       /* 포커스/앵커 이동 시 헤더에 안가리게 */
-}
-#deptTree table{ width:100%; border-collapse:separate; border-spacing:0 10px; }
+/* ---- 직원 리스트 테이블(좌측 pane 안) ---- */
+.tree{ padding:12px; }  /* pane 자체가 스크롤을 가짐 */
+#deptTree table{ width:100%; border-collapse:separate; border-spacing:0 8px; } /* 간격 조정 */
 #deptTree thead th{
-  position:sticky; top:0; z-index:100;   /* ✅ 헤더가 항상 위 */
+  position:sticky; top:0; z-index:100;
   background:#fff; box-shadow:0 1px 0 #e5e7eb;
-  padding:10px 12px; text-align:center; vertical-align:middle;
+  padding:8px 10px; text-align:center; vertical-align:middle;
 }
-#deptTree tbody, #deptTree tbody tr, #deptTree tbody td{
-  position:relative; z-index:1;          /* ✅ 본문은 헤더보다 아래 */
-}
+#deptTree tbody, #deptTree tbody tr, #deptTree tbody td{ position:relative; z-index:1; }
 #deptTree tbody td{
   padding:10px 12px; background:#fff; text-align:center; vertical-align:middle;
   border-top:1px solid #e5e7eb; border-bottom:1px solid #e5e7eb;
 }
 #deptTree tbody td:first-child{ border-left:1px solid #e5e7eb; border-radius:10px 0 0 10px; }
 #deptTree tbody td:last-child{ border-right:1px solid #e5e7eb; border-radius:0 10px 10px 0; }
+#deptTree .btn{ height:26px; padding:0 8px; }
 
 /* ---- 우측 선택 박스 ---- */
-.box{ border:1px dashed #e5e7eb; border-radius:12px; padding:10px; min-height:120px; background:#fff; }
-.row{ display:flex; align-items:center; justify-content:space-between; border:1px solid #e5e7eb; border-radius:10px; padding:8px 10px; margin-bottom:8px; background:#fff; }
-.ord{ width:28px; text-align:center; font-weight:700; }
-.actions .btn{ height:28px; }
+.box{ border:1px dashed #e5e7eb; border-radius:12px; padding:10px; min-height:160px; background:#fff; }
+.row{ display:flex; align-items:center; justify-content:space-between; border:1px solid #e5e7eb; border-radius:10px; padding:6px 8px; margin-bottom:8px; background:#fff; }
+.ord{ width:26px; text-align:center; font-weight:700; }
+.actions .btn{ height:26px; }
   </style>
 
   <!-- CSRF 메타 -->
@@ -99,14 +113,14 @@ tbody td { border-bottom:1px solid #e5e7eb; padding:12px 14px; vertical-align:mi
 <!-- ====================== script ====================== -->
 <script>
 const deptMap  = {10:"인사팀", 20:"개발팀", 30:"기획팀", 40:"영업팀", 50:"고객지원팀"};
-const gradeMap = {1:"사원",   2:"대리",   3:"과장",   4:"부장",   5:"사장"};
+const gradeMap = {1:"사원", 2:"대리", 3:"과장", 4:"부장", 5:"사장"};
 const ctx = "<%= ctxPath %>";
 
 let page = 1, size = 10, totalPages = 1;
 
 $(function(){
   bindEvents();
-  loadTemplates();   // 저장된 결재라인 목록
+  loadTemplates();   // 저장된 결재라인
   loadMembers();     // 직원 목록
 });
 
@@ -166,7 +180,7 @@ function loadTemplates(){
 
       const $sel = $('<input/>', { type:'radio', name:'tpl', value: String(id || '') });
 
-      /* 미리보기 멤버를 라디오에 data로 저장 → 상세 조회 없이 부모로 전송 가능 */
+      // 미리보기 멤버를 라디오에 data로 저장 → 상세 조회 없이 부모로 전송 가능
       if (members && members.length){
         var appr = [];
         for (var i=0; i<members.length; i++){
@@ -215,8 +229,6 @@ function loadTemplates(){
       }
       $tr.append($("<td/>").append($chips));
 
-      $tr.append($("<td/>", {class:"count-cell"}).text(count));
-
       $tbody.append($tr);
     });
   })
@@ -227,7 +239,7 @@ function loadTemplates(){
   });
 }
 
-/* ====== 템플릿 적용(부모창으로 즉시 전달) ====== */
+/* ====== 템플릿 적용(부모창에 즉시 전달) ====== */
 function useSelectedTemplate(){
   var $picked = $('input[name="tpl"]:checked');
   if($picked.length === 0){ alert("템플릿을 선택하세요."); return; }
@@ -235,7 +247,7 @@ function useSelectedTemplate(){
   var id = $picked.val();
   if(!id){ alert("템플릿 ID가 비어 있습니다."); return; }
 
-  // 1) 목록에서 붙여둔 approvers가 있으면 바로 적용
+  // 1) 목록 data에 approvers가 있으면 바로 적용
   var stored = $picked.data('approvers');
   if (Array.isArray(stored) && stored.length){
     var approvers1 = stored.map(function(a){
@@ -251,7 +263,7 @@ function useSelectedTemplate(){
     }
   }
 
-  // 2) 없으면 상세조회 한 번만
+  // 2) 없으면 상세 조회
   $.getJSON(ctx + "/sign/lines/" + encodeURIComponent(id))
     .done(function(dto){
       var members = (dto && dto.members ? dto.members.slice() : []).sort(function(a,b){
@@ -298,8 +310,8 @@ function loadMembers(){
         $tbody.append($("<tr/>").append($("<td/>", {colspan:4, style:"text-align:center", text:"직원이 없습니다."})));
       } else {
         json.forEach(function(m){
-          const dept = (m.department && m.department.departmentName) || deptMap[m.fkDepartmentSeq] || "";
-          const position = m.position || (gradeMap[m.fkGradeSeq] || "");
+          const dept = (m.department && m.department.departmentName) || m.deptName || deptMap[m.fkDepartmentSeq] || "";
+          const position = m.position || m.title || (gradeMap[m.fkGradeSeq] || "");
           const name     = m.name || m.memberName || "";
           const seq      = m.memberSeq || m.seq || m.id || 0;
 
@@ -347,11 +359,11 @@ function addApprover(seq, name, dept, pos){
   $row.append($meta);
 
   const $actions = $("<div/>", {class:"actions"});
-  const $up = $("<button/>", {type:"button", class:"btn small", text:"▲"}).on("click", function(){ moveUp(this); });
+  const $up   = $("<button/>", {type:"button", class:"btn small", text:"▲"}).on("click", function(){ moveUp(this); });
   const $down = $("<button/>", {type:"button", class:"btn small", text:"▼"}).on("click", function(){ moveDown(this); });
-  const $del = $("<button/>", {type:"button", class:"btn small", text:"삭제"})
-                .css({background:"#ef4444", color:"#fff", borderColor:"#ef4444"})
-                .on("click", function(){ removeRow(this); });
+  const $del  = $("<button/>", {type:"button", class:"btn small", text:"삭제"})
+                  .css({background:"#ef4444", color:"#fff", borderColor:"#ef4444"})
+                  .on("click", function(){ removeRow(this); });
   $actions.append($up, $down, $del);
   $row.append($actions);
 
@@ -418,54 +430,56 @@ function applyToParentFromCurrentSelection(){
     </div>
   </header>
 
-  <!-- 템플릿 목록 카드 -->
-  <section class="card" aria-label="저장된 결재라인">
-    <div class="card-h">
-      <span>저장된 결재라인</span>
-      <div class="controls">
-        <div class="pagination">
-          <button class="btn small" id="tplPrev">&laquo;</button>
-          <span id="pageInfo" class="cap">1/1</span>
-          <button class="btn small" id="tplNext">&raquo;</button>
+  <!-- 가운데 전체(스크롤 영역) -->
+  <div class="content">
+    <!-- 템플릿 목록 카드 -->
+    <section class="card" aria-label="저장된 결재라인">
+      <div class="card-h">
+        <span>저장된 결재라인</span>
+        <div class="controls" style="display:flex; gap:8px; align-items:center;">
+          <div class="pagination">
+            <button class="btn small" id="tplPrev">&laquo;</button>
+            <span id="pageInfo" class="cap">1/1</span>
+            <button class="btn small" id="tplNext">&raquo;</button>
+          </div>
+          <button class="btn brand" id="tplApply">선택 템플릿 적용</button>
         </div>
-        <button class="btn brand" id="tplApply">선택 템플릿 적용</button>
       </div>
-    </div>
-    <div class="card-b">
-      <div class="table-wrap">
-        <table class="tpl-table">
-          <thead>
-            <tr>
-              <th class="sel-col">선택</th>
-              <th class="name-col">템플릿명</th>
-              <th>결재선 미리보기</th>
-              <th class="count-col">결재자수</th>
-            </tr>
-          </thead>
-          <tbody id="tplTbody">
-            <tr><td colspan="4" class="empty">불러오는 중…</td></tr>
-          </tbody>
-        </table>
+      <div class="card-b">
+        <div class="table-wrap">
+          <table class="tpl-table">
+            <thead>
+              <tr>
+                <th class="sel-col">선택</th>
+                <th class="name-col">템플릿명</th>
+                <th>결재선 미리보기</th>
+              </tr>
+            </thead>
+            <tbody id="tplTbody">
+              <tr><td colspan="4" class="empty">불러오는 중…</td></tr>
+            </tbody>
+          </table>
+        </div>
       </div>
-    </div>
-  </section>
-
-  <!-- 메인 2컬럼: 좌 직원/우 선택 박스 -->
-  <main>
-    <!-- 좌: 직원 목록 -->
-    <section class="pane left">
-      <div id="deptTree" class="tree"></div>
     </section>
 
-    <!-- 우: 선택/정렬 -->
-    <section class="pane right">
-      <div style="display:flex; align-items:center; justify-content:space-between;">
-        <strong>선택한 결재자</strong>
-        <span class="cap" id="selCount">0/3</span>
-      </div>
-      <div id="selectedBox" class="box"></div>
-    </section>
-  </main>
+    <!-- 메인 2컬럼: 좌 직원/우 선택 박스 -->
+    <main>
+      <!-- 좌: 직원 목록 -->
+      <section class="pane left">
+        <div id="deptTree" class="tree"></div>
+      </section>
+
+      <!-- 우: 선택/정렬 -->
+      <section class="pane right">
+        <div style="display:flex; align-items:center; justify-content:space-between; padding:10px;">
+          <strong>선택한 결재자</strong>
+          <span class="cap" id="selCount">0/3</span>
+        </div>
+        <div id="selectedBox" class="box" style="margin:10px;"></div>
+      </section>
+    </main>
+  </div>
 
   <footer>
     <div style="display:flex; gap:8px; justify-content:flex-end;">

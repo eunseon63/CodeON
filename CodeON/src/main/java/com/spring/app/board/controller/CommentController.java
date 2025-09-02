@@ -216,10 +216,10 @@ public class CommentController {
     
     
     //추천
-    @PostMapping("recommend")
+    @PostMapping("toggleRecommend")
     @ResponseBody
-    public Map<String, Object> recommend(@RequestParam("fkBoardSeq") Integer fkBoardSeq,
-                                         HttpSession session) {
+    public Map<String, Object> toggleRecommend(@RequestParam("fkBoardSeq") Integer fkBoardSeq,
+                                               HttpSession session) {
         Map<String, Object> result = new HashMap<>();
         MemberDTO loginuser = (MemberDTO) session.getAttribute("loginuser");
 
@@ -233,14 +233,16 @@ public class CommentController {
         paramMap.put("fkMemberSeq", loginuser.getMemberSeq());
 
         try {
-            int added = commentService.addRecommend(paramMap);
-            if(added > 0) {
-                int newCount = commentService.getRecommendCount(fkBoardSeq);
-                result.put("status", "success");
-                result.put("newCount", newCount);
+            boolean exists = commentService.existsRecommend(paramMap);
+            if(exists) {
+                commentService.removeRecommend(paramMap); // 추천 취소
+                result.put("status", "removed");
             } else {
-                result.put("status", "already");
+                commentService.addRecommend(paramMap); // 추천 추가
+                result.put("status", "added");
             }
+            int newCount = commentService.getRecommendCount(fkBoardSeq);
+            result.put("newCount", newCount);
         } catch(Exception e) {
             e.printStackTrace();
             result.put("status", "fail");
@@ -248,7 +250,33 @@ public class CommentController {
 
         return result;
     }
+ // 현재 로그인 사용자의 추천 여부 체크
+    @GetMapping("checkRecommend")
+    @ResponseBody
+    public Map<String, Object> checkRecommend(@RequestParam("fkBoardSeq") Integer fkBoardSeq,
+                                              HttpSession session) {
+        Map<String, Object> result = new HashMap<>();
+        MemberDTO loginuser = (MemberDTO) session.getAttribute("loginuser");
 
+        if (loginuser == null) {
+            result.put("exists", false);
+            result.put("count", commentService.getRecommendCount(fkBoardSeq));
+            return result;
+        }
+
+        Map<String, Object> paramMap = new HashMap<>();
+        paramMap.put("fkBoardSeq", fkBoardSeq);
+        paramMap.put("fkMemberSeq", loginuser.getMemberSeq());
+
+        boolean exists = commentService.existsRecommend(paramMap);
+
+        result.put("exists", exists);
+        result.put("count", commentService.getRecommendCount(fkBoardSeq));
+
+        return result;
+    }
+    
+    
     // 게시글 추천수 조회
     @GetMapping("recommendCount")
     @ResponseBody

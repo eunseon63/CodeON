@@ -81,17 +81,32 @@
 
 
 <div class="modal fade" id="recommendModal" tabindex="-1" aria-labelledby="recommendModalLabel" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="recommendModalLabel">추천한 사람</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+  <div class="modal-dialog modal-dialog-centered modal-sm">
+    <div class="modal-content border-0 shadow-lg" style="border-radius: 12px; overflow: hidden;">
+      
+      <!-- 헤더 -->
+      <div class="modal-header bg-primary text-white" style="border-bottom: none;">
+        <h5 class="modal-title" id="recommendModalLabel">
+          <i class="bi bi-hand-thumbs-up-fill me-2"></i>현재 추천인
+        </h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
-      <div class="modal-body">
-        <ul id="recommendMemberList" class="list-group">
+      
+      <!-- 본문 -->
+      <div class="modal-body p-3" style="background-color: #f8f9fa;">
+        <ul id="recommendMemberList" class="list-group list-group-flush">
           <!-- AJAX로 추천한 사람 이름이 들어갑니다 -->
+          <!-- 예: <li class="list-group-item d-flex justify-content-between align-items-center">
+                  홍길동 <span class="badge bg-primary rounded-pill">👍</span>
+               </li> -->
         </ul>
       </div>
+
+      <!-- 푸터 (선택 사항) -->
+      <div class="modal-footer border-0 justify-content-center" style="background-color: #f8f9fa;">
+        <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">닫기</button>
+      </div>
+
     </div>
   </div>
 </div>
@@ -180,44 +195,45 @@ $(document).on("keypress", "[id^=replyContent-]", function(e) {
 
 // 추천 시작
 $(document).ready(function() {
-	
-    $("#btnRecommend").click(function() {
-        const fkBoardSeq = $("#boardSeq").val(); // hidden input 필요
 
+    const fkBoardSeq = $("#boardSeq").val(); // hidden input 필요
+
+    // 초기 추천 상태 체크 및 추천수 표시
+    function initRecommend() {
         $.ajax({
-            url: "${ctxPath}/comment/recommend",
-            type: "POST",
+            url: "${ctxPath}/comment/checkRecommend",
+            type: "GET",
             data: { fkBoardSeq: fkBoardSeq },
             success: function(response) {
-                if(response.status === "success") {
-                    // 추천 수 증가
-                    $("#recommendCount").text(response.newCount);
-                    
-                 // 2. 추천자 목록 가져오기
-                    loadRecommendMembers(fkBoardSeq);
-
-                    // 3. 댓글 목록 갱신
-                    goReadComment(1);
-                } else if(response.status === "already") {
-                    alert("이미 추천하셨습니다.");
+                // 버튼 색상 / 텍스트 토글
+                if(response.exists) {
+                    $("#btnRecommend").removeClass("btn-outline-success")
+                                      .addClass("btn-success")
+                                      .text("추천 ❌");
                 } else {
-                    alert("추천 실패");
+                    $("#btnRecommend").removeClass("btn-success")
+                                      .addClass("btn-outline-success")
+                                      .text("추천 👍");
                 }
+                $("#recommendCount").text(response.count);
             },
             error: function() {
-                alert("추천 중 오류가 발생했습니다.");
+                console.log("추천 상태 확인 실패");
             }
         });
-        function loadRecommendMembers(fkBoardSeq) {
-        //추천한 사람 조회
+    }
+
+    // 추천자 목록 모달 띄우기
+    function loadRecommendMembers() {
         $.ajax({
-            url: "<%= ctxPath %>/comment/recommendMembers",
+            url: "${ctxPath}/comment/recommendMembers",
             type: "GET",
             data: { fkBoardSeq: fkBoardSeq },
             dataType: "json",
             success: function(memberList) {
                 const $list = $("#recommendMemberList");
                 $list.empty();
+
                 if(memberList.length === 0){
                     $list.append('<li class="list-group-item">추천한 사람이 없습니다.</li>');
                 } else {
@@ -225,16 +241,51 @@ $(document).ready(function() {
                         $list.append('<li class="list-group-item">' + name + '</li>');
                     });
                 }
+
                 // 모달 띄우기
                 const recommendModal = new bootstrap.Modal(document.getElementById('recommendModal'));
                 recommendModal.show();
             },
             error: function() {
-                alert("추천자 목록 불러오기 실패");
+                console.log("추천자 목록 불러오기 실패");
             }
-        }); 
-       }
+        });
+    }
+
+    // 추천 버튼 클릭
+    $("#btnRecommend").click(function() {
+        $.ajax({
+        	 url: "${ctxPath}/comment/toggleRecommend",
+             type: "POST",
+             data: { fkBoardSeq: fkBoardSeq },
+             success: function(response) {
+                 if(response.status === "added") {
+                     $("#btnRecommend").removeClass("btn-outline-success")
+                                       .addClass("btn-success")
+                                       .text("❌ " + response.newCount); // 버튼 안에 추천수 표시
+                 } else if(response.status === "removed") {
+                     $("#btnRecommend").removeClass("btn-success")
+                                       .addClass("btn-outline-success")
+                                       .text("👍 " + response.newCount); // 버튼 안에 추천수 표시
+                 } else if(response.status === "fail") {
+                     alert("로그인이 필요합니다.");
+                     return;
+                 }
+
+                // 추천수 업데이트
+                $("#recommendCount").text(response.newCount);
+
+                // 추천자 목록 갱신 + 모달 표시
+                loadRecommendMembers();
+            },
+            error: function() {
+                alert("추천 처리 중 오류가 발생했습니다.");
+            }
+        });
     });
+
+    // 페이지 로딩 시 초기화
+    initRecommend();
 });
 
 

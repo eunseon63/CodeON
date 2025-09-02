@@ -113,6 +113,7 @@ CREATE TABLE TBL_EMAIL (
     CONSTRAINT fk_email_send_member_email FOREIGN KEY (send_member_email)
         REFERENCES TBL_MEMBER(member_email)
 );
+drop table TBL_EMAIL;
 
 CREATE SEQUENCE emailSeq
 START WITH 1
@@ -132,7 +133,40 @@ select * from tbl_business_conform;
 select * from tab;
 select * from tbl_member;
 select * from tbl_email;
+delete from tbl_email;
+select * from TBL_EMAIL_USER_STATUS;
+
 desc tbl_email;
+rollback;
+commit;
 
 select count(*)
 from tbl_email;
+
+drop table TBL_EMAIL;
+drop table TBL_EMAIL_USER_STATUS;
+CREATE TABLE TBL_EMAIL (
+    email_seq NUMBER PRIMARY KEY,
+    send_member_email VARCHAR2(50) NOT NULL,
+    receive_member_email VARCHAR2(50) NOT NULL,
+    email_title VARCHAR2(50),
+    email_content CLOB,
+    email_regdate DATE DEFAULT SYSDATE,
+    email_filename VARCHAR2(255),
+    email_orgfilename VARCHAR2(255),
+    email_filesize VARCHAR2(255),
+    CONSTRAINT fk_email_send_member_email FOREIGN KEY (send_member_email)
+        REFERENCES TBL_MEMBER(member_email)
+);
+
+CREATE TABLE TBL_EMAIL_USER_STATUS (
+    email_seq NUMBER NOT NULL,
+    member_email VARCHAR2(50) NOT NULL,
+    read_status NUMBER(1) DEFAULT 0,           -- 읽음 상태
+    important_status NUMBER(1) DEFAULT 0,       -- 중요 표시
+    PRIMARY KEY (email_seq, member_email),
+    CONSTRAINT fk_email_user_email FOREIGN KEY (email_seq)
+        REFERENCES TBL_EMAIL(email_seq),
+    CONSTRAINT fk_email_user_member FOREIGN KEY (member_email)
+        REFERENCES TBL_MEMBER(member_email)
+);

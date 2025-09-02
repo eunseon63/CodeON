@@ -81,7 +81,7 @@
 			<div class="mb-3 row align-items-center">
 			    <label for="emailTitle" class="col-sm-2 col-form-label">
 			        제목
-			        <input type="checkbox" id="emailSendImportant" name="emailSendImportant" value="1" class="ms-2">
+			        <input type="checkbox" id="importantStatus" name="importantStatus" value="1" class="ms-2">
 			        <span class="small" >중요 *</span>
 			    </label>
 			    <div class="col-sm-10">

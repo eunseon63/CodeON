@@ -45,6 +45,10 @@ public interface BoardDAO {
 	 String getDepartmentNameBySeq(Integer fkDepartmentSeq);
 
 
+	 //이번주 인기글 
+	 List<BoardDTO> selectWeeklyPopularBoard(Map<String, Object> paraMap);
+
+
 
 
 
