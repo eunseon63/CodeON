@@ -42,25 +42,24 @@ $(function () {
         var row = $(this);
         var emailSeq = row.data('emailseq');
         var icon = row.find('.read-icon'); 
-        var currentStatus = String(icon.data('readstatus'));
 
-        if (currentStatus === '0') {
-            $.ajax({
-                url: "<%= ctxPath %>/mail/updateReadStatus",
-                type: 'POST',
-                dataType: "json",
-                data: { emailSeq: emailSeq, readstatus: '1' },
-                async: false,
-                success: function(json) {
-                    if (json.n === 1) {
-                        icon.removeClass('bi-envelope-fill text-primary').addClass('bi-envelope-open-fill text-secondary');
-                        icon.data('readstatus', '1');
-                        updateRowReadStatus(row, '1');
-                        updateMailCount();
-                    }
+        $.ajax({
+            url: "<%= ctxPath %>/mail/updateReadStatus",
+            type: 'POST',
+            dataType: "json",
+            data: { emailSeq: emailSeq, readStatus: '1' },
+            async: false,
+            success: function(json) {
+                if (json.n === 1) {
+                    icon.removeClass('bi-envelope-fill text-primary').addClass('bi-envelope-open-fill text-secondary');
+                    icon.data('readstatus', '1');
+                    updateRowReadStatus(row, '1');
+                    updateMailCount();
                 }
-            });
-        }
+            },
+            error: function() { console.error("실패"); }
+        });
+        
         window.location.href = '<%= ctxPath %>/mail/view?emailSeq=' + emailSeq;
     });
 
