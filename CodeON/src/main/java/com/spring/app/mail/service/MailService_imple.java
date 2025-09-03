@@ -160,5 +160,10 @@ public class MailService_imple implements MailService {
 		return dao.getReceivedMailListWithPaging(paraMap);
 	}
 
+	 @Override
+	    public List<MailUserStatusDTO> getScheduledUsers() {
+	        return dao.selectScheduledUsers();
+	    }
+
 
 }

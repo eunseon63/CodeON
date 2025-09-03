@@ -50,6 +50,10 @@ public interface BoardDAO {
 
 
 
+	 List<BoardDTO> selectRecentNotices(Map<String, Object> p);
+
+
+
 
 
 

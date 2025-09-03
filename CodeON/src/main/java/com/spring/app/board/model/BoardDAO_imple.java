@@ -73,8 +73,6 @@ public class BoardDAO_imple implements BoardDAO {
 		    return sqlSession.selectOne("board.getNextBoard", paraMap);
 		}
 		
-		
-		
 
 		@Override
 		public int delete(String boardSeq) {
@@ -91,7 +89,8 @@ public class BoardDAO_imple implements BoardDAO {
 		public List<BoardDTO> selectRecentNoticesFromTypes(Map<String, Object> p) {
 			return sqlSession.selectList("board.selectRecentNoticesFromTypes", p);
 		}
-		  @Override
+		
+	     @Override
 		    public String getDepartmentNameBySeq(Integer fkDepartmentSeq) {
 		        return sqlSession.selectOne("getDepartmentNameBySeq", fkDepartmentSeq);
 		    }
@@ -101,6 +100,12 @@ public class BoardDAO_imple implements BoardDAO {
 			  return sqlSession.selectList("board.selectWeeklyPopularBoard", paraMap);
 		  }
 
+		  
+		  // 최근공지 불러오기
+		  @Override
+		  public List<BoardDTO> selectRecentNotices(Map<String, Object> p) {
+		      return sqlSession.selectList("board.selectRecentNotices", p);
+		  }
 		
 
 	

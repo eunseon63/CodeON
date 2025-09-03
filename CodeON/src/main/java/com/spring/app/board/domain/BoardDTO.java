@@ -28,4 +28,10 @@ public class BoardDTO {
     private String memberName;
     private String boardCategoryName;
     private Integer commentCount;
+    
+    
+    
+    
+    
+
 }

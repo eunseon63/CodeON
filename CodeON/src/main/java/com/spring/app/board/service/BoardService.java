@@ -43,7 +43,7 @@ public interface BoardService {
 
 	
 	 // 메인 화면
-	 List<BoardDTO> selectRecentNotices(List<Integer> typeSeqs, int limit);
+	 List<BoardDTO> selectRecentNotices(int userDeptSeq, int limit);
 
 
 	 List<BoardDTO> getWeeklyPopularBoard(int fkBoardTypeSeq, Integer fkDepartmentSeq);

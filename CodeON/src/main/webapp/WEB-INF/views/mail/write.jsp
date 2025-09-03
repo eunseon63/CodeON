@@ -130,3 +130,4 @@ $(function(){
 </main>
 
 <jsp:include page="../footer/footer.jsp" />
+>>>>>>> refs/heads/main

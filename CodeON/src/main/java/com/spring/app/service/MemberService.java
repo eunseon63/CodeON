@@ -55,6 +55,10 @@ public interface MemberService {
 	List<Map<String, Object>> memberCntByHireYear();
     List<Map<String, Object>> memberCntByHireYearGender();
 
+    
+    //부서 소속 직원을 리스트로 조회
+	public List<MemberDTO> findByDept(int fkDepartmentSeq);
+
 	
 
 }
