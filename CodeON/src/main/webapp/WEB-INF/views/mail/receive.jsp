@@ -34,7 +34,7 @@ $(function () {
                 url: "<%= ctxPath %>/mail/updateReadStatus",
                 type: 'POST',
                 dataType: "json",
-                data: { emailSeq: emailSeq, emailReadStatus: '1' },
+                data: { emailSeq: emailSeq, readStatus: '1' },
                 async: false,
                 success: function(json) {
                     if (json.n === 1) {

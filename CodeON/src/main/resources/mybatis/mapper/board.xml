@@ -345,4 +345,34 @@ WHERE ROWNUM &lt;= 5
 </select>
 	
 	
+	
+<!--  index 공지사항 표시 (로그인유저 기준) -->	
+	<select id="selectRecentNotices" parameterType="map" resultType="com.spring.app.board.domain.BoardDTO">
+    SELECT *
+    FROM (
+        SELECT 
+            b.board_seq        AS boardSeq,
+            b.board_title      AS boardTitle,
+            b.board_regdate    AS boardRegdate,
+            b.board_readcount  AS boardReadcount,
+            COALESCE(r.recommend_count, 0) AS recommendCount,
+            m.member_name      AS memberName,
+            b.fk_board_type_seq AS fkBoardTypeSeq
+        FROM tbl_board b
+        LEFT JOIN (
+            SELECT fk_board_seq, COUNT(*) AS recommend_count
+            FROM tbl_recommend
+            GROUP BY fk_board_seq
+        ) r ON b.board_seq = r.fk_board_seq
+        LEFT JOIN tbl_member m ON b.fk_member_seq = m.member_seq
+        WHERE 
+            (b.fk_board_type_seq = 0
+             OR m.fk_department_seq = #{userDeptSeq})
+        ORDER BY b.board_regdate DESC
+    )
+    WHERE ROWNUM &lt;= #{limit}
+</select>
+	
+	
+	
 </mapper>

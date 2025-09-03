@@ -3,7 +3,7 @@
     String ctxPath = request.getContextPath();
 %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
-<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
+<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 
 <!-- Bootstrap & Icons -->
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -37,6 +37,33 @@
                         icon.removeClass('bi-star-fill text-warning').addClass('bi-star');
                     }
                     icon.data('importantStatus', newStatus);
+                }
+            }
+        });
+    });
+    
+    // 읽음 상태 아이콘 클릭
+    $(document).on('click', '.read-icon', function(event) {
+        event.stopPropagation();
+        var icon = $(this);
+        var row = icon.closest('tr');
+        var emailSeq = icon.data('emailseq');
+        var currentStatus = String(icon.data('readstatus'));
+        var newStatus = currentStatus === '1' ? '0' : '1';
+
+        $.ajax({
+            url: "<%= ctxPath %>/mail/updateReadStatus",
+            type: 'POST',
+            dataType: "json",
+            data: { emailSeq: emailSeq, readStatus: newStatus },
+            success: function(json) {
+                if (json.n === 1) {
+                    icon.removeClass('bi-envelope-fill bi-envelope-open-fill text-primary text-secondary');
+                    if (newStatus === '1') icon.addClass('bi-envelope-open-fill text-secondary');
+                    else icon.addClass('bi-envelope-fill text-primary');
+                    icon.data('readstatus', newStatus);
+                    updateRowReadStatus(row, newStatus);
+                    updateMailCount();
                 }
             }
         });
@@ -150,9 +177,17 @@
 	                                        </c:if>
 	                                    </div>
 	                                </td>
-	                                <td class="align-middle ${mail.readStatus == '1' ? 'text-secondary' : 'text-dark'}">
-	                                    ${mail.receiveMemberEmail}
-	                                </td>
+									<td class="align-middle ${mail.readStatus == '1' ? 'text-secondary' : 'text-dark'}">
+									    <c:set var="emails" value="${fn:split(mail.receiveMemberEmail, ',')}" />
+									    <c:choose>
+									        <c:when test="${fn:length(emails) == 1}">
+									            ${emails[0]}
+									        </c:when>
+									        <c:otherwise>
+									            ${emails[0]} 외 ${fn:length(emails) - 1}명
+									        </c:otherwise>
+									    </c:choose>
+									</td>
 	                                <td class="align-middle ${mail.readStatus == '1' ? 'text-secondary' : 'text-dark'}">
 	                                    ${mail.emailTitle}
 	                                </td>

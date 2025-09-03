@@ -14,65 +14,59 @@
 <jsp:include page="mailsidebar.jsp" />
 
 <script type="text/javascript">
-   $(function(){
-       var oEditors = [];
+$(function(){
+    var oEditors = [];
 
-       nhn.husky.EZCreator.createInIFrame({
-           oAppRef: oEditors,
-           elPlaceHolder: "emailContent",
-           sSkinURI: "${ctxPath}/smarteditor/SmartEditor2Skin.html",
-           htParams: {
-               bUseToolbar: true,
-               bUseVerticalResizer: true,
-               bUseModeChanger: true
-           }
-       });
+    nhn.husky.EZCreator.createInIFrame({
+        oAppRef: oEditors,
+        elPlaceHolder: "emailContent",
+        sSkinURI: "<%=ctxPath%>/smarteditor/SmartEditor2Skin.html",
+        htParams: {
+            bUseToolbar: true,
+            bUseVerticalResizer: true,
+            bUseModeChanger: true
+        }
+    });
 
-       $('button#btnWrite').click(function(e){
-           oEditors.getById["emailContent"].exec("UPDATE_CONTENTS_FIELD", []);
+    $('button#btnWrite').click(function(e){
+        oEditors.getById["emailContent"].exec("UPDATE_CONTENTS_FIELD", []);
 
-           // 제목 유효성 검사
-           var title = $('input[name="emailTitle"]').val().trim();
-           if(title === "") {
-               alert("제목을 입력하세요!");
-               $('input[name="emailTitle"]').focus();
-               e.preventDefault();
-               return false;
-           }
+        // 제목 유효성 검사
+        var title = $('input[name="emailTitle"]').val().trim();
+        if(title == "") {
+            alert("제목을 입력하세요!");
+            $('input[name="emailTitle"]').focus();
+            return false;
+        }
 
-           // 본문 유효성 검사
-           var content = $('textarea[name="emailContent"]').val().trim();
-           content = content.replace(/&nbsp;/gi, "").replace(/<[^>]*>/gi, "");
-           if(content.length === 0) {
-               alert("메일 내용을 입력하세요!");
-               e.preventDefault();
-               return false;
-           }
+        // 내용 유효성 검사
+        var content = $('textarea[name="emailContent"]').val().trim();
+        content = content.replace(/&nbsp;/gi, "");
+        content = content.replace(/<[^>]*>/gi, "");
+        if(content.length == 0) {
+            alert("메일 내용을 입력하세요!");
+            return false;
+        }
 
-           // 받는 사람 이메일 조립
-           var receiverId = $('#receiveMemberId').val().trim();
-           if(receiverId === "") {
-               alert("받는 사람 아이디를 입력하세요!");
-               $('#receiveMemberId').focus();
-               e.preventDefault();
-               return false;
-           }
+        // 받는 사람 유효성 검사 (콤마 구분)
+        var emails = $('input[name="receiveMemberEmail"]').val().trim().split(',');
+        for(var i=0; i<emails.length; i++){
+            var email = emails[i].trim();
+            if(email.length == 0) continue; // 빈 값 무시
+            var emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if(!emailPattern.test(email)){
+                alert("유효하지 않은 이메일 주소가 있습니다: " + email);
+                return false;
+            }
+        }
 
-           // hidden input 추가 (이미 있으면 제거 후 다시 추가)
-           $('#mailForm input[name="receiveMemberEmail"]').remove();
-           $('<input>').attr({
-               type: 'hidden',
-               name: 'receiveMemberEmail',
-               value: receiverId + "@CodeON.com"
-           }).appendTo('#mailForm');
-
-           // 폼(form)을 전송(submit)
-           const frm = document.writeFrm;
-           frm.method = "post";
-           frm.action = "<%= ctxPath%>/mail/write";
-           frm.submit();
-       });
-   });
+        // 폼 전송
+        const frm = document.writeFrm;
+        frm.method = "post";
+        frm.action = "<%= ctxPath%>/mail/write";
+        frm.submit();
+    });
+});
 </script>
 
 <main style="margin-left: 240px; padding-top: 20px;">
@@ -80,33 +74,37 @@
         <h3 class="mb-4">메일 작성</h3>
 
         <form id="mailForm" name="writeFrm" enctype="multipart/form-data">
-			<div class="mb-3 row">
-			    <label for="sendMemberEmail" class="col-sm-2 col-form-label">보내는 사람</label>
-			    <div class="col-sm-10">
-			        <input type="email" class="form-control" id="sendMemberEmail" name="sendMemberEmail"
-			               value="${sessionScope.loginuser.memberEmail}" readonly>
-			    </div>
-			</div>
+            <!-- 보내는 사람 -->
             <div class="mb-3 row">
-                <label for="receiveMemberEmail" class="col-sm-2 col-form-label">받는 사람</label>
-                <div class="input-group" style="max-width: 400px;">
-				    <input type="text" class="form-control" id="receiveMemberId" 
-				           name="receiveMemberId" placeholder="아이디 입력" required>
-				    <span class="input-group-text">@CodeON.com</span>
-				</div>
+                <label for="sendMemberEmail" class="col-sm-2 col-form-label">보내는 사람</label>
+                <div class="col-sm-10">
+                    <input type="email" class="form-control" id="sendMemberEmail" name="sendMemberEmail"
+                           value="${sessionScope.loginuser.memberEmail}" readonly>
+                </div>
             </div>
 
-			<div class="mb-3 row align-items-center">
-			    <label for="emailTitle" class="col-sm-2 col-form-label">
-			        제목
-			        <input type="checkbox" id="importantStatus" name="importantStatus" value="1" class="ms-2">
-			        <span class="small" >중요 *</span>
-			    </label>
-			    <div class="col-sm-10">
-			        <input type="text" class="form-control" id="emailTitle" name="emailTitle" required>
-			    </div>
-			</div>
+            <!-- 받는 사람 (여러 명) -->
+            <div class="mb-3 row">
+                <label for="receiveMemberEmail" class="col-sm-2 col-form-label">받는 사람</label>
+                <div class="col-sm-10">
+                    <input type="text" class="form-control" id="receiveMemberEmail" name="receiveMemberEmail" 
+                           placeholder="여러 명일 경우 ,(콤마)로 구분" required>
+                </div>
+            </div>
 
+            <!-- 제목 + 중요 -->
+            <div class="mb-3 row align-items-center">
+                <label for="emailTitle" class="col-sm-2 col-form-label">
+                    제목
+                    <input type="checkbox" id="importantStatus" name="importantStatus" value="1" class="ms-2">
+                    <span class="small">중요 *</span>
+                </label>
+                <div class="col-sm-10">
+                    <input type="text" class="form-control" id="emailTitle" name="emailTitle" required>
+                </div>
+            </div>
+
+            <!-- 첨부파일 -->
             <div class="mb-3 row">
                 <label for="emailFile" class="col-sm-2 col-form-label">첨부파일</label>
                 <div class="col-sm-10">
@@ -114,6 +112,7 @@
                 </div>
             </div>
 
+            <!-- 내용 -->
             <div class="mb-3 row">
                 <label for="emailContent" class="col-sm-2 col-form-label">내용</label>
                 <div class="col-sm-10">
@@ -121,6 +120,7 @@
                 </div>
             </div>
 
+            <!-- 버튼 -->
             <div class="text-end">
                 <button type="button" class="btn btn-primary" id="btnWrite">보내기</button>
                 <button type="reset" class="btn btn-secondary">초기화</button>
@@ -130,3 +130,4 @@
 </main>
 
 <jsp:include page="../footer/footer.jsp" />
+>>>>>>> refs/heads/main

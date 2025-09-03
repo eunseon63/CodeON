@@ -100,14 +100,15 @@ public class BoardService_imple implements BoardService {
 		}
 
 
-		// 메인 화면
+		// index 최근공지 불러오기 
 		@Override
-		public List<BoardDTO> selectRecentNotices(List<Integer> typeSeqs, int limit){
-		    Map<String,Object> p = new HashMap<>();
-		    p.put("typeSeqs", typeSeqs);      // 예: [0, 1]
-		    p.put("limit", limit);            // 예: 5
-		    return dao.selectRecentNoticesFromTypes(p);
+		public List<BoardDTO> selectRecentNotices(int userDeptSeq, int limit) {
+		    Map<String, Object> p = new HashMap<>();
+		    p.put("userDeptSeq", userDeptSeq);
+		    p.put("limit", limit);
+		    return dao.selectRecentNotices(p);
 		}
+
 
 
 

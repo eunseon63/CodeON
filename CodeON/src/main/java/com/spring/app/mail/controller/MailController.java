@@ -340,11 +340,14 @@ public class MailController {
 			HttpSession session = request.getSession();
 			String root = session.getServletContext().getRealPath("/");
 			
-			
+			// System.out.println(root);
+			// C:\NCS\worksapce_spring_boot_17\myspring\src\main\webapp\
 			
 			String path = root + "resources" + File.separator + "files";
 			// path 가 첨부파일이 저장될 WAS(톰캣)의 폴더가 된다.
-	
+		    // System.out.println("~~~ 확인용 path ==> " + path);
+		    // ~~~ 확인용 path ==> C:\NCS\worksapce_spring_boot_17\myspring\src\main\webapp\resources\files
+			
 			/*
             	2. 파일첨부를 위한 변수의 설정 및 값을 초기화 한 후 파일 올리기
 			*/
@@ -403,13 +406,18 @@ public class MailController {
 	    sender.setImportantStatus(importantStatus);
 	    statusList.add(sender);
 
-	    // 수신자
-	    MailUserStatusDTO receiver = new MailUserStatusDTO();
-	    receiver.setMemberEmail(mailDto.getReceiveMemberEmail());
-	    receiver.setReadStatus("0"); // 수신자는 안읽음
-	    receiver.setImportantStatus(importantStatus); 
-	    statusList.add(receiver);
+	    // 수신자 (콤마 구분 여러 명)
+	    String[] receivers = mailDto.getReceiveMemberEmail().split(",");
+	    for(String rEmail : receivers) {
+	        rEmail = rEmail.trim();
+	        if(rEmail.isEmpty()) continue;
 
+	        MailUserStatusDTO receiver = new MailUserStatusDTO();
+	        receiver.setMemberEmail(rEmail);
+	        receiver.setReadStatus("0"); // 수신자는 안읽음
+	        receiver.setImportantStatus(importantStatus);
+	        statusList.add(receiver);
+	    }
 	    mailDto.setUserStatusList(statusList);
 
 	    int n;
@@ -608,3 +616,4 @@ public class MailController {
         return "mail/resend";
     }
 }
+

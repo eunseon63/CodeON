@@ -477,5 +477,11 @@ public class MemberService_imple implements MemberService {
     public List<Map<String, Object>> memberCntByHireYearGender() {
         return mbrdao.memberCntByHireYearGender();
     }
+
+	@Override
+	public List<MemberDTO> findByDept(int fkDepartmentSeq) {
+		
+		return mbrdao.findByDept(fkDepartmentSeq);
+	}
 }
 

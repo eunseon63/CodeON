@@ -3,6 +3,7 @@
     String ctxPath = request.getContextPath();
 %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 
 <!-- Bootstrap CSS & Icons -->
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -48,7 +49,7 @@ $(function () {
                 url: "<%= ctxPath %>/mail/updateReadStatus",
                 type: 'POST',
                 dataType: "json",
-                data: { emailSeq: emailSeq, emailReadStatus: '1' },
+                data: { emailSeq: emailSeq, readstatus: '1' },
                 async: false,
                 success: function(json) {
                     if (json.n === 1) {
@@ -182,7 +183,7 @@ $(function () {
                             <th style="width:40px;"><input type="checkbox" id="chkAll"></th>
                             <th style="width:80px;"></th>
                             <th>보낸 사람</th>
-                            <th>제목</th>
+                            <th>제목 / 받는 사람</th>
                             <th>날짜</th>
                         </tr>
                     </thead>
@@ -213,7 +214,18 @@ $(function () {
                                             ${mail.sendMemberEmail}
                                         </td>
                                         <td class="align-middle ${mail.readStatus == '1' ? 'text-secondary' : 'text-dark'}">
-                                            ${mail.emailTitle}
+                                            <div>${mail.emailTitle}</div>
+                                            <small class="text-muted">
+                                                <c:set var="emails" value="${fn:split(mail.receiveMemberEmail, ',')}" />
+                                                <c:choose>
+                                                    <c:when test="${fn:length(emails) == 1}">
+                                                        ${emails[0]}
+                                                    </c:when>
+                                                    <c:otherwise>
+                                                        ${emails[0]} 외 ${fn:length(emails) - 1}명
+                                                    </c:otherwise>
+                                                </c:choose>
+                                            </small>
                                         </td>
                                         <td class="align-middle ${mail.readStatus == '1' ? 'text-secondary' : 'text-dark'}">
                                             ${mail.emailRegdate}

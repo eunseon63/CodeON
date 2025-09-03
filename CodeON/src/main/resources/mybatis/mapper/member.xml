@@ -84,4 +84,13 @@ GROUP BY TO_CHAR(member_hiredate,'YYYY'), member_gender
 ORDER BY "hire_year", "gender"
 </select>
 
+
+<!-- 부서 직원 리스트  -->
+<select id="findByDept" parameterType="int" resultType="com.spring.app.domain.MemberDTO">
+    SELECT *
+    FROM tbl_member
+    WHERE fk_department_seq = #{fkDepartmentSeq}
+      AND member_email IS NOT NULL
+</select>
+
 </mapper>
