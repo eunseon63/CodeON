@@ -1,3 +1,4 @@
+
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%
     String ctxPath = request.getContextPath();
@@ -189,7 +190,6 @@ $(function () {
 									           style="${empty mail.emailFilename ? 'visibility:hidden;' : ''}"></i>
 									    </div>
 									</td>
-
 
 	                                <td class="align-middle ${mail.readStatus == '1' ? 'text-secondary' : 'text-dark'}">
 	                                    ${mail.sendMemberEmail}

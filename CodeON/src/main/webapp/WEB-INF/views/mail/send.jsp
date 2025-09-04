@@ -16,6 +16,40 @@
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
 <script>
+
+	// row 색상 업데이트
+	function updateRowReadStatus(row, newStatus) {
+	    var colorClass = newStatus === '1' ? 'text-secondary' : 'text-dark';
+	    row.find('td').not(':first').not(':nth-child(2)').removeClass('text-secondary text-dark').addClass(colorClass);
+	}
+	
+	// 메일 row 클릭 → 상세보기
+	$(document).on('click', 'tr.mail-row', function() {
+	    var row = $(this);
+	    var emailSeq = row.data('emailseq');
+	    var icon = row.find('.read-icon'); 
+	    var currentStatus = String(icon.data('readStatus'));
+	
+	    if (currentStatus === '0') {
+	        $.ajax({
+	            url: "<%= ctxPath %>/mail/updateReadStatus",
+	            type: 'POST',
+	            dataType: "json",
+	            data: { emailSeq: emailSeq, readStatus: '1' },
+	            async: false,
+	            success: function(json) {
+	                if (json.n === 1) {
+	                    icon.removeClass('bi-envelope-fill text-primary').addClass('bi-envelope-open-fill text-secondary');
+	                    icon.data('readStatus', '1');
+	                    icon.attr('data-read-status', '1'); // HTML 속성 동기화
+	                    updateRowReadStatus(row, '1');
+	                }
+	            }
+	        });
+	    }
+	    window.location.href = '<%= ctxPath %>/mail/view?emailSeq=' + emailSeq;
+	});
+	
     // 중요 표시 토글
     $(document).on('click', '.important-icon', function(event) {
         event.stopPropagation();

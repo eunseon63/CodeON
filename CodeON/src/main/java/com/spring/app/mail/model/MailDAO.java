@@ -61,10 +61,10 @@ public interface MailDAO {
 	List<MailDTO> getReceivedMailListWithPaging(Map<String, String> paraMap);
 
 	List<MailUserStatusDTO> MailUserList(String valueOf);
-
+	
 	//스케줄러
 	List<MailUserStatusDTO> selectScheduledUsers();
-	
+
 	int deleteByEmailSeq(String emailSeq);
 
 }

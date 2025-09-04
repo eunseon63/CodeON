@@ -289,7 +289,6 @@
 	    </foreach>
 	</delete>
 		
-
 	<!-- === 한 메일 메일 삭제 === -->
 	<delete id="deleteMail" parameterType="String">
 	    DELETE FROM tbl_email

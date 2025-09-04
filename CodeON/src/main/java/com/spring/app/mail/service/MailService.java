@@ -61,5 +61,4 @@ public interface MailService {
 	
 	int deleteByEmailSeq(String emailSeq);
 
-
 }
