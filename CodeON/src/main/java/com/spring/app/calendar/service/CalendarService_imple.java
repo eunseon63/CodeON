@@ -66,6 +66,18 @@ public class CalendarService_imple implements CalendarService {
 			return n;
 		}
 
+		// 부서별 조회기능
+		@Override
+		public List<CalendarAjaxDTO> selectDeptCalendar(int fkDepartmentSeq) {
+		    return dao.selectDeptCalendar(fkDepartmentSeq);
+		}
+
+		// 사내일정 조회
+		@Override
+		public List<CalendarAjaxDTO> selectCompanyCalendar() {
+		    return dao.selectCompanyCalendar();
+		}
+
 		
 
 

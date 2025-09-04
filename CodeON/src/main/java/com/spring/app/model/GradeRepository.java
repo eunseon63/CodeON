@@ -6,4 +6,6 @@ import com.spring.app.entity.Grade;
 
 public interface GradeRepository extends JpaRepository<Grade, Integer>  {
 
+	
+	
 }

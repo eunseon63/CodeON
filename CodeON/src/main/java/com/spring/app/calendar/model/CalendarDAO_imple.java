@@ -65,6 +65,20 @@ public class CalendarDAO_imple implements CalendarDAO {
 		return n;
 	}
 
+	// 부서별 조회기능
+	@Override
+	public List<CalendarAjaxDTO> selectDeptCalendar(int fkDepartmentSeq) {
+	    return sqlsession.selectList("calendar.selectDeptCalendar", fkDepartmentSeq);
+	}
+
+	// 사내일정 저회
+	@Override
+	public List<CalendarAjaxDTO> selectCompanyCalendar() {
+	    return sqlsession.selectList("calendar.selectCompanyCalendar");
+	}
+
+	
+
 	
 	
 	

@@ -30,8 +30,7 @@ public class CalendarDTO {
     private String calendarColor;
     private String calendarType;
     private String calendarLocation;
-
-    private String[] calendarUsers;   
+    private String calendarUser;   
 
     // 연관 객체
     private Member member;

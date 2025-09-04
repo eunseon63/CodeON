@@ -49,8 +49,15 @@ public class LoginController {
         HttpSession session = request.getSession();
         session.setAttribute("loginuser", mbrDto);
 
+        // 디버깅 로그 추가
+        //System.out.println(">>> 로그인 성공");
+       //System.out.println("세션에 저장된 loginuser: " + session.getAttribute("loginuser"));
+        //System.out.println("사용자 이름: " + mbrDto.getMemberName());
+       // System.out.println("사용자 아이디: " + mbrDto.getMemberUserid());
+
         return "redirect:" + request.getContextPath() + "/index"; 
     }
+
 
     /** 로그아웃 처리 */
     @GetMapping("logout")

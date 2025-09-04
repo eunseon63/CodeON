@@ -101,7 +101,7 @@ public class Calendar {
                 .calendarContent(this.calendarContent)
                 .calendarColor(this.calendarColor)
                 .calendarLocation(this.calendarLocation)
-                .calendarUsers(this.calendarUser != null ? this.calendarUser.split(",") : new String[]{})
+                .calendarUser(this.calendarUser)
                 .member(this.member)
                 .bigCategory(this.bigCategory)
                 .smallCategory(this.smallCategory)

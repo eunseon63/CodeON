@@ -44,12 +44,7 @@
 		    <tr>
 		        <th>캘린더 종류</th>
 		        <td>
-		            <select name="calendarType" required>
-		                <option value="사내" ${map.CALENDAR_TYPE eq '사내' ? 'selected' : ''}>사내 일정</option>
-		                <option value="부서" ${map.CALENDAR_TYPE eq '부서' ? 'selected' : ''}>부서 일정</option>
-		                <option value="개인" ${map.CALENDAR_TYPE eq '개인' ? 'selected' : ''}>개인 일정</option>
-		                <option value="공유" ${map.CALENDAR_TYPE eq '공유' ? 'selected' : ''}>공유 일정</option>
-		            </select>
+		        	<input type="text" name="calednarType" value="${map.calendarType}" readonly />
 		        </td>
 		    </tr>
 		    <tr>

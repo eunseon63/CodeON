@@ -26,6 +26,12 @@ public interface CalendarService {
 	// 일정 수정하기
 	int editCalendar_end(CalendarDTO cvo) throws Throwable;
 
+	// 부서별 조회기능
+	List<CalendarAjaxDTO> selectDeptCalendar(int fkDepartmentSeq);
+
+	// 사내일정 조회
+	List<CalendarAjaxDTO> selectCompanyCalendar();
+
 	
 	
 

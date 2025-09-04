@@ -2,6 +2,7 @@ package com.spring.app.controller;
 
 import java.io.File;
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -144,7 +145,7 @@ public class MemberRestController {
 	            	
 	            	// 행이 존재하지 않으면 건너뛴다.
 	            	if (row == null) {
-	            		continue;
+	            		continue;	
 	            	}
 	            	
 	            	// 행의 1번째 열(입사일자)
@@ -281,20 +282,23 @@ public class MemberRestController {
 	
 	// 부서별 인원통계
 	@GetMapping("memberCntByDeptname")
-	public List<Map<String, String>> memberCntByDeptname() {
-		List<Map<String, String>> deptnamePercentageList = memberService.memberCntByDeptname();
-		
-		return deptnamePercentageList;
-	}
-	
-	// 성별 인원통계
-	@GetMapping("memberCntByGender")
-	@ResponseBody
-	public List<Map<String, String>> memberCntByGender() {
-		List<Map<String, String>> genderPercentageList = memberService.memberCntByGender();
-		
-		return genderPercentageList;
-	}
-	
+    public List<Map<String, Object>> memberCntByDeptname() {
+        return memberService.memberCntByDeptname();
+    }
 
+    @GetMapping("memberCntByGender")
+    public List<Map<String, Object>> memberCntByGender() {
+        return memberService.memberCntByGender();
+    }
+
+    @GetMapping("memberCntByHireYear")
+    public List<Map<String, Object>> memberCntByHireYear() {
+        return memberService.memberCntByHireYear();
+    }
+
+    @GetMapping("memberCntByHireYearGender")
+    public List<Map<String, Object>> memberCntByHireYearGender() {
+        return memberService.memberCntByHireYearGender();
+    }
+	
 }

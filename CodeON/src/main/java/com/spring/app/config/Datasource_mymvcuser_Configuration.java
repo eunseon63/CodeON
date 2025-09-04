@@ -20,7 +20,7 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 @Configuration  // Spring 컨테이너가 처리해주는 클래스로서, 클래스내에 하나 이상의 @Bean 메소드를 선언만 해주면 런타임시 해당 빈에 대해 정의되어진 대로 요청을 처리해준다.
 @EnableTransactionManagement // 스프링 부트에서 Transaction 처리를 위한 용도
-public class Datasource_Configuration {
+public class Datasource_mymvcuser_Configuration {
 
 	@Value("${mybatis.mapper-locations}")  // *.yml 파일에 있는 설정값을 가지고 온 것으로서 mapper 파일의 위치를 알려주는 것이다.
     private String mapperLocations;
@@ -37,11 +37,9 @@ public class Datasource_Configuration {
      @ConfigurationProperties은 *.properties , *.yml 파일에 있는 property를 자바 클래스에 값을 가져와서 사용할 수 있게 해주는 어노테이션이다. 
      
      @ConfigurationProperties를 사용하기 위해서는 
-     
-     bulid.gradle 에서
+     build.gradle 에서
      annotationProcessor 'org.springframework.boot:spring-boot-configuration-processor:3.5.3'
      를 추가해야 한다.
-     
    */
 	
 	

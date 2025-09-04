@@ -10,7 +10,7 @@
 :root{
   --bg:#f7f8fb; --line:#e5e7eb; --text:#111827; --muted:#6b7280; --card:#fff; --brand:#2563eb; --danger:#ef4444;
 }
-.wrap{ max-width:720px; margin:110px auto 60px; color:var(--text); font-family:'Pretendard','맑은 고딕',sans-serif; }
+.wrap{ max-width:720px; margin:40px auto 60px; color:var(--text); font-family:'Pretendard','맑은 고딕',sans-serif; }
 .card{ background:var(--card); border:1px solid var(--line); border-radius:12px; box-shadow:0 2px 12px rgba(0,0,0,.06); padding:24px; }
 .h1{ font-size:20px; font-weight:800; margin-bottom:14px; }
 .form-row{ display:grid; grid-template-columns: 160px 1fr; gap:12px; align-items:center; margin-bottom:14px; }

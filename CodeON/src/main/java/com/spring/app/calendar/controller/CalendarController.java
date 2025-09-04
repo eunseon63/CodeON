@@ -23,6 +23,7 @@ import com.spring.app.calendar.service.CalendarService;
 import com.spring.app.calendar.service.CategoryService;
 import com.spring.app.common.MyUtil;
 import com.spring.app.domain.MemberDTO;
+import com.spring.app.service.MemberService;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
@@ -46,12 +47,15 @@ public class CalendarController {
         return "Calendar/list";
     }
 
+    
+    // === 일정 등록 폼 ===
     // === 일정 등록 폼 ===
     @GetMapping("/addCalendarForm")
     public ModelAndView showAddCalendarForm(ModelAndView mav, HttpServletRequest request) {
         HttpSession session = request.getSession();
         MemberDTO loginUser = (MemberDTO) session.getAttribute("loginuser");
 
+        // 로그인 체크
         if (loginUser == null) {
             mav.addObject("message", "로그인이 필요합니다.");
             mav.addObject("loc", request.getContextPath() + "/login/loginStart");
@@ -59,14 +63,46 @@ public class CalendarController {
             return mav;
         }
 
+        // URL 파라미터 bigCategorySeq 확인
+        String bigCategorySeq = request.getParameter("bigCategorySeq");
+
+        // ✅ 사내 일정 등록 제한 (1 = 사내 캘린더 → 인사팀만 가능)
+        if ("1".equals(bigCategorySeq) && loginUser.getFkDepartmentSeq() != 10) {
+            mav.addObject("message", "사내 일정은 인사팀만 등록할 수 있습니다.");
+            mav.addObject("loc", request.getContextPath() + "/Calendar/list");
+            mav.setViewName("msg");
+            return mav;
+        }
+
+        // ✅ 부서 일정 등록 제한 (2 = 부서 캘린더 → 과장 이상만 가능)
+        if ("2".equals(bigCategorySeq) && loginUser.getFkGradeSeq() < 3) {
+            mav.addObject("message", "부서 일정은 과장급 이상만 등록 가능합니다.");
+            mav.addObject("loc", request.getContextPath() + "/Calendar/list");
+            mav.setViewName("msg");
+            return mav;
+        }
+
+        // === 전체 대분류/소분류 조회 ===
         List<BigCategoryDTO> bigCategoryList = categoryService.getAllBigCategories();
         List<SmallCategoryDTO> smallCategoryList = categoryService.getAllSmallCategories();
 
+        // ✅ 여기서 필터링
+        if (bigCategorySeq != null && !bigCategorySeq.isEmpty()) {
+            int seq = Integer.parseInt(bigCategorySeq);
+            bigCategoryList.removeIf(cat -> cat.getBigCategorySeq() != seq);
+        }
+
         mav.addObject("bigCategoryList", bigCategoryList);
         mav.addObject("smallCategoryList", smallCategoryList);
+        mav.addObject("selectedBigCategory", bigCategorySeq);
+
         mav.setViewName("Calendar/addCalendarForm");
         return mav;
     }
+
+
+
+
 
     // === 일정 등록 처리하기 === // 
     @PostMapping("/addCalendarForm")
@@ -89,10 +125,14 @@ public class CalendarController {
             String title = request.getParameter("title");
             String calendarType = request.getParameter("calendarType");
             String shareTargets = request.getParameter("shareEmployees");
+            String calendarLocation = request.getParameter("calendarLocation");
             String content = request.getParameter("content");
             String bigCategorySeq = request.getParameter("bigCategorySeq");
             String smallCategorySeq = request.getParameter("smallCategorySeq");
-
+            
+            
+            
+            
             // 필수 체크
             if (startDate == null || startDate.isEmpty() || endDate == null || endDate.isEmpty()) {
                 throw new IllegalArgumentException("시작일과 종료일을 입력하세요.");
@@ -108,10 +148,12 @@ public class CalendarController {
             // Map에 담기
             Map<String, Object> paraMap = new HashMap<>();
             paraMap.put("memberSeq", memberSeq);
+            paraMap.put("calendarUser", memberSeq);
             paraMap.put("calendarStart", startTS);
             paraMap.put("calendarEnd", endTS);
             paraMap.put("title", title);
             paraMap.put("calendarType", calendarType);
+            paraMap.put("calendarLocation", calendarLocation);
             paraMap.put("shareTargets", shareTargets);
             paraMap.put("content", content);
             paraMap.put("bigCategorySeq", bigCategorySeq);
@@ -132,37 +174,19 @@ public class CalendarController {
     }
     
    
-    // 등록된 일정을 가져와 list.jsp 에 보여주기 //
+    // 개인 일정 보여주기 //
     @ResponseBody
     @GetMapping(value="selectCalendar")
-    public String selectCalendar(HttpServletRequest request) {
+    public List<CalendarAjaxDTO> selectCalendar(HttpServletRequest request) {
         // 요청 파라미터로 사번(calendar_user) 전달
-        String calendarUser = request.getParameter("fk_userid");
-        List<CalendarAjaxDTO> calendarList = service.selectCalendar(calendarUser);
-
+    	HttpSession session = request.getSession();
+        MemberDTO loginUser = (MemberDTO) session.getAttribute("loginuser");
+        int calendarUser = loginUser.getMemberSeq();
         
+        List<CalendarAjaxDTO> calendarList = service.selectCalendar(String.valueOf(calendarUser));
+       
         
-        JSONArray jsArr = new JSONArray();
-
-        if(calendarList != null && !calendarList.isEmpty()) {
-            for(CalendarAjaxDTO svo : calendarList) {
-                JSONObject jsObj = new JSONObject();
-                jsObj.put("id", svo.getCalendarSeq());
-                jsObj.put("title", svo.getCalendarName());
-                jsObj.put("start", svo.getCalendarStart());
-                jsObj.put("end", svo.getCalendarEnd());
-                jsObj.put("color", svo.getCalendarColor());
-                jsObj.put("type", svo.getCalendarType());
-                jsObj.put("location", svo.getCalendarLocation());
-                jsObj.put("content", svo.getCalendarContent());
-                jsObj.put("user", svo.getCalendarUser());
-                jsArr.put(jsObj);
-            }
-        }
-
-        //System.out.println("calendarUser=" + calendarUser);
-        
-        return jsArr.toString();
+        return calendarList;
     }
 
     // === 일정 상세보기 ===
@@ -235,7 +259,6 @@ public class CalendarController {
             int calendarSeq = Integer.parseInt(calendarSeqStr);
             String gobackURL_detailCalendar = request.getParameter("gobackURL_detailCalendar");
 
-            System.out.println(calendarSeqStr);
             
             Map<String, String> map = service.detailCalendar(calendarSeq);
             int calendarUser = Integer.parseInt(map.get("fkMemberSeq").toString());
@@ -285,27 +308,46 @@ public class CalendarController {
             e.printStackTrace();
             mav.setViewName("redirect:/Calendar/list");
         }
-
-        
         
         return mav;
     }
 
+    /**
+     * ✅ 부서 일정 조회
+     * - fk_department_seq = 로그인한 사원의 부서 번호 기준
+     */
+    @GetMapping("/selectDeptCalendar")
+    @ResponseBody
+    public List<CalendarAjaxDTO> selectDeptCalendar(HttpSession session) {
+        MemberDTO loginUser = (MemberDTO) session.getAttribute("loginuser");
+        
+        
+        
+        if (loginUser == null) {
+            return List.of();
+        }
+        return service.selectDeptCalendar(loginUser.getFkDepartmentSeq());
+    }
+
     
-    
-    
-    
-    
-    
-    
-    
+    // 사내 일정 조회
+    @GetMapping("/selectCompanyCalendar")
+    @ResponseBody
+    public List<CalendarAjaxDTO> selectCompanyCalendar() {
+    	
+        
+        
+    	List<CalendarAjaxDTO> companyEvents = service.selectCompanyCalendar();
+        
+        return companyEvents;
+    }
 
 
 
-
-
-
-
+    
+    
+    
+    
     
     
     

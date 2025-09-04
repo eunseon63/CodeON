@@ -17,6 +17,7 @@ import com.spring.app.entity.Signline;
 import com.spring.app.entity.SignlineMember;
 import com.spring.app.model.SignlineRepository;
 
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -73,6 +74,12 @@ public class SignlineService_imple implements SignlineService {
                     .build());
         }
         return out;
+	}
+
+	@Override
+	public Signline getLineWithMembers(Long signlineSeq) {
+		return signlineRepository.findById(signlineSeq)
+		        .orElseThrow(() -> new EntityNotFoundException("signline not found"));
 	}
 
 }

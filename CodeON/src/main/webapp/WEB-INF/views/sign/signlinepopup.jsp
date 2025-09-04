@@ -168,35 +168,55 @@ main {
 	font-weight: 700;
 	margin: 0;
 }
+
 /* 왼쪽 영역 여백 조금 키우기 */
 .tree { padding: 16px 18px; }
 
-/* 직원 테이블: 행 간격 + 셀 패딩 */
+/* 직원 테이블 */
 #deptTree table{
   width: 100%;
-  border-collapse: separate;     /* 행 간격을 주려면 separate */
-  border-spacing: 0 10px;        /* ← 행 간격(세로 여백) */
+  border-collapse: separate;
+  border-spacing: 0 10px;        /* 행 간격 */
+  position: relative;            /* stacking context */
 }
 
-#deptTree thead th{
+/* 헤더 고정 및 간격 보정 */
+#deptTree thead{
+  position: sticky;
+  top: -10px;   /* border-spacing 세로값(10px)만큼 끌어올리기 */
+  z-index: 30;
+}
+
+#deptTree thead th {
   padding: 10px 12px;
-  background: #f9fafb;
-  position: sticky; top: 0; z-index: 1; /* 스크롤해도 헤더 고정(옵션) */
-    text-align: center;     /* 가로 가운데 */
-  vertical-align: middle; /* 세로 가운데 */
+  background: #f9fafb;           /* 불투명 배경 */
+  position: sticky;
+  top: 0;
+  z-index: 31;
+  text-align: center;
+  vertical-align: middle;
+  box-shadow: 0 1px 0 #e5e7eb;   /* 헤더 경계선 강조 */
+}
+
+/* 본문 */
+#deptTree tbody{ 
+  position: relative; 
+  z-index: 1; 
 }
 
 #deptTree tbody td{
-  padding: 10px 12px;            /* 셀 내부 여백 */
+  position: relative;
+  z-index: 1;
+  padding: 10px 12px;
   background: #fff;
-  border-top: 1px solid #e5e7eb; /* 행 테두리 만들기 */
+  border-top: 1px solid #e5e7eb;
   border-bottom: 1px solid #e5e7eb;
   border-left: 0; border-right: 0;
-    text-align: center;     /* 가로 가운데 */
-  vertical-align: middle; /* 세로 가운데 */
+  text-align: center;
+  vertical-align: middle;
 }
 
-/* 행을 카드처럼: 좌우 모서리 둥글게 + 외곽선 연결 */
+/* 행을 카드처럼 둥글게 */
 #deptTree tbody td:first-child{
   border-left: 1px solid #e5e7eb;
   border-radius: 10px 0 0 10px;
@@ -206,7 +226,7 @@ main {
   border-radius: 0 10px 10px 0;
 }
 
-/* 버튼도 살짝 작게 */
+/* 버튼 크기 */
 #deptTree .btn{
   height: 28px;
   padding: 0 10px;
@@ -232,6 +252,10 @@ function esc(s){ s=s||''; return String(s)
 
 $(function(){
 	loadMembers();
+	
+  $("#btnCancel").on("click", function(){
+	    window.close();
+	  });
 });   // 페이지 로드시 호출
 	
 function loadMembers() {

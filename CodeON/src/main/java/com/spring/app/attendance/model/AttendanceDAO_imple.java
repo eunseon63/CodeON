@@ -1,6 +1,8 @@
 package com.spring.app.attendance.model;
 
 import com.spring.app.attendance.domain.AttendanceRecord;
+import com.spring.app.domain.AnnualLeaveDTO;
+
 import lombok.RequiredArgsConstructor;
 import org.mybatis.spring.SqlSessionTemplate;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -69,6 +71,11 @@ public class AttendanceDAO_imple implements AttendanceDAO {
         p.put("start", ym.atDay(1));
         p.put("end", ym.atEndOfMonth());
         return sqlsession.selectOne("attendance.selectMonthlySummary", p);
+    }
+
+    @Override
+    public AnnualLeaveDTO selectAnnualLeaveByMemberSeq(int memberSeq) {
+        return sqlsession.selectOne("attendance.selectAnnualLeaveByMemberSeq", memberSeq);
     }
 
 }

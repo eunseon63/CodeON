@@ -12,14 +12,15 @@ spring: # 주의할 점은 내용작성시 들여쓰기 내어쓰기를 반드�
       
   datasource: #DB 접속
     driver-class-name: oracle.jdbc.OracleDriver
-    jdbcUrl: jdbc:oracle:thin:@211.63.89.70:1521:xe      # SID 방식
+
+    jdbc-url: jdbc:oracle:thin:@211.63.89.70:1521:xe      # SID 방식
     #url: jdbc:oracle:thin:@//127.0.0.1:1521/xe  # oracle 12c 이후부터 PDB 사용시는 이렇게 하라고 함.
     username: final_orauser3
     password: seven
     type: com.zaxxer.hikari.HikariDataSource
     hikari: #커넥션풀 
       #driver-class-name: oracle.jdbc.OracleDriver
-      #jdbc-url: jdbc:oracle:thin:@127.0.0.1:1521:xe
+      #jdbc-url: jdbc:oracle:thin:@211.63.89.70:1521:xe
       #username: jspbegin_user
       #password: gclass
       minimum-idle: 5        # 최소 유휴(쓰지 않고 놀리는 것) 커넥션 (5개)
@@ -27,6 +28,10 @@ spring: # 주의할 점은 내용작성시 들여쓰기 내어쓰기를 반드�
       idle-timeout: 30000    # 30초 후 연결 실패시 예외 발생 
       max-lifetime: 1800000  # 커넥션 풀에서 살아있을 수 있는 커넥션의 최대 수명시간 1,800초(30분). 30분 이상 유지된 커넥션은 제거  
       connection-timeout: 30000 # 클라이언트가 pool에 connection을 요청하는데 기다리는 최대시간을 설정 30초
+      
+  data: #=== (몽고DB #웹채팅관련8) === 
+    mongodb:
+      uri: mongodb://devuser:qwer1234$@127.0.0.1:27017/mydb
   
   jpa:
     database-platform: org.hibernate.dialect.OracleDialect      # Spring Boot 3.2.1 버전 이후 부터는 JPA Provider가 적절한 Dialect 를 찾아내게 해주므로, 즉 설정을 명시하지 않아도 Oracle을 자동 인식해주므로 이를 명시적으로 지정하게 되면 오류가 발생하게 된다.  
@@ -62,7 +67,6 @@ spring: # 주의할 점은 내용작성시 들여쓰기 내어쓰기를 반드�
       # '[use_sql_comments]': true 는 사용자 주석문을 보여줌 
     
     open-in-view: false
-       
 
   messages: #메시지(파일이 여러개일 경우 ,로 구분)
     basename: messages.validation
@@ -80,7 +84,12 @@ spring: # 주의할 점은 내용작성시 들여쓰기 내어쓰기를 반드�
       max-file-size: 10MB     # 파일 업로드 용량제한 설정하기. 파일 업로드 용량을 설정하지 않으면 기본값은 1048576 bytes (1MB)으로 된다.
       max-request-size: 12MB  # 파일 및 파일을 제외한 input 태그값 업로드 용량제한 설정하기. 업로드 용량을 설정하지 않으면 기본값은 1048576 bytes (1MB)으로 된다.
 
+  ai:
+    openai:
+      api-key: ${OPENAI_API_KEY}
+
 mybatis: #mybatis 설정
+ 
  #type-aliases-package: com.spring.app.**.domain 
  #mapper-locations: com/spring/app/**/mapper/*.xml   #src/main/java 아래 패키지속에 매퍼파일을 만드는 경우 
   mapper-locations: mybatis/mapper/**/*.xml          #src/main/resources 아래 폴더속에 매퍼파일을 만드는 경우

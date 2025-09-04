@@ -114,10 +114,12 @@
 	</form>
 
     <div class="btn-group">
+    <c:if test="${sessionScope.loginuser.memberSeq eq map.fkMemberSeq}">
         <button type="button" class="btn-edit" onclick="editCalendar(${map.calendarSeq})">수정</button>
         <button type="button" class="btn-delete" onclick="delCalendar(${map.calendarSeq})">삭제</button>
-        <button type="button" class="btn-cancel" onclick="location.href='<%= ctxPath%>/Calendar/list'">취소</button>
-    </div>
+    </c:if>
+    <button type="button" class="btn-cancel" onclick="location.href='<%= ctxPath%>/Calendar/list'">취소</button>
 </div>
+
 
 <jsp:include page="../footer/footer.jsp" />

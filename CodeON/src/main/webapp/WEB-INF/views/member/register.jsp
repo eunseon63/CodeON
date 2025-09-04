@@ -161,6 +161,7 @@ $(function() {
 </script>
 
 <body>
+
 <div class="main-container">
     <div class="card shadow-sm register-card">
         <div class="card-header text-white text-center d-flex align-items-center justify-content-center py-3">
@@ -248,15 +249,9 @@ $(function() {
 
                 <div class="d-flex justify-content-center mt-4">
                     <button type="button" id="btnRegister" class="btn btn-primary px-5 me-2">
-                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-person-plus me-1" viewBox="0 0 16 16">
-                            <path d="M6 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6zm2-3a2 2 0 1 1-4 0 2 2 0 0 1 4 0zm4 4s-1 0-1-1 1-4 6-4 6 3 6 4-1 1-1 1H8zm-1-9a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 0 1H9.5V7a.5.5 0 0 1-1 0V4.5H7a.5.5 0 0 1 0-1z"/>
-                        </svg>
                         등록
                     </button>
                     <button type="reset" class="btn btn-outline-secondary px-5">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-counterclockwise me-1" viewBox="0 0 16 16">
-                            <path fill-rule="evenodd" d="M8 3a5 5 0 1 1-4.57 7.5l-.5-.87A4 4 0 1 0 8 4a4 4 0 0 0-4 4v.5a.5.5 0 0 1-1 0V8a5 5 0 0 1 10 0v1.5a.5.5 0 0 1-.5.5z"/>
-                        </svg>
                         초기화
                     </button>
                 </div>

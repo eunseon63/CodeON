@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.spring.app.entity.Signline;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -32,4 +33,5 @@ public class SignlineDTO {
     
     // 한 결재라인에 있는 사람 수
     private long memberCount;
+
 }
