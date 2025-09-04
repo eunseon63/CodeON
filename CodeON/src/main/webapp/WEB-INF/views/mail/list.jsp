@@ -34,9 +34,7 @@ $(function () {
     // row 색상 업데이트
     function updateRowReadStatus(row, newStatus) {
         var colorClass = newStatus === '1' ? 'text-secondary' : 'text-dark';
-        row.find('td').not(':first').not(':nth-child(2)')
-           .removeClass('text-secondary text-dark')
-           .addClass(colorClass);
+        row.find('td').not(':first').not(':nth-child(2)').removeClass('text-secondary text-dark').addClass(colorClass);
     }
 
     // 메일 row 클릭 → 상세보기
@@ -44,7 +42,7 @@ $(function () {
         var row = $(this);
         var emailSeq = row.data('emailseq');
         var icon = row.find('.read-icon'); 
-        var currentStatus = String(icon.attr('data-readstatus')); // ★ 수정
+        var currentStatus = String(icon.data('readStatus'));
 
         if (currentStatus === '0') {
             $.ajax({
@@ -55,11 +53,10 @@ $(function () {
                 async: false,
                 success: function(json) {
                     if (json.n === 1) {
-                        icon.removeClass('bi-envelope-fill text-primary')
-                            .addClass('bi-envelope-open-fill text-secondary');
-                        icon.attr('data-readstatus', '1'); // ★ 동기화
+                        icon.removeClass('bi-envelope-fill text-primary').addClass('bi-envelope-open-fill text-secondary');
+                        icon.data('readStatus', '1');
+                        icon.attr('data-read-status', '1'); // HTML 속성 동기화
                         updateRowReadStatus(row, '1');
-                        updateMailCount();
                     }
                 }
             });
@@ -72,7 +69,7 @@ $(function () {
         event.stopPropagation();
         var icon = $(this);
         var emailSeq = icon.data('emailseq');
-        var currentStatus = String(icon.attr('data-importantstatus')); // ★ 수정
+        var currentStatus = String(icon.data('importantStatus'));
         var newStatus = currentStatus === '1' ? '0' : '1';
 
         $.ajax({
@@ -85,7 +82,8 @@ $(function () {
                     icon.removeClass('bi-star bi-star-fill text-warning');
                     if (newStatus === '1') icon.addClass('bi-star-fill text-warning');
                     else icon.addClass('bi-star');
-                    icon.attr('data-importantstatus', newStatus); // ★ 동기화
+                    icon.data('importantStatus', newStatus);
+                    icon.attr('data-important-status', newStatus); // HTML 속성 동기화
                 }
             }
         });
@@ -97,7 +95,7 @@ $(function () {
         var icon = $(this);
         var row = icon.closest('tr');
         var emailSeq = icon.data('emailseq');
-        var currentStatus = String(icon.attr('data-readstatus')); // ★ 수정
+        var currentStatus = String(icon.data('readStatus'));
         var newStatus = currentStatus === '1' ? '0' : '1';
 
         $.ajax({
@@ -110,7 +108,8 @@ $(function () {
                     icon.removeClass('bi-envelope-fill bi-envelope-open-fill text-primary text-secondary');
                     if (newStatus === '1') icon.addClass('bi-envelope-open-fill text-secondary');
                     else icon.addClass('bi-envelope-fill text-primary');
-                    icon.attr('data-readstatus', newStatus); // ★ 동기화
+                    icon.data('readStatus', newStatus);
+                    icon.attr('data-read-status', newStatus); // HTML 속성 동기화
                     updateRowReadStatus(row, newStatus);
                     updateMailCount();
                 }

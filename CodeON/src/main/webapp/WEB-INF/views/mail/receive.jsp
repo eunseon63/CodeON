@@ -190,7 +190,6 @@ $(function () {
 									    </div>
 									</td>
 
-
 	                                <td class="align-middle ${mail.readStatus == '1' ? 'text-secondary' : 'text-dark'}">
 	                                    ${mail.sendMemberEmail}
 	                                </td>

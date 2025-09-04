@@ -15,34 +15,6 @@
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
 <script>
-    // 중요 표시 토글
-    function toggleImportant(icon) {
-        const emailSeq = $(icon).data('emailseq');
-        const currentStatus = $(icon).data('importantStatus');
-        const newStatus = currentStatus == 1 ? 0 : 1;
-
-        $.ajax({
-            url: "<%= ctxPath%>/mail/updateImportant",
-            type: "POST",
-            data: { emailSeq: emailSeq, importantStatus: newStatus },
-            success: function(response) {
-                if (response.n == 1) {
-                    if (newStatus == 1) {
-                        $(icon).removeClass('bi-star').addClass('bi-star-fill text-warning');
-                    } else {
-                        $(icon).removeClass('bi-star-fill text-warning').addClass('bi-star');
-                    }
-                    $(icon).data('importantStatus', newStatus);
-                } else {
-                    alert("중요 표시 변경 실패");
-                }
-            },
-            error: function() {
-                alert("서버 오류 발생");
-            }
-        });
-    }
-
     // 메일 삭제
     function deleteMail(emailSeq) {
         if (!confirm("정말로 이 메일을 삭제하시겠습니까?")) return;
@@ -80,12 +52,6 @@
 			<!-- 헤더 -->
 			<div class="card-header d-flex justify-content-between align-items-center">
 			    <div>
-			        <i class="bi ${mail.importantStatus == 1 ? 'bi-star-fill text-warning' : 'bi-star'}"
-			           style="cursor:pointer;"
-			           data-emailseq="${mail.emailSeq}"
-			           data-importantStatus="${mail.importantStatus}"
-			           title="중요"
-			           onclick="toggleImportant(this)"></i>
 			        <span class="ms-2 fw-bold">${mail.emailTitle}</span>
 			    </div>
 			    <div>
