@@ -162,6 +162,51 @@ body{ background:var(--bg); }
 
 .doc-meta{ font-size:12px; color:var(--muted); margin-top:2px; }
 .doc-list li:hover{ background:#fafafa; }
+
+
+
+
+/* 오늘 일정 리스트 */
+.today-events {
+  list-style:none;
+  margin:0;
+  padding:0;
+  max-height: 220px; /* 일정 많으면 스크롤 */
+  overflow-y:auto;
+}
+.today-events li {
+  padding:10px 0;
+  border-bottom:1px solid var(--line);
+}
+.today-events li:last-child {
+  border-bottom:none;
+}
+
+.event-link {
+  display:flex;
+  flex-direction:column;
+  text-decoration:none;
+  color:var(--text);
+  transition: background .15s ease;
+  padding:6px 4px;
+  border-radius:8px;
+}
+.event-link:hover {
+  background:#f9fafb;
+}
+
+.event-time {
+  font-size:12px;
+  color:var(--muted);
+  margin-bottom:2px;
+}
+.event-title {
+  font-size:14px;
+  font-weight:600;
+}
+
+
+
 </style>
 
 <div class="dashboard">
@@ -264,33 +309,41 @@ body{ background:var(--bg); }
     </section>
 
     <!-- 우측: 오늘 일정 + 결재 대기 -->
-	<!-- 우측: 오늘 일정 + 결재 대기 -->
+	
 	<aside>
-	  <div class="card">
-	    <div class="card-bd">
-	      <div class="item-title" style="margin-bottom:10px;">📌 오늘 예정된 사내 일정</div>
-	      <c:choose>
-	        <c:when test="${empty todayCompanyEvents}">
-	          <div style="color:#6b7280">오늘 등록된 사내 일정이 없습니다.</div>
-	        </c:when>
-	        <c:otherwise>
-	          <ul class="list">
-	            <c:forEach var="ev" items="${todayCompanyEvents}">
-	              <li>
-	                <a href="${pageContext.request.contextPath}/Calendar/detailCalendar?calendarSeq=${ev.calendarSeq}">
-	                  <c:out value="${ev.calendarName}"/>
-	                </a>
-	                <span style="color:#6b7280; font-size:12px;">
-	                  (<c:out value="${fn:substring(ev.calendarStart,11,16)}"/>~
-	                   <c:out value="${fn:substring(ev.calendarEnd,11,16)}"/>)
-	                </span>
-	              </li>
-	            </c:forEach>
-	          </ul>
-	        </c:otherwise>
-	      </c:choose>
-	    </div>
-	  </div>
+		
+		<div class="card">
+		  <div class="card-bd">
+		    <div class="item-title" style="margin-bottom:12px; font-size:16px; font-weight:700;">
+		      📌 오늘 예정된 사내 일정
+		    </div>
+
+		    <c:choose>
+		      <c:when test="${empty todayCompanyEvents}">
+		        <div style="color:#6b7280; font-size:14px; padding:8px 0;">
+		          오늘 등록된 사내 일정이 없습니다.
+		        </div>
+		      </c:when>
+		      <c:otherwise>
+		        <ul class="list today-events">
+		          <c:forEach var="ev" items="${todayCompanyEvents}">
+		            <li>
+		              <a class="event-link" href="${ctxPath}/Calendar/detailCalendar?calendarSeq=${ev.calendarSeq}">
+		                <span class="event-time">
+		                  ⏰ <c:out value="${fn:substring(ev.calendarStart,11,16)}"/>~
+		                      <c:out value="${fn:substring(ev.calendarEnd,11,16)}"/>
+		                </span>
+		                <span class="event-title">
+		                  <c:out value="${ev.calendarName}"/>
+		                </span>
+		              </a>
+		            </li>
+		          </c:forEach>
+		        </ul>
+		      </c:otherwise>
+		    </c:choose>
+		  </div>
+		</div>
 
       <div class="card" style="margin-top:18px;">
         <div class="card-bd">
