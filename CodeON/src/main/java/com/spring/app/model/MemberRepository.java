@@ -2,6 +2,7 @@ package com.spring.app.model;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -12,6 +13,7 @@ import org.springframework.data.repository.query.Param;
 
 import com.spring.app.domain.AddressDTO;
 import com.spring.app.domain.MemberProfileDTO;
+import com.spring.app.entity.DraftLine;
 import com.spring.app.entity.Member;
 
 import jakarta.transaction.Transactional;
@@ -87,6 +89,7 @@ public interface MemberRepository extends JpaRepository<Member, Integer> {
 
 		    @Query("select d.departmentName from Department d where d.departmentSeq = :seq")
 		    String findDeptName(@Param("seq") int seq);
+
 
 
 }

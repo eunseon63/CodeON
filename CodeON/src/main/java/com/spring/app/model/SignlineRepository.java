@@ -25,4 +25,5 @@ public interface SignlineRepository extends JpaRepository<Signline, Long> {
 		    order by sl.signlineSeq desc
 		  """)
 	List<Signline> findAllWithMembersByFkMemberSeq(@Param("fkMemberSeq") Long fkMemberSeq);
+
 }
