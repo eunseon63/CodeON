@@ -1,9 +1,5 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ taglib prefix="c"  uri="http://java.sun.com/jsp/jstl/core" %>
-
-<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
-
-
 <%
     String ctxPath = request.getContextPath();
 %>
@@ -30,11 +26,7 @@ textarea{resize:vertical; min-height:110px}
 .row{display:grid; grid-template-columns:1fr 1fr; gap:14px}
 .helper{font-size:12px; color:var(--muted); margin-top:6px}
 .btn-submit{margin-top:22px; width:100%; padding:12px; background:linear-gradient(90deg,#22c55e,#16a34a); border:none; border-radius:10px; color:#fff; font-size:16px; font-weight:700; cursor:pointer}
-
-.tag{display:inline-block; padding:4px 10px; border-radius:999px; background:#ecfdf5; color:#065f46; font-size:12px; margin-left:8px}
-
 .alert{margin-top:12px; padding:12px; border:1px solid #fecaca; background:#fff1f2; color:#991b1b; border-radius:10px; font-size:13px}
-
 .hidden{display:none}
 
 /* 공유자 태그 스타일 */
@@ -57,93 +49,36 @@ span.plusUser > i {
 
 <body>
 <div class="container">
+  <h2>일정 등록</h2>
 
-  <!--<%-- 1) 목록에서 탭을 누르고 왔으면 kind 파라미터가 있음. 없으면 기본 PERSONAL(개인). --%>-->
-  <c:set var="rawKind" value="${param.kind}" />
-  <c:choose>
-    <c:when test="${rawKind == 'COMPANY' || rawKind == '사내'}"><c:set var="kind" value="COMPANY"/></c:when>
-    <c:when test="${rawKind == 'DEPARTMENT' || rawKind == '부서'}"><c:set var="kind" value="DEPARTMENT"/></c:when>
-    <c:when test="${rawKind == 'SHARE' || rawKind == '공유'}"><c:set var="kind" value="SHARE"/></c:when>
-    <c:otherwise><c:set var="kind" value="PERSONAL"/></c:otherwise>
-  </c:choose>
-
-  <!--<%-- 2) bigCategoryList에서 해당 kind의 대분류 seq 찾기 (특히 PERSONAL=개인) --%>-->
-  <c:set var="companySeq"  value=""/>
-  <c:set var="deptSeq"     value=""/>
-  <c:set var="personalSeq" value=""/>
-  <c:set var="shareSeq"    value=""/>
-  <c:forEach var="bigCat" items="${bigCategoryList}">
-    <c:if test="${fn:contains(bigCat.bigCategoryName,'사내')}"><c:set var="companySeq"  value="${bigCat.bigCategorySeq}"/></c:if>
-    <c:if test="${fn:contains(bigCat.bigCategoryName,'부서')}"><c:set var="deptSeq"     value="${bigCat.bigCategorySeq}"/></c:if>
-    <c:if test="${fn:contains(bigCat.bigCategoryName,'개인')}"><c:set var="personalSeq" value="${bigCat.bigCategorySeq}"/></c:if>
-    <c:if test="${fn:contains(bigCat.bigCategoryName,'공유')}"><c:set var="shareSeq"    value="${bigCat.bigCategorySeq}"/></c:if>
-  </c:forEach>
-
-  <c:set var="selectedBigSeq"
-         value="${kind=='COMPANY' ? companySeq :
-                 kind=='DEPARTMENT' ? deptSeq :
-                 kind=='SHARE' ? shareSeq : personalSeq}"/>
-
-  <h2>
-    일정 등록
-    <span class="tag">
-      <c:choose>
-        <c:when test="${kind=='COMPANY'}">사내</c:when>
-        <c:when test="${kind=='DEPARTMENT'}">부서</c:when>
-        <c:when test="${kind=='SHARE'}">공유</c:when>
-        <c:otherwise>내 캘린더(개인)</c:otherwise>
-      </c:choose>
-    </span>
-  </h2>
-
-  <!--<%-- 3) 폼: 캘린더/대분류 선택 UI 제거. bigCategorySeq를 hidden으로 전송(중복 제거). --%>-->
   <form action="<%= ctxPath %>/Calendar/addCalendarForm" method="post" onsubmit="return validateForm();">
 
-    <input type="hidden" name="bigCategorySeq" value="${selectedBigSeq}"/>
-    <input type="hidden" name="calendarType"  value="${kind}"/><!-- 필요 시 백엔드 로깅/분기용 -->
-
-
-
-    <!--<%-- (선택) 소분류: 선택된 대분류에 속한 것만 보여줌 --%>-->
-    <label>소분류 선택</label>
-    <select name="smallCategorySeq" id="smallCategorySeq">
-      <option value="">-- 선택하세요 --</option>
-
     <!-- 대분류 -->
-	<label>캘린더 선택</label>
-	<select name="bigCategorySeq" id="bigCategorySeq" required>
-	  <option value="">-- 선택하세요 --</option>
-	  <c:forEach var="bigCat" items="${bigCategoryList}">
-	    <c:choose>
-	     
-	      <c:when test="${bigCat.bigCategoryName eq '부서 캘린더' && sessionScope.loginuser.fkGradeSeq lt 3}">
-	      
-	      </c:when>
-	      <c:otherwise>
-	        <option value="${bigCat.bigCategorySeq}">${bigCat.bigCategoryName}</option>
-	      </c:otherwise>
-	    </c:choose>
-	  </c:forEach>
-	</select>
-	<div class="helper">예: 사내 / 부서 / 내 캘린더 등</div>
+   <label>캘린더 선택</label>
+   <select name="bigCategorySeq" id="bigCategorySeq" required>
+     <option value="">-- 선택하세요 --</option>
+     <c:forEach var="bigCat" items="${bigCategoryList}">
+       <c:choose>
+        
+         <c:when test="${bigCat.bigCategoryName eq '부서 캘린더' && sessionScope.loginuser.fkGradeSeq lt 3}">
+         
+         </c:when>
+         <c:otherwise>
+           <option value="${bigCat.bigCategorySeq}">${bigCat.bigCategoryName}</option>
+         </c:otherwise>
+       </c:choose>
+     </c:forEach>
+   </select>
+   <div class="helper">예: 사내 / 부서 / 내 캘린더 등</div>
 
     <!-- 소분류 -->
     <label>일정 선택</label>
     <select name="smallCategorySeq" id="smallCategorySeq" required>
       <option value="">-- 캘린더를 먼저 선택하세요 --</option>
-
       <c:forEach var="smallCat" items="${smallCategoryList}">
-
-        <c:if test="${smallCat.fkBigCategorySeq == selectedBigSeq}">
-          <option value="${smallCat.smallCategorySeq}" data-fk="${smallCat.fkBigCategorySeq}">
-            ${smallCat.smallCategoryName}
-          </option>
-        </c:if>
-
         <option value="${smallCat.smallCategorySeq}" data-fk="${smallCat.fkBigCategorySeq}">
           ${smallCat.smallCategoryName}
         </option>
-
       </c:forEach>
     </select>
     <div id="noSmallAlert" class="alert hidden">
@@ -151,14 +86,14 @@ span.plusUser > i {
     </div>
 
 
-    <!--<%-- 제목/내용 --%>-->
+    <!-- 제목/내용 -->
     <label>일정 제목</label>
     <input type="text" id="title" name="title" placeholder="일정 제목을 입력하세요" required>
 
     <label>일정 내용</label>
     <textarea name="content" placeholder="세부 내용을 입력하세요"></textarea>
 
-    <!--<%-- 시작/종료 --%>-->
+    <!-- 시작/종료 -->
     <div class="row">
       <div>
         <label>시작 날짜</label>
@@ -170,7 +105,7 @@ span.plusUser > i {
       </div>
     </div>
 
-    <!--<%-- 장소/색상(선택) --%>-->
+    <!-- 장소 / 색상 -->
     <div class="row">
       <div>
         <label>장소</label>
@@ -182,19 +117,7 @@ span.plusUser > i {
       </div>
     </div>
 
-
-    <!--<%-- 공유 탭에서 진입했을 때만 공유자 입력 --%>-->
-    <c:if test="${kind=='SHARE'}">
-      <div id="shareEmployeesGroup">
-        <label>공유할 직원</label>
-        <input type="text" id="shareEmployees" name="shareEmployees" placeholder="사원번호 또는 사원이름, 쉼표(,)로 구분">
-        <div class="helper">예: 101, 205, 김철수</div>
-      </div>
-    </c:if>
-
-
     <!-- 반복 -->
-
     <label>반복</label>
     <select name="repeatType">
       <option value="NONE">반복 없음</option>
@@ -209,81 +132,57 @@ span.plusUser > i {
 
 <script>
 
-function validateForm(){
-  const title = document.getElementById('title').value.trim();
-  const start = document.getElementById('startDate').value;
-  const end   = document.getElementById('endDate').value;
-  if(!title){ alert('제목을 입력하세요.'); return false; }
-  if(!start || !end){ alert('시작/종료 일시를 모두 입력하세요.'); return false; }
-  if(new Date(start) > new Date(end)){ alert('종료일은 시작일 이후여야 합니다.'); return false; }
+   function validateForm() {
+        // 제목 필수
+        if (!$("#title").val().trim()) {
+          alert("일정 제목을 입력하세요.");
+          $("#title").focus();
+          return false;
+        }
 
-  // 공유일 때만 공유자 필수
-  var isShare = '<c:out value="${kind}"/>' === 'SHARE';
-  if(isShare){
-    const share = (document.getElementById('shareEmployees')?.value || '').trim();
-    if(!share){ alert('공유 캘린더는 공유할 직원을 입력하세요.'); return false; }
-  }
+        // 대분류 필수
+        if (!$("#bigCategorySeq").val()) {
+          alert("캘린더(대분류)를 선택하세요.");
+          $("#bigCategorySeq").focus();
+          return false;
+        }
 
-  // 개인(내 캘린더) 고정 보장 체크
-  const big = '<c:out value="${selectedBigSeq}"/>';
-  if(!big){ alert('개인 대분류가 설정되지 않았습니다. 관리자에게 문의해주세요.'); return false; }
+        // 소분류 필수
+        if (!$("#smallCategorySeq").val()) {
+          alert("일정을 선택하세요.");
+          $("#smallCategorySeq").focus();
+          return false;
+        }
 
-  return true;
-}
+        // 시작 / 종료 날짜 검사
+        const start = $("#startDate").val();
+        const end = $("#endDate").val();
+        if (!start || !end) {
+          alert("시작일과 종료일을 입력하세요.");
+          return false;
+        }
+        if (start > end) {
+          alert("종료일은 시작일 이후여야 합니다.");
+          $("#endDate").focus();
+          return false;
+        }
 
+        // 장소 (선택이지만 길이 제한)
+        if ($("#calendarLocation").val().length > 50) {
+          alert("장소는 50자 이내로 입력하세요.");
+          $("#calendarLocation").focus();
+          return false;
+        }
 
-	function validateForm() {
-		  // 제목 필수
-		  if (!$("#title").val().trim()) {
-		    alert("일정 제목을 입력하세요.");
-		    $("#title").focus();
-		    return false;
-		  }
+        // 내용 (선택이지만 길이 제한)
+        if ($("textarea[name=content]").val().length > 500) {
+          alert("내용은 500자 이내로 입력하세요.");
+          $("textarea[name=content]").focus();
+          return false;
+        }
 
-		  // 대분류 필수
-		  if (!$("#bigCategorySeq").val()) {
-		    alert("캘린더(대분류)를 선택하세요.");
-		    $("#bigCategorySeq").focus();
-		    return false;
-		  }
-
-		  // 소분류 필수
-		  if (!$("#smallCategorySeq").val()) {
-		    alert("일정을 선택하세요.");
-		    $("#smallCategorySeq").focus();
-		    return false;
-		  }
-
-		  // 시작 / 종료 날짜 검사
-		  const start = $("#startDate").val();
-		  const end = $("#endDate").val();
-		  if (!start || !end) {
-		    alert("시작일과 종료일을 입력하세요.");
-		    return false;
-		  }
-		  if (start > end) {
-		    alert("종료일은 시작일 이후여야 합니다.");
-		    $("#endDate").focus();
-		    return false;
-		  }
-
-		  // 장소 (선택이지만 길이 제한)
-		  if ($("#calendarLocation").val().length > 50) {
-		    alert("장소는 50자 이내로 입력하세요.");
-		    $("#calendarLocation").focus();
-		    return false;
-		  }
-
-		  // 내용 (선택이지만 길이 제한)
-		  if ($("textarea[name=content]").val().length > 500) {
-		    alert("내용은 500자 이내로 입력하세요.");
-		    $("textarea[name=content]").focus();
-		    return false;
-		  }
-
-		  return true; // 통과 시 submit 진행
-		}
-
+        return true; // 통과 시 submit 진행
+      }
 
 
 

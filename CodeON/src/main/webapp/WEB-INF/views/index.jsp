@@ -264,17 +264,33 @@ body{ background:var(--bg); }
     </section>
 
     <!-- 우측: 오늘 일정 + 결재 대기 -->
-    <aside>
-      <div class="card">
-        <div class="card-bd">
-          <div class="item-title" style="margin-bottom:10px;">📌 오늘 예정된 일정</div>
-          <ul class="list">
-            <li>- 10:00 전산팀 월말회의</li>
-            <li>- 13:00 유산균 먹기</li>
-            <li>- 19:00 팀 전체 회식</li>
-          </ul>
-        </div>
-      </div>
+	<!-- 우측: 오늘 일정 + 결재 대기 -->
+	<aside>
+	  <div class="card">
+	    <div class="card-bd">
+	      <div class="item-title" style="margin-bottom:10px;">📌 오늘 예정된 사내 일정</div>
+	      <c:choose>
+	        <c:when test="${empty todayCompanyEvents}">
+	          <div style="color:#6b7280">오늘 등록된 사내 일정이 없습니다.</div>
+	        </c:when>
+	        <c:otherwise>
+	          <ul class="list">
+	            <c:forEach var="ev" items="${todayCompanyEvents}">
+	              <li>
+	                <a href="${pageContext.request.contextPath}/Calendar/detailCalendar?calendarSeq=${ev.calendarSeq}">
+	                  <c:out value="${ev.calendarName}"/>
+	                </a>
+	                <span style="color:#6b7280; font-size:12px;">
+	                  (<c:out value="${fn:substring(ev.calendarStart,11,16)}"/>~
+	                   <c:out value="${fn:substring(ev.calendarEnd,11,16)}"/>)
+	                </span>
+	              </li>
+	            </c:forEach>
+	          </ul>
+	        </c:otherwise>
+	      </c:choose>
+	    </div>
+	  </div>
 
       <div class="card" style="margin-top:18px;">
         <div class="card-bd">
