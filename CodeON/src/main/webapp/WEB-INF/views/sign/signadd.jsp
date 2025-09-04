@@ -153,36 +153,39 @@ body { margin:0; background:var(--bg); font-family:system-ui,-apple-system,Segoe
             </div>
           </section>
 
-<!-- 휴가 신청서 -->
-<section id="pane-vacation" class="form f-vacation">
-  <div class="row2">
-    <div>제목</div>
-    <input class="input" id="v-title" placeholder="예) 연차 신청">
-  </div>
+          <!-- 휴가 신청서 -->
+          <section id="pane-vacation" class="form f-vacation">
+            <div class="row2">
+              <div>제목</div>
+              <input class="input" id="v-title" placeholder="예) 연차 신청">
+            </div>
 
-  <!-- 휴가 종류 -->
-  <div class="row2" style="margin-top:8px">
-    <div>휴가 종류</div>
-    <select class="select" id="v-type">
-      <option value="ANNUAL">연차</option>
-      <option value="HALF">반차</option>
-    </select>
-  </div>
+            <div class="row2" style="margin-top:8px">
+              <div>휴가 종류</div>
+              <select class="select" id="v-type">
+                <option value="ANNUAL">연차</option>
+                <option value="HALF">반차</option>
+              </select>
+            </div>
 
-  <div class="row2" style="margin-top:8px">
-    <div>기간</div>
-    <div style="display:flex;gap:8px">
-      <input type="date" class="date" id="v-from">
-      <span style="align-self:center">~</span>
-      <input type="date" class="date" id="v-to">
-    </div>
-  </div>
+            <div class="row2" style="margin-top:8px">
+              <div>기간</div>
+              <div style="display:flex;gap:8px">
+                <input type="date" class="date" id="v-from">
+                <span style="align-self:center">~</span>
+                <input type="date" class="date" id="v-to">
+              </div>
+            </div>
 
-  <div style="margin-top:10px">
-    <div style="color:var(--muted);font-size:13px;margin-bottom:6px">사유</div>
-    <textarea class="textarea" id="v-reason" placeholder="사유를 입력하세요."></textarea>
-  </div>
-</section>
+            <div style="margin-top:10px">
+              <div style="color:var(--muted);font-size:13px;margin-bottom:6px">사유</div>
+              <textarea class="textarea" id="v-reason" placeholder="사유를 입력하세요."></textarea>
+            </div>
+
+            <div style="margin-top:10px;display:flex;gap:8px;align-items:center">
+              <input type="file" id="v-file" multiple>
+            </div>
+          </section>
 
           <!-- 지출 결의서 -->
           <section id="pane-expense" class="form f-expense">
@@ -215,11 +218,15 @@ body { margin:0; background:var(--bg); font-family:system-ui,-apple-system,Segoe
               </table>
               <div class="sum">합계: <span id="sumMoney">0</span> 원</div>
             </div>
+
+            <div style="margin-top:10px;display:flex;gap:8px;align-items:center">
+              <input type="file" id="e-file" multiple>
+            </div>
           </section>
 
           <!-- 출장 보고서 -->
           <section id="pane-trip" class="form f-trip">
-            <div class="row2"><div>제목</div><input class="input" id="t-title" placeholder="예) 부산 고객사 미팅 보고"></div>
+            <div class="row2"><div>제목</div><input class="input" id="t-title"></div>
             <div class="row2" style="margin-top:8px"><div>출장 목적</div><input class="input" id="t-purpose" placeholder="목적 입력"></div>
             <div class="row2" style="margin-top:8px"><div>출장 기간</div>
               <div style="display:flex;gap:8px">
@@ -227,10 +234,14 @@ body { margin:0; background:var(--bg); font-family:system-ui,-apple-system,Segoe
                 <input type="date" class="date" id="t-to">
               </div>
             </div>
-            <div class="row2" style="margin-top:8px"><div>출장 지역</div><input class="input" id="t-area" placeholder="예) 부산 해운대"></div>
+            <div class="row2" style="margin-top:8px"><div>출장 지역</div><input class="input" id="t-area" ></div>
             <div style="margin-top:10px">
               <div style="color:var(--muted);font-size:13px;margin-bottom:6px">출장 결과</div>
               <textarea class="textarea" id="t-result" placeholder="결과를 입력하세요."></textarea>
+            </div>
+
+            <div style="margin-top:10px;display:flex;gap:8px;align-items:center">
+              <input type="file" id="t-file" multiple>
             </div>
           </section>
         </div>
@@ -335,7 +346,7 @@ body { margin:0; background:var(--bg); font-family:system-ui,-apple-system,Segoe
     $("#draftForm input[name='approverSeq']").each(function(){ fd.append("approverSeq", this.value); });
     $("#draftForm input[name='lineOrder']").each(function(){ fd.append("lineOrder", this.value); });
 
-    // 타입별 분기 + 요약 필드 포함(원하면 서버에서 무시해도 됨)
+    // 타입별 분기 + 요약 필드 포함
     if (isProp) {
       url = ctx + "/sign/draft/proposal";
       fd.append("fk_draft_type_seq", 3);
@@ -346,7 +357,7 @@ body { margin:0; background:var(--bg); font-family:system-ui,-apple-system,Segoe
       fd.append("draft_title",     title);
       fd.append("draft_content",   body);
       const files = ($("#p-file")[0] && $("#p-file")[0].files) || [];
-      for(let i=0;i<files.length;i++){ fd.append("files", files[i], files[i].name); }
+      for (let i=0;i<files.length;i++) fd.append("files", files[i], files[i].name);
 
     } else if (isVac) {
       url = ctx + "/sign/draft/vacation";
@@ -358,7 +369,6 @@ body { margin:0; background:var(--bg); font-family:system-ui,-apple-system,Segoe
       const end   = (type === "HALF") ? start : ($("#v-to").val() || "");
       const reason= $("#v-reason").val()  || "";
 
-      // 간단 검증
       if (!start) { alert("휴가 시작일을 입력하세요."); return; }
       if (type !== "HALF" && !end) { alert("휴가 종료일을 입력하세요."); return; }
       if (type !== "HALF" && start > end) { alert("종료일이 시작일보다 빠릅니다."); return; }
@@ -367,10 +377,12 @@ body { margin:0; background:var(--bg); font-family:system-ui,-apple-system,Segoe
       fd.append("vacation_start",   start);
       fd.append("vacation_end",     end);
       fd.append("vacation_content", reason);
-      fd.append("vacation_type",    type);             // ★ 서버에 전달
-
+      fd.append("vacation_type",    type);
       fd.append("draft_title",      title);
       fd.append("draft_content",    reason);
+
+      const vfiles = ($("#v-file")[0] && $("#v-file")[0].files) || [];
+      for (const f of vfiles) fd.append("files", f, f.name);
 
     } else if (isExp) {
       url = ctx + "/sign/draft/expense";
@@ -379,20 +391,25 @@ body { margin:0; background:var(--bg); font-family:system-ui,-apple-system,Segoe
       const why   = $("#e-reason").val() || "";
       fd.append("payment_title",   title);
       fd.append("payment_content", why);
+
       // 리스트
       $("#expTable tbody tr").each(function(){
         const reg = $(this).find("input[type='date']").val() || "";
         const use = $(this).find("input.input").val()         || "";
         const amt = $(this).find(".money").val()              || "0";
-        fd.append("payment_list_regdate", reg);
-        fd.append("payment_list_content", use);
-        fd.append("payment_list_price[]",   amt);
+        fd.append("payment_list_regdate",  reg);
+        fd.append("payment_list_content",  use);
+        fd.append("payment_list_price[]",  amt);
       });
+
       // 합계
       const total = recalcSum();
       fd.append("total_amount", total);
       fd.append("draft_title",  title);
       fd.append("draft_content",why);
+
+      const efiles = ($("#e-file")[0] && $("#e-file")[0].files) || [];
+      for (const f of efiles) fd.append("files", f, f.name);
 
     } else if (isTrip) {
       url = ctx + "/sign/draft/trip";
@@ -411,6 +428,9 @@ body { margin:0; background:var(--bg); font-family:system-ui,-apple-system,Segoe
       fd.append("business_result",   result);
       fd.append("draft_title",       title);
       fd.append("draft_content",     result);
+
+      const tfiles = ($("#t-file")[0] && $("#t-file")[0].files) || [];
+      for (const f of tfiles) fd.append("files", f, f.name);
     }
 
     if (!url) { alert("문서 유형을 선택하세요."); return; }

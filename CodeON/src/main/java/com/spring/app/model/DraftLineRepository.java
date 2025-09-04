@@ -59,12 +59,12 @@ public interface DraftLineRepository extends JpaRepository<DraftLine, Long> {
     List<DraftLine> findDetailLines(@Param("draftSeq") Long draftSeq);
 
     @Query("""
-      select min(x.lineOrder)
-        from DraftLine x
-       where x.draft.draftSeq = :draftSeq
-         and x.signStatus <> 1
+        select max(dl.lineOrder)
+          from DraftLine dl
+         where dl.draft.draftSeq = :seq
+           and dl.signStatus = 0
     """)
-    Integer findNextOrder(@Param("draftSeq") Long draftSeq);
+    Integer findNextOrder(@Param("seq") Long seq);
 
     @Query("""
       select dl

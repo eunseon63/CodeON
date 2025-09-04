@@ -55,11 +55,11 @@ public class SignlineService_imple implements SignlineService {
                         .lineOrder(sm.getLineOrder())
                         .memberSeq(
                                 m != null
-                                    ? (long) m.getMemberSeq()                                // int → Long
-                                    : (sm.getFkMemberSeq() != null ? sm.getFkMemberSeq().longValue() : null)  // Integer → Long
+                                    ? (long) m.getMemberSeq()                                
+                                    : (sm.getFkMemberSeq() != null ? sm.getFkMemberSeq().longValue() : null) 
                             )
                         .memberName(m != null ? m.getMemberName() : null)
-                        .deptName(d != null ? d.getDepartmentName() : null)  // 게터명 맞추기
+                        .deptName(d != null ? d.getDepartmentName() : null) 
                         .title(g != null ? g.getGradeName() : null)
                         .build());
             }
@@ -70,7 +70,7 @@ public class SignlineService_imple implements SignlineService {
                     .signlineName(sl.getSignlineName())
                     .regdate(sl.getRegdate())
                     .members(memberDtos)
-                    .memberCount(memberDtos.size())   // 카드에 “결재자 N명”
+                    .memberCount(memberDtos.size())
                     .build());
         }
         return out;
