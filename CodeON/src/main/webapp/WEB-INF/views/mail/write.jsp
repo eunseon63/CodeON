@@ -48,11 +48,11 @@ $(function(){
             return false;
         }
 
-        // 받는 사람 유효성 검사 (콤마 구분)
+        // 받는 사람 유효성 검사
         var emails = $('input[name="receiveMemberEmail"]').val().trim().split(',');
         for(var i=0; i<emails.length; i++){
             var email = emails[i].trim();
-            if(email.length == 0) continue; // 빈 값 무시
+            if(email.length == 0) continue;
             var emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
             if(!emailPattern.test(email)){
                 alert("유효하지 않은 이메일 주소가 있습니다: " + email);
@@ -60,12 +60,27 @@ $(function(){
             }
         }
 
-        // 폼 전송
-        const frm = document.writeFrm;
-        frm.method = "post";
-        frm.action = "<%= ctxPath%>/mail/write";
-        frm.submit();
+        // FormData 객체 생성 (첨부파일 포함 가능)
+        var formData = new FormData(document.writeFrm);
+
+        // AJAX 전송
+        $.ajax({
+            url: "<%= ctxPath%>/mail/write",
+            type: "POST",
+            data: formData,
+            processData: false,
+            contentType: false,
+            success: function(response){
+                alert("메일이 성공적으로 전송되었습니다.");
+                window.location.href = "<%= ctxPath%>/mail/receive";
+            },
+            error: function(xhr, status, error){
+                console.error(xhr.responseText);
+                alert("메일 전송에 실패했습니다. 다시 시도해주세요.\n");
+            }
+        });
     });
+
 });
 </script>
 

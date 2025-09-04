@@ -120,7 +120,7 @@
 
             <div class="text-end">
                 <button type="button" class="btn btn-primary" id="btnReply">보내기</button>
-                <button type="reset" class="btn btn-secondary">초기화</button>
+                <button type="button" class="btn btn-secondary" onclick="history.back();">취소</button>
             </div>
         </form>
     </div>

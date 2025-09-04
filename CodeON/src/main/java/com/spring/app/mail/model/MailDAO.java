@@ -49,6 +49,8 @@ public interface MailDAO {
 
 	// 메일 하나 삭제하기
 	int deleteMail(String emailSeq);
+	
+	int deleteByEmailSeqList(List<Long> emailSeqList);
 
 	int getSentMailTotalCount(Map<String, String> paraMap);
 
@@ -63,6 +65,6 @@ public interface MailDAO {
 	//스케줄러
 	List<MailUserStatusDTO> selectScheduledUsers();
 	
-	
+	int deleteByEmailSeq(String emailSeq);
 
 }

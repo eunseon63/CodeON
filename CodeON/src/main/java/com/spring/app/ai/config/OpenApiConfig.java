@@ -13,6 +13,4 @@ public class OpenApiConfig {
 	   return chatClientBuilder.build();
    }
 
-   
-   
 }
