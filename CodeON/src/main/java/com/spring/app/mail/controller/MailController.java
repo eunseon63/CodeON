@@ -175,7 +175,7 @@ public class MailController {
 	    int pageNo = ((Integer.parseInt(currentShowPageNo)-1)/blockSize)*blockSize + 1;
 
 	    String pageBar = "<ul style='list-style:none;'>";
-	    String url = "sendlist";
+	    String url = "send";
 
 	    // [처음][이전]
 	    pageBar += "<li style='display:inline-block; width:70px;'><a href='" + url + "?searchWord=" + searchWord + "&currentShowPageNo=1'>[<<]</a></li>";
@@ -500,7 +500,9 @@ public class MailController {
 	@PostMapping("deleteMails")
 	@ResponseBody
 	public Map<String, Object> deleteMails(@RequestParam("emailSeqList") List<Long> emailSeqList) {
-		int n = service.deleteMails(emailSeqList);
+		
+		service.deleteByEmailSeqList(emailSeqList);
+	    int n = service.deleteMails(emailSeqList);
 		
 		Map<String, Object> response = new HashMap<>();
 		response.put("n", n);
@@ -512,6 +514,8 @@ public class MailController {
 	@PostMapping("deleteMail")
 	@ResponseBody
 	public Map<String, Object> deleteMail(@RequestParam("emailSeq") String emailSeq) {
+		
+		service.deleteByEmailSeq(emailSeq);
 		int n = service.deleteMail(emailSeq);
 		
 		Map<String, Object> response = new HashMap<>();

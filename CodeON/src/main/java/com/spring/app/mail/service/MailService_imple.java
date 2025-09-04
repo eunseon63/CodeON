@@ -139,6 +139,11 @@ public class MailService_imple implements MailService {
 	public int deleteMail(String emailSeq) {
 		return dao.deleteMail(emailSeq);
 	}
+	
+	@Override
+	public int deleteByEmailSeqList(List<Long> emailSeqList) {
+		return dao.deleteByEmailSeqList(emailSeqList);
+	}
 
 	@Override
 	public int getSentMailTotalCount(Map<String, String> paraMap) {
@@ -158,6 +163,12 @@ public class MailService_imple implements MailService {
 	@Override
 	public List<MailDTO> getReceivedMailListWithPaging(Map<String, String> paraMap) {
 		return dao.getReceivedMailListWithPaging(paraMap);
+	}
+
+	@Override
+	public int deleteByEmailSeq(String emailSeq) {
+		return dao.deleteByEmailSeq(emailSeq);
+		
 	}
 
 

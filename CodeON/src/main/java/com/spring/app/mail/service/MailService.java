@@ -40,6 +40,8 @@ public interface MailService {
 
 	// 메일 하나 삭제하기
 	int deleteMail(String emailSeq);
+	
+	int deleteByEmailSeqList(List<Long> emailSeqList);
 
 	// 보낸 메일 총 개수
 	int getSentMailTotalCount(Map<String, String> paraMap);
@@ -54,5 +56,7 @@ public interface MailService {
 	List<MailDTO> getReceivedMailListWithPaging(Map<String, String> paraMap);
 
 	List<MailUserStatusDTO> MailUserList();
+
+	int deleteByEmailSeq(String emailSeq);
 
 }

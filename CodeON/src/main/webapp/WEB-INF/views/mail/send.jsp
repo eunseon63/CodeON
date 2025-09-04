@@ -149,8 +149,8 @@
 	                <tr>
 	                    <th style="width:40px;"><input type="checkbox" id="chkAll"></th>
 	                    <th style="width:80px;"></th>
-	                    <th>받은 사람</th>
-	                    <th>제목</th>
+	                    <th>보낸 사람</th>
+	                    <th>제목 / 받는 사람</th>
 	                    <th>날짜</th>
 	                </tr>
 	            </thead>
@@ -162,35 +162,39 @@
 	                                <td class="align-middle text-center">
 	                                    <input type="checkbox" name="chkMail" value="${mail.emailSeq}">
 	                                </td>
-	                                <td class="text-center align-middle">
-	                                    <div class="d-flex justify-content-center align-items-center gap-2" style="font-size:1.25rem;">
-	                                        <i class="bi ${mail.importantStatus == '1' ? 'bi-star-fill text-warning' : 'bi-star'} important-icon"
-	                                           data-emailseq="${mail.emailSeq}" 
-	                                           data-importantstatus="${mail.importantStatus}" 
-	                                           title="중요"></i>
-	                                        <i class="bi ${mail.readStatus == '1' ? 'bi-envelope-open-fill text-secondary' : 'bi-envelope-fill text-primary'} read-icon"
-	                                           data-emailseq="${mail.emailSeq}" 
-	                                           data-readstatus="${mail.readStatus}" 
-	                                           title="메일 상태"></i>
-	                                        <c:if test="${not empty mail.emailFilename}">
-	                                            <i class="bi bi-paperclip attach-icon" title="첨부파일"></i>
-	                                        </c:if>
-	                                    </div>
-	                                </td>
-									<td class="align-middle ${mail.readStatus == '1' ? 'text-secondary' : 'text-dark'}">
-									    <c:set var="emails" value="${fn:split(mail.receiveMemberEmail, ',')}" />
-									    <c:choose>
-									        <c:when test="${fn:length(emails) == 1}">
-									            ${emails[0]}
-									        </c:when>
-									        <c:otherwise>
-									            ${emails[0]} 외 ${fn:length(emails) - 1}명
-									        </c:otherwise>
-									    </c:choose>
+									<td class="text-center align-middle">
+									    <div class="d-flex justify-content-center align-items-center gap-2" style="width:80px; font-size:1.25rem;">
+									        <i class="bi ${mail.importantStatus == '1' ? 'bi-star-fill text-warning' : 'bi-star'} important-icon"
+									           data-emailseq="${mail.emailSeq}" 
+									           data-important-status="${mail.importantStatus}" 
+									           title="중요"></i>
+									        <i class="bi ${mail.readStatus == '1' ? 'bi-envelope-open-fill text-secondary' : 'bi-envelope-fill text-primary'} read-icon"
+									           data-emailseq="${mail.emailSeq}" 
+									           data-read-status="${mail.readStatus}" 
+									           title="메일 상태"></i>
+									        <i class="bi bi-paperclip attach-icon text-secondary" 
+									           title="첨부파일"
+									           style="${empty mail.emailFilename ? 'visibility:hidden;' : ''}"></i>
+									    </div>
 									</td>
-	                                <td class="align-middle ${mail.readStatus == '1' ? 'text-secondary' : 'text-dark'}">
-	                                    ${mail.emailTitle}
-	                                </td>
+
+                    				<td class="align-middle ${mail.readStatus == '1' ? 'text-secondary' : 'text-dark'}">
+                                        ${mail.sendMemberEmail}
+                                    </td>
+                                    <td class="align-middle ${mail.readStatus == '1' ? 'text-secondary' : 'text-dark'}">
+                                        <div>${mail.emailTitle}</div>
+                                        <small class="text-muted">
+                                            <c:set var="emails" value="${fn:split(mail.receiveMemberEmail, ',')}" />
+                                            <c:choose>
+                                                <c:when test="${fn:length(emails) == 1}">
+                                                    ${emails[0]}
+                                                </c:when>
+                                                <c:otherwise>
+                                                    ${emails[0]} 외 ${fn:length(emails) - 1}명
+                                                </c:otherwise>
+                                            </c:choose>
+                                        </small>
+                                    </td>
 	                                <td class="align-middle ${mail.readStatus == '1' ? 'text-secondary' : 'text-dark'}">
 	                                    ${mail.emailRegdate}
 	                                </td>
@@ -214,6 +218,6 @@
 
     </div>
 </main>
-
+<br><br>
 <jsp:include page="../footer/footer.jsp" />
 

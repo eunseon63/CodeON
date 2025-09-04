@@ -33,7 +33,7 @@
 	    )
 	</insert>
 	
-	<!-- 첨부파일 없는 메일 저장 -->
+	<!-- 첨부파일 있는 메일 저장 -->
 	<insert id="insertMail_withFile">
 	    INSERT INTO TBL_EMAIL (
 	        email_seq,
@@ -76,13 +76,6 @@
 	    </foreach>
 	    SELECT * FROM dual
 	</insert>
-
-   
-   
-   <insert id="write_withFile" parameterType="MailDTO">
-       insert into TBL_EMAIL(email_seq, send_member_email, receive_member_email, email_title, email_content, email_regdate, email_send_status, email_receive_status, email_send_important, email_receive_important, email_readstatus, EMAIL_FILENAME, EMAIL_ORGFILENAME, EMAIL_FILESIZE)
-       values(emailSeq.nextval, #{sendMemberEmail}, #{receiveMemberEmail}, #{emailTitle}, #{emailContent}, sysdate, default, default, #{emailSendImportant}, default, default, #{emailFilename}, #{emailOrgFilename}, #{emailFilesize})
-   </insert>
    
    
 	<select id="getTotalCount" resultType="int" parameterType="hashmap">
@@ -175,15 +168,22 @@
 	    JOIN tbl_email_user_status u
 	      ON e.email_seq = u.email_seq
 	    WHERE u.member_email = #{loginUserEmail}
-	      AND u.read_status IS NOT NULL
+	      and u.member_email = e.send_member_email
 	    <if test="searchWord != null and searchWord != ''">
 	        AND LOWER(e.email_title) LIKE '%' || LOWER(#{searchWord}) || '%'
 	    </if>
 	</select>
 	
 	<!-- 발신메일 페이징 리스트 -->
-	<select id="getSentMailListWithPaging" parameterType="HashMap" resultType="MailDTO">
-	    SELECT e.*, u.read_status, u.important_status
+	<select id="getSentMailListWithPaging" parameterType="HashMap" resultMap="MailMap">
+	    SELECT e.email_seq,
+	           e.email_title,
+	           e.send_member_email,
+	           e.receive_member_email,
+	           e.email_regdate,
+	           e.email_filename,
+	           u.read_status, 
+	           u.important_status
 	    FROM tbl_email e
 	    JOIN tbl_email_user_status u
 	      ON e.email_seq = u.email_seq
@@ -204,20 +204,27 @@
 	    JOIN tbl_email_user_status u
 	      ON e.email_seq = u.email_seq
 	    WHERE u.member_email = #{loginUserEmail}
-	      AND u.read_status IS NOT NULL
+	      AND u.member_email = e.receive_member_email
 	    <if test="searchWord != null and searchWord != ''">
 	        AND LOWER(e.email_title) LIKE '%' || LOWER(#{searchWord}) || '%'
 	    </if>
 	</select>
 	
 	<!-- 수신메일 페이징 리스트 -->
-	<select id="getReceivedMailListWithPaging" parameterType="HashMap" resultType="MailDTO">
-	    SELECT e.*, u.read_status, u.important_status
+	<select id="getReceivedMailListWithPaging" parameterType="HashMap" resultMap="MailMap">
+	    SELECT e.email_seq,
+	           e.email_title,
+	           e.send_member_email,
+	           e.receive_member_email,
+	           e.email_regdate,
+	           e.email_filename,
+	           u.read_status, 
+	           u.important_status
 	    FROM tbl_email e
 	    JOIN tbl_email_user_status u
 	      ON e.email_seq = u.email_seq
-	    WHERE u.member_email = #{loginUserEmail} and
-	    u.member_email = e.receive_member_email
+	    WHERE u.member_email = #{loginUserEmail} 
+	    and u.member_email = e.receive_member_email
 	    <if test="searchWord != null and searchWord != ''">
 	        AND LOWER(e.email_title) LIKE '%' || LOWER(#{searchWord}) || '%'
 	    </if>
@@ -268,16 +275,31 @@
 	<delete id="deleteMails" parameterType="java.util.List">
 	    DELETE FROM tbl_email
 	    WHERE email_seq IN
-	    <foreach collection="list" item="seq" open="(" separator="," close=")">
-	        #{seq}
+	    <foreach collection="list" item="emailSeq" open="(" separator="," close=")">
+	        #{emailSeq}
 	    </foreach>
 	</delete>
+	
+	<!-- 메일유저 삭제 -->
+	<delete id="deleteByEmailSeqList" parameterType="java.util.List">
+	    DELETE FROM tbl_email_user_status
+	    WHERE email_seq IN
+	    <foreach collection="list" item="emailSeq" open="(" separator="," close=")">
+	        #{emailSeq}
+	    </foreach>
+	</delete>
+		
 
-	<!-- === 선택한 메일 삭제 === -->
+	<!-- === 한 메일 메일 삭제 === -->
 	<delete id="deleteMail" parameterType="String">
 	    DELETE FROM tbl_email
 	    WHERE email_seq = #{emailSeq}
 	</delete>
 	
+    <!-- 한 메일 자식 테이블 삭제 -->
+    <delete id="deleteByEmailSeq" parameterType="string">
+        DELETE FROM tbl_email_user_status
+        WHERE email_seq = #{emailSeq}
+    </delete>
 
 </mapper>
