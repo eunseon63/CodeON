@@ -36,10 +36,11 @@ public class MyPageController {
 
         Integer loginMemberSeq = loginuser.getMemberSeq();
 
+        // 프로필 정보 조회
         MemberProfileDTO profile = myPageService.getProfile(loginMemberSeq);
         model.addAttribute("profile", profile);
 
-        // 화면에서 부서 드롭다운을 disabled로 표기만 한다면 생략 가능
+        // 부서 목록 조회
         List<Department> departments = myPageService.getDepartments();
         model.addAttribute("departments", departments);
         model.addAttribute("profileDeptName", profile.getDeptName());
@@ -59,15 +60,15 @@ public class MyPageController {
             ra.addFlashAttribute("message", "로그인이 필요합니다.");
             return "redirect:" + request.getContextPath() + "/login/loginStart";
         }
-
         Integer loginMemberSeq = loginuser.getMemberSeq();
 
         try {
+        	// 정보 수정
             myPageService.updateProfile(loginMemberSeq, form);
             ra.addFlashAttribute("message", "수정 완료되었습니다.");
             return "redirect:" + request.getContextPath() + "/mypage";
         } catch (IllegalArgumentException | IllegalStateException ex) {
-            // 실패 시 재표시
+            // 실패 시 다시 폼 랜더링을 위한 데이터 재주입
             MemberProfileDTO profile = myPageService.getProfile(loginMemberSeq);
             model.addAttribute("profile", profile);
 
@@ -105,14 +106,13 @@ public class MyPageController {
             ra.addFlashAttribute("message", "로그인이 필요합니다.");
             return "redirect:" + request.getContextPath() + "/login/loginStart";
         }
-
         if (!newPwd.equals(newPwdConfirm)) {
             ra.addFlashAttribute("message", "새 비밀번호와 확인이 일치하지 않습니다.");
             ra.addFlashAttribute("error", true);
             return "redirect:" + request.getContextPath() + "/mypage/password";
         }
-
         try {
+        	// 비밀번호 변경
             myPageService.changePassword(loginuser.getMemberSeq(), currentPwd, newPwd);
 
             // 선택: 보안 강화를 위해 세션 재생성(재로그인 유도)

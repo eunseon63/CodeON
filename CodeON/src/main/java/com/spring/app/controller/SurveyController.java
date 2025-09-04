@@ -26,14 +26,15 @@ public class SurveyController {
 
     @GetMapping
     public String index() {
-        return "redirect:/survey/main";
+        return "redirect:/survey/main";	// 리다이렉트
     }
-
+    // 설문 메인 화면
     @GetMapping("/main")
     public String main(Model model,
                        @SessionAttribute(name = "loginuser", required = false) MemberDTO loginuser) {
 
         if (loginuser != null) {
+        	// 로그인한 사용자 프로필 조회 (부서, 직급 등)
             MemberProfileDTO profile = myPageService.getProfile(loginuser.getMemberSeq());
             model.addAttribute("userName",  loginuser.getMemberName());
             model.addAttribute("gradeName", profile != null ? profile.getGradeName() : "-");
@@ -45,9 +46,9 @@ public class SurveyController {
             List<SurveyDTO> list = surveyService.getVisibleSurveys(null, memberSeq, deptSeq);
             model.addAttribute("surveys", list);
         } else {
+        	// 로그인하지 않은 경우 설문 목록은 비움
             model.addAttribute("surveys", Collections.emptyList());
         }
-
         return "survey/main"; // /WEB-INF/views/survey/main.jsp
     }
 }

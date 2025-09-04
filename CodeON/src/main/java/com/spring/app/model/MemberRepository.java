@@ -81,6 +81,8 @@ public interface MemberRepository extends JpaRepository<Member, Integer> {
 		    """)
 		    Optional<MemberProfileDTO> findProfileDtoByMemberSeq(@Param("memberSeq") Integer memberSeq);
 
+			// 이메일 중복 검사(본인 제외): 파생 쿼리 메서드 → select count(*) > 0 를 Boolean으로 매핑
+			// 해당 이메일을 쓰는 다른 회원이 존재하는지 검사	
 		    boolean existsByMemberEmailAndMemberSeqNot(String email, Integer memberSeq);
 
 		    @Query("select d.departmentName from Department d where d.departmentSeq = :seq")
