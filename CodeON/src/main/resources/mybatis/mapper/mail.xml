@@ -279,5 +279,12 @@
 	    WHERE email_seq = #{emailSeq}
 	</delete>
 	
+	 <!-- 스케줄러 발송 대상 조회 (예: 안읽음, 중요 표시 없음) -->
+    <select id="selectScheduledUsers" resultType="com.spring.app.mail.domain.MailUserStatusDTO">
+        SELECT member_email
+        FROM TBL_EMAIL_USER_STATUS
+        WHERE read_status = '0'
+        AND important_status = '0'
+    </select>
 
 </mapper>

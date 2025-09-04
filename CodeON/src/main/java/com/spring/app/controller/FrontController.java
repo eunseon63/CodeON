@@ -54,7 +54,9 @@ public class FrontController {
 
         int memberSeq = loginuser.getMemberSeq();
         String userName = loginuser.getMemberName();
-
+        
+        int userDeptSeq= loginuser.getFkDepartmentSeq(); // 유저 부서마다 보여지는 공지가 달라야하므로 
+        
         MemberProfileDTO profile = myPageService.getProfile(memberSeq);
         String gradeName = (profile != null && profile.getGradeName() != null) ? profile.getGradeName() : "-";
 
@@ -81,9 +83,8 @@ public class FrontController {
         if (inbox.size() > 5) inbox = inbox.subList(0, 5);
         model.addAttribute("pendingLines", inbox);
         
-        // 사내게시판(= fk_board_type_seq = 0) 공지 5개
-        List<Integer> typeSeqs = List.of(0, 1);
-        List<BoardDTO> noticeList = boardService.selectRecentNotices(typeSeqs, 5);
+        // 최근공지 5개 가져오기 (로그인유저 기준)
+        List<BoardDTO> noticeList = boardService.selectRecentNotices(userDeptSeq, 5);
         model.addAttribute("noticeList", noticeList);
 
         return "index"; // /WEB-INF/views/index.jsp

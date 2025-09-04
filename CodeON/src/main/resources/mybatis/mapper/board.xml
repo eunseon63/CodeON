@@ -199,29 +199,29 @@
   </update>
 
   <!-- 상세 -->
-  <select id="getBoardDetail" parameterType="string"
-          resultType="com.spring.app.board.domain.BoardDTO">
-    SELECT
-      b.board_seq AS boardSeq,
-      b.fk_board_type_seq AS fkBoardTypeSeq,
-      b.fk_board_category_seq AS fkBoardCategorySeq,
-      b.fk_member_seq AS fkMemberSeq,
-      b.board_title AS boardTitle,
-      b.board_content AS boardContent,
-      b.board_regdate AS boardRegdate,
-      b.board_readcount AS boardReadcount,
-      b.board_password AS boardPassword,
-      b.board_file_ori_name AS boardFileOriName,
-      b.board_file_save_name AS boardFileSaveName,
-      b.board_file_size AS boardFileSize,
-      m.member_name AS memberName,
-      c.board_category_name AS boardCategoryName
-    FROM tbl_board b
-    LEFT JOIN tbl_member m ON b.fk_member_seq = m.member_seq
-    LEFT JOIN tbl_board_category c ON b.fk_board_category_seq = c.board_category_seq
-    WHERE b.board_seq = #{boardSeq}
-  </select>
-
+ <select id="getBoardDetail" parameterType="string"
+        resultType="com.spring.app.board.domain.BoardDTO">
+  SELECT
+    b.board_seq AS boardSeq,
+    b.fk_board_type_seq AS fkBoardTypeSeq,
+    b.fk_board_category_seq AS fkBoardCategorySeq,
+    b.fk_member_seq AS fkMemberSeq,
+    b.board_title AS boardTitle,
+    b.board_content AS boardContent,
+    b.board_regdate AS boardRegdate,
+    b.board_readcount AS boardReadcount,
+    b.board_password AS boardPassword,
+    b.board_file_ori_name AS boardFileOriName,
+    b.board_file_save_name AS boardFileSaveName,
+    b.board_file_size AS boardFileSize,
+    m.member_name AS memberName,
+    m.member_userid AS memberUserid, <!-- 추가 -->
+    c.board_category_name AS boardCategoryName
+  FROM tbl_board b
+  LEFT JOIN tbl_member m ON b.fk_member_seq = m.member_seq
+  LEFT JOIN tbl_board_category c ON b.fk_board_category_seq = c.board_category_seq
+  WHERE b.board_seq = #{boardSeq}
+</select>
   <!-- 부서명 조회 -->
   <select id="getDepartmentNameBySeq" parameterType="int" resultType="string">
     SELECT department_name
@@ -343,6 +343,36 @@ FROM (
 )
 WHERE ROWNUM &lt;= 5
 </select>
+	
+	
+	
+<!--  index 공지사항 표시 (로그인유저 기준) -->	
+	<select id="selectRecentNotices" parameterType="map" resultType="com.spring.app.board.domain.BoardDTO">
+    SELECT *
+    FROM (
+        SELECT 
+            b.board_seq        AS boardSeq,
+            b.board_title      AS boardTitle,
+            b.board_regdate    AS boardRegdate,
+            b.board_readcount  AS boardReadcount,
+            COALESCE(r.recommend_count, 0) AS recommendCount,
+            m.member_name      AS memberName,
+            b.fk_board_type_seq AS fkBoardTypeSeq
+        FROM tbl_board b
+        LEFT JOIN (
+            SELECT fk_board_seq, COUNT(*) AS recommend_count
+            FROM tbl_recommend
+            GROUP BY fk_board_seq
+        ) r ON b.board_seq = r.fk_board_seq
+        LEFT JOIN tbl_member m ON b.fk_member_seq = m.member_seq
+        WHERE 
+            (b.fk_board_type_seq = 0
+             OR m.fk_department_seq = #{userDeptSeq})
+        ORDER BY b.board_regdate DESC
+    )
+    WHERE ROWNUM &lt;= #{limit}
+</select>
+	
 	
 	
 </mapper>

@@ -55,4 +55,6 @@ public interface MailService {
 
 	List<MailUserStatusDTO> MailUserList();
 
+	List<MailUserStatusDTO> getScheduledUsers();
+
 }

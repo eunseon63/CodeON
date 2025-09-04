@@ -616,3 +616,4 @@ public class MailController {
         return "mail/resend";
     }
 }
+

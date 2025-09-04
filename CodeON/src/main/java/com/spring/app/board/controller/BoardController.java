@@ -2,6 +2,7 @@ package com.spring.app.board.controller;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -23,6 +24,10 @@ import com.spring.app.board.service.CommentService;
 import com.spring.app.common.FileManager;
 import com.spring.app.common.MyUtil;
 import com.spring.app.domain.MemberDTO;
+import com.spring.app.mail.domain.MailDTO;
+import com.spring.app.mail.domain.MailUserStatusDTO;
+import com.spring.app.mail.service.MailService;
+import com.spring.app.service.MemberService;
 
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
@@ -38,6 +43,9 @@ public class BoardController {
     private final BoardService boardService;
     private final CommentService commentService;
     private final FileManager fileManager;
+    private final MemberService memberService;
+    private final MailService mailService;
+    
     
     // 글쓰기 폼 요청(GET) 
     @GetMapping("add")
@@ -64,16 +72,22 @@ public class BoardController {
         return mav;	
     }
 
-    // 글쓰기 처리(POST) 
+
+ // 글쓰기 처리(POST)
     @PostMapping("add")
-    public ModelAndView addPost(@RequestParam("fkBoardTypeSeq") Integer fkBoardTypeSeq,BoardDTO boardDto, HttpSession session) {
+    public ModelAndView addPost(@RequestParam("fkBoardTypeSeq") Integer fkBoardTypeSeq,
+                                @RequestParam("fkBoardCategorySeq") Integer fkBoardCategorySeq,
+                                BoardDTO boardDto,
+                                HttpSession session) {
         ModelAndView mav = new ModelAndView();
-        
+
         try {
             MemberDTO loginuser = (MemberDTO) session.getAttribute("loginuser");
             boardDto.setFkMemberSeq(loginuser.getMemberSeq());
             boardDto.setMemberName(loginuser.getMemberName());
             boardDto.setFkBoardTypeSeq(fkBoardTypeSeq);
+            boardDto.setFkBoardCategorySeq(fkBoardCategorySeq);
+
             // ===== 파일 업로드 처리 =====
             if (boardDto.getAttach() != null && !boardDto.getAttach().isEmpty()) {
                 String originalFilename = boardDto.getAttach().getOriginalFilename();
@@ -81,24 +95,64 @@ public class BoardController {
 
                 String savedFilename = UUID.randomUUID().toString() + "_" + originalFilename;
                 boardDto.setBoardFileSaveName(savedFilename);
-
                 boardDto.setBoardFileSize(boardDto.getAttach().getSize());
 
                 String uploadDir = session.getServletContext().getRealPath("/resources/upload");
                 File dir = new File(uploadDir);
-                if (!dir.exists()) {
-                    dir.mkdirs();
-                }
+                if (!dir.exists()) dir.mkdirs();
 
                 File savedFile = new File(dir, savedFilename);
                 boardDto.getAttach().transferTo(savedFile);
             }
 
-            System.out.println("fkBoardTypeSeq = " + boardDto.getFkBoardTypeSeq());
-
+            // 1) 게시글 저장
             boardService.add(boardDto);
 
-            
+            // 2) 공지사항이면 메일 발송
+            if (fkBoardCategorySeq == 0) { // 공지사항
+                List<MemberDTO> targetMembers;
+
+                if (fkBoardTypeSeq == 0) {
+                    // 사내게시판 → 전 직원
+                    targetMembers = memberService.findAll();
+                } else {
+                    // 부서게시판 → 해당 부서 직원만
+                    targetMembers = memberService.findByDept(loginuser.getFkDepartmentSeq());
+                }
+
+                // 3) 수신자 리스트 구성 (본인 제외, null 체크)
+                List<MailUserStatusDTO> statusList = targetMembers.stream()
+                        .filter(m -> m.getMemberEmail() != null && !m.getMemberEmail().equals(loginuser.getMemberEmail()))
+                        .map(m -> MailUserStatusDTO.builder()
+                                .memberEmail(m.getMemberEmail())
+                                .readStatus("0")
+                                .importantStatus("0")
+                                .build())
+                        .toList();
+
+                // 4) 모든 수신자를 콤마로 연결
+                String allReceivers = statusList.stream()
+                        .map(MailUserStatusDTO::getMemberEmail)
+                        .reduce((a, b) -> a + "," + b)
+                        .orElse("");
+
+                // 5) MailDTO 구성
+                for(MemberDTO m : targetMembers) {
+                    if(m.getMemberEmail().length() > 50) continue; // 안전장치
+                    MailDTO mail = MailDTO.builder()
+                            .sendMemberEmail(loginuser.getMemberEmail())
+                            .receiveMemberEmail(m.getMemberEmail())
+                            .emailTitle("[공지] " + boardDto.getBoardTitle())
+                            .emailContent(boardDto.getBoardContent())
+                            .userStatusList(List.of(MailUserStatusDTO.builder()
+                                                    .memberEmail(m.getMemberEmail())
+                                                    .readStatus("0")
+                                                    .importantStatus("0")
+                                                    .build()))
+                            .build();
+                    mailService.write(mail);
+                }
+            }
             mav.setViewName("redirect:/board/list?fkBoardTypeSeq=" + boardDto.getFkBoardTypeSeq());
 
         } catch (IOException e) {
@@ -112,6 +166,7 @@ public class BoardController {
             mav.addObject("boardDto", boardDto);
             mav.setViewName("board/add");
         }
+
         return mav;
     }
 
