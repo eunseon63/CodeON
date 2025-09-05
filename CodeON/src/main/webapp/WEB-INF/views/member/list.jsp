@@ -417,3 +417,5 @@ function goDetail(memberSeq) {
     </div>
 </body>
 </html>
+
+<jsp:include page="../footer/footer.jsp" />
