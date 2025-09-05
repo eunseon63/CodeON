@@ -21,6 +21,13 @@ import lombok.RequiredArgsConstructor;
 public class MyPageController {
 
     private final MyPageService myPageService;
+    
+    // ✅ email 필드는 바인딩 자체를 금지
+    @InitBinder
+    void initBinder(org.springframework.web.bind.WebDataBinder binder) {
+        binder.setDisallowedFields("email");
+        // 또는 binder.setAllowedFields("memberSeq","name","mobile");  // 화이트리스트 방식
+    }
 
     /** 마이페이지 조회 */
     @GetMapping("")
