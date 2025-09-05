@@ -22,10 +22,10 @@ public interface DraftLineRepository extends JpaRepository<DraftLine, Long> {
 	 where dl.approver.memberSeq = :memberSeq
 	   and coalesce(dl.signStatus, 0) = 0
 	   and dl.lineOrder = (
-	     select min(dl2.lineOrder)
+	     select max(dl2.lineOrder)  
 	       from DraftLine dl2
 	      where dl2.draft = d
-	        and coalesce(dl2.signStatus, 0) <> 1
+	        and coalesce(dl2.signStatus, 0) = 0
 	   )
 	 order by d.draftRegdate desc
 	""")

@@ -28,8 +28,6 @@
     gap:12px;
     flex-wrap:wrap;
     justify-content:flex-end;
-    /* ★ lineOrder=1이 맨 오른쪽에 오도록 우->좌로 역정렬 */
-    flex-direction:row-reverse;
   }
   .stamp{width:140px;border:2px solid #111;border-radius:2px;background:#fff}
   .stamp .h{border-bottom:2px solid #111;text-align:center;padding:6px 4px;font-weight:700;font-size:15px}
