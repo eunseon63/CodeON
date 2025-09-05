@@ -172,6 +172,10 @@ public class MemberController {
 		return "member/chart";
 	}
 
+   @GetMapping("chat")
+   String chat() {
+	   return "member/chat";
+   }
 	
 }
 
