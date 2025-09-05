@@ -62,4 +62,39 @@ public interface DraftRepository extends JpaRepository<Draft, Long> {
     	""")
     	Optional<Draft> findByIdWithMemberTypeAndOrg(@Param("seq") Long seq);
     
+    // 내가 올린 문서 중 "결재 진행" (승인 ≥1 && 미승인 존재 && 반려 0)
+    @Query("""
+    select d
+    from Draft d
+    where d.member.memberSeq = :me
+      and (select count(dl) from DraftLine dl where dl.draft = d) > 0
+      and (select sum(case when dl2.signStatus = 9 then 1 else 0 end)
+           from DraftLine dl2 where dl2.draft = d) = 0
+      and (select sum(case when dl3.signStatus = 1 then 1 else 0 end)
+           from DraftLine dl3 where dl3.draft = d) >= 1
+      and (select sum(case when dl4.signStatus = 1 then 1 else 0 end)
+           from DraftLine dl4 where dl4.draft = d)
+          <
+          (select count(dl5) from DraftLine dl5 where dl5.draft = d)
+    order by d.draftRegdate desc
+    """)
+    List<Draft> findMyInProgress(@Param("me") Long me);
+
+    // 내가 올린 문서 중 "결재 완료" (반려 0 && 승인수 = 결재자수)
+    @Query("""
+    select d
+    from Draft d
+    where d.member.memberSeq = :me
+      and (select count(dl) from DraftLine dl where dl.draft = d) > 0
+      and (select sum(case when dl2.signStatus = 9 then 1 else 0 end)
+           from DraftLine dl2 where dl2.draft = d) = 0
+      and (select sum(case when dl3.signStatus = 1 then 1 else 0 end)
+           from DraftLine dl3 where dl3.draft = d)
+          =
+          (select count(dl4) from DraftLine dl4 where dl4.draft = d)
+    order by d.draftRegdate desc
+    """)
+    List<Draft> findMyCompleted(@Param("me") Long me);
+
+    
 }

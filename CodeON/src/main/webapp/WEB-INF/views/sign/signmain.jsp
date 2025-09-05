@@ -113,7 +113,7 @@
   <div class="section">
     <div class="section-header">
       <div class="section-title">결재 완료 문서</div>
-      <a class="more-btn" href="${pageContext.request.contextPath}/sign/history">더보기</a>
+      <a class="more-btn" href="${pageContext.request.contextPath}/sign/sent">더보기</a>
     </div>
     <div class="doc-list">
       <c:if test="${empty historyPreview}">

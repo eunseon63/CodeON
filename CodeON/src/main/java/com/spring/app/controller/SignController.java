@@ -283,14 +283,14 @@ public class SignController {
     @GetMapping("sent")
     public String sent(HttpSession session, Model model){
         Long me = Long.valueOf(((MemberDTO)session.getAttribute("loginuser")).getMemberSeq());
-        model.addAttribute("rows", signService.buildSentPreview(me, Integer.MAX_VALUE));
+        model.addAttribute("rows", signService.buildMyDraftboxAll(me));
         return "/sign/sent";
     }
 
     @GetMapping("history")
     public String history(HttpSession session, Model model) {
         Long me = Long.valueOf(((MemberDTO)session.getAttribute("loginuser")).getMemberSeq());
-        model.addAttribute("rows", signService.buildHistoryPreview(me, Integer.MAX_VALUE));
+        model.addAttribute("rows", signService.buildApprovalHistory(me, Integer.MAX_VALUE));
         return "sign/history";
     }
 

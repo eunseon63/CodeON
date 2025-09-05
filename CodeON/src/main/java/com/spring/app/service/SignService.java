@@ -34,8 +34,10 @@ public interface SignService {
 
     /* ===== 목록/요약 ===== */
     List<Map<String,Object>> buildInboxPreview(Long me, int limit);
+    List<Map<String, Object>> buildMyDraftboxAll(Long me);
     List<Map<String,Object>> buildSentPreview (Long me, int limit);
     List<Map<String,Object>> buildHistoryPreview(Long me, int limit);
+    List<Map<String, Object>> buildApprovalHistory(Long me, int limit);
 
     /* ===== 상세 뷰 모델 ===== */
     SignView loadSignView(long draftSeq, long me);
