@@ -8,10 +8,12 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.spring.app.ai.service.OpenAiService;
+import com.spring.app.domain.AttendanceDTO;
+import com.spring.app.domain.DraftDTO;
 import com.spring.app.domain.MemberDTO;
+import com.spring.app.domain.VacationDTO;
 import com.spring.app.service.MemberService;
 
-import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 
 @RestController
@@ -21,6 +23,7 @@ public class OpenAiController {
 
 	private final OpenAiService openAiService;
 	private final MemberService memberService;
+	private final IntegratedHrService hrService;
 	
 	@GetMapping("memberChat")
 	public String memberChat() {
@@ -29,19 +32,16 @@ public class OpenAiController {
 		return openAiService.memberChat(members);
 	}
 	
-    // DB 전체 인덱싱
-    @GetMapping("index")
-    public String indexDb() {
-        openAiService.indexAllDbDocuments();
-        return "DB 인덱싱 완료";
-    }
+	@GetMapping("hrChat")
+	public String hrChat(@RequestParam(name = "question", required = false, defaultValue = "HR 데이터 분석 요청") String question) {
+	    List<MemberDTO> members = hrService.findAllMembers();
+	    List<VacationDTO> vacations = hrService.findAllVacations();
+	    List<DraftDTO> drafts = hrService.findAllDrafts();
+	    List<AttendanceDTO> attendances = hrService.findAllAttendances();
 
-    // RAG 챗봇 질문
-    @GetMapping("chat")
-    public String chat(@RequestParam(name="question") String question, HttpSession session) {
-    	
-    	MemberDTO loginuser = (MemberDTO) session.getAttribute("loginuser");
+	    // 사용자 질문 전달
+	    return openAiService.analyzeHrData(members, vacations, drafts, attendances, question);
+	}
 
-        return openAiService.ragChat(question, loginuser.getMemberSeq());
-    }
+	
 }

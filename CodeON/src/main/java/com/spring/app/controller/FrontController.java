@@ -96,7 +96,6 @@ public class FrontController {
 
         return "index"; // /WEB-INF/views/index.jsp
     }
+
 }
-    
-    
-    
+
