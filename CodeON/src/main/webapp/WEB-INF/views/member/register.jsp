@@ -150,7 +150,7 @@ $(function() {
             dataType: "json",
             success: function(json) {
                 alert("등록이 완료되었습니다.");
-                $("form[name='sendFrm']")[0].reset();
+                location.href = "<%= ctxPath %>/member/list";
             },
             error: function(request, status, error) {
                 alert("code: " + request.status + "\nmessage: " + request.responseText + "\nerror: " + error);

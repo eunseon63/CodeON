@@ -72,7 +72,7 @@ $(function(){
             contentType: false,
             success: function(response){
                 alert("메일이 성공적으로 전송되었습니다.");
-                window.location.href = "<%= ctxPath%>/mail/receive";
+                window.location.href = "<%= ctxPath%>/mail/list";
             },
             error: function(xhr, status, error){
                 console.error(xhr.responseText);
@@ -145,4 +145,3 @@ $(function(){
 </main>
 
 <jsp:include page="../footer/footer.jsp" />
->>>>>>> refs/heads/main
