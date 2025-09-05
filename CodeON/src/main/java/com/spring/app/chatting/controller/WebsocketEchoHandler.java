@@ -26,6 +26,7 @@ import com.spring.app.domain.MemberDTO;
 
 import lombok.RequiredArgsConstructor;
 
+//=== (#웹채팅관련6) ===
 @Component
 @RequiredArgsConstructor
 public class WebsocketEchoHandler extends TextWebSocketHandler {
@@ -62,7 +63,7 @@ public class WebsocketEchoHandler extends TextWebSocketHandler {
     // === 접속 시 ===
     @Override
     public void afterConnectionEstablished(WebSocketSession wsession) throws Exception {
-        connectedUsers.add(wsession);
+        connectedUsers.add(wsession);	// 현재 연결된 세션 목록에 추가 (브라우저 탭 기준 1세션)
 
         // 현재 접속 사용자의 로그인 정보
         Map<String, Object> attrs = wsession.getAttributes();
@@ -75,7 +76,7 @@ public class WebsocketEchoHandler extends TextWebSocketHandler {
                 .add(wsession);
         }
 
-        // memberDto_list 에 사용자 단위로 유니크 추가
+        // memberDto_list 에 사용자 단위로 중복 없이 추가
         if (loginuser != null) {
             boolean exists = false;
             for (MemberDTO m : memberDto_list) {
@@ -94,7 +95,7 @@ public class WebsocketEchoHandler extends TextWebSocketHandler {
         // 브로드캐스트(접속자 문자열)
         broadcastToAll(new TextMessage(connectingUserName));
 
-        // ===== 테이블(⊆ prefix) 갱신 =====
+        // ===== 테이블(⊆ prefix) 갱신 → 테이블 뷰가 있다면 즉시 갱신 =====
         String v_html = buildMemberTableHtml();
         if (v_html != null) {
             broadcastToAll(new TextMessage(v_html));
@@ -118,7 +119,7 @@ public class WebsocketEchoHandler extends TextWebSocketHandler {
                 }
 
                 MemberDTO cur = (MemberDTO) wsession.getAttributes().get("loginuser");
-
+                // 본인/타인 메시지에 따라 말풍선 정렬과 스타일을 달리해 재생
                 if (cur != null && cur.getMemberUserid().equals(list.get(i).getUserid())) {
                     wsession.sendMessage(new TextMessage(
                         "<div style='background-color: #ffff80; display: inline-block; max-width: 60%; float: right; padding: 7px; border-radius: 15%; word-break: break-all;'>"
@@ -142,12 +143,12 @@ public class WebsocketEchoHandler extends TextWebSocketHandler {
     public void handleTextMessage(WebSocketSession wsession, TextMessage message) throws Exception {
         Map<String, Object> map = wsession.getAttributes();
         MemberDTO loginuser = (MemberDTO) map.get("loginuser");
-
         MessageDTO messageDto = MessageDTO.convertMessage(message.getPayload());
 
         Date now = new Date();
         String currentTime = String.format("%tp %tl:%tM", now, now, now);
 
+        // [3] 공개(all)면 본인 제외 전체에게, 귓속말(one)이면 대상 세션 1곳에만 송신
         for (WebSocketSession webSocketSession : connectedUsers) {
             if ("all".equals(messageDto.getType())) {
                 if (!wsession.getId().equals(webSocketSession.getId())) {
@@ -171,12 +172,12 @@ public class WebsocketEchoHandler extends TextWebSocketHandler {
                             + messageDto.getMessage()
                             + "</div> <div style='display: inline-block; padding: 20px 0 0 5px; font-size: 7pt;'>"
                             + currentTime + "</div> <div>&nbsp;</div>"));
-                    break;
+                    break;	// 대상은 오직 1세션
                 }
             }
         }
 
-        // 공개대화만 Mongo 저장
+        // 공개대화만 Mongo 저장(귓속말은 비저장)
         if ("all".equals(messageDto.getType())) {
             String str_now_date = new SimpleDateFormat("yyyyMMddHHmmss").format(new Date());
             String uuid = UUID.randomUUID().toString().replace("-", "");

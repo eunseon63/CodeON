@@ -44,19 +44,19 @@ public class MyPageService_imple implements MyPageService {
         // 도메인 유효성 검증 (null/blank, 형식, 길이 등)
         assertNotBlank(form.getName(), "이름은 필수입니다.");
         assertRegex(form.getMobile(), "^\\d{2,3}-\\d{3,4}-\\d{4}$", "휴대폰 형식은 010-1234-5678 입니다.");
-        assertRegex(form.getEmail(), "^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$", "이메일 형식이 올바르지 않습니다.");
-
-        // 이메일 중복(자기 자신 제외)
-        if (memberRepository.existsByMemberEmailAndMemberSeqNot(form.getEmail(), form.getMemberSeq()))
-            throw new IllegalArgumentException("이미 사용 중인 이메일입니다.");
 
      // JPA가 DB에서 해당 회원 데이터를 꺼내와 Member 객체로 저장하고 세터로 값을 변경하면
      // JAP가 알아서 update 쿼리를 날려준다.
+     // 2) 회원 로딩
         Member m = memberRepository.findById(form.getMemberSeq())
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 회원입니다."));
 
+        // 3) 이메일 수정 불가 정책(서버 이중 방어)
+        if (form.getEmail() != null && !Objects.equals(form.getEmail(), m.getMemberEmail())) {
+            throw new IllegalArgumentException("이메일은 수정할 수 없습니다.");
+        }
+        
         m.setMemberName(form.getName());
-        m.setMemberEmail(form.getEmail());
         m.setMemberMobile(form.getMobile());
     }
     
