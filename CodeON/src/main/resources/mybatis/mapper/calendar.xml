@@ -107,6 +107,26 @@
 	    ORDER BY c.calendar_start ASC
 	</select>
 
+	
+	<!-- 오늘 사내 일정 조회 -->
+	<select id="getTodayCompanyEvents"  parameterType="java.time.LocalDate" resultType="com.spring.app.calendar.domain.CalendarAjaxDTO">
+	    SELECT
+	        c.calendar_seq          AS calendarSeq,
+	        c.calendar_name         AS calendarName,
+	        TO_CHAR(c.calendar_start, 'YYYY-MM-DD"T"HH24:MI:SS') AS calendarStart,
+	        TO_CHAR(c.calendar_end,   'YYYY-MM-DD"T"HH24:MI:SS') AS calendarEnd,
+	        c.calendar_color        AS calendarColor,
+	        bc.big_category_name    AS calendarType,
+	        c.calendar_location     AS calendarLocation,
+	        c.calendar_content      AS calendarContent,
+	        c.calendar_user         AS calendarUser
+	    FROM tbl_calendar c
+	    JOIN tbl_calendar_big_category bc
+	      ON c.fk_big_category_seq = bc.big_category_seq
+	    WHERE bc.big_category_seq = 1
+	      AND TRUNC(c.calendar_start) = #{today}
+	    ORDER BY c.calendar_start ASC
+	</select>
 
 
 	
@@ -215,4 +235,3 @@
 	
 
 </mapper>
-

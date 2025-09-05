@@ -192,67 +192,175 @@ public class SignService_imple implements SignService {
     @Transactional(readOnly = true)
     public List<Map<String, Object>> buildInboxPreview(Long me, int limit) {
         var rows = draftLineRepository.findInbox(me);
-        List<Map<String,Object>> preview = new ArrayList<>();
+
+        List<Map<String,Object>> preview = new ArrayList<>(Math.min(limit, rows.size()));
         for (var dl : rows) {
             var d = dl.getDraft();
+
             Map<String,Object> m = new LinkedHashMap<>();
             m.put("draftSeq", d.getDraftSeq());
             m.put("title", d.getDraftTitle());
             m.put("docType", d.getDraftType()!=null ? d.getDraftType().getDraftTypeName() : "-");
             m.put("drafterName", d.getMember()!=null ? d.getMember().getMemberName() : "-");
-            m.put("isEmergency", d.getIsEmergency());
-            m.put("regdate", d.getDraftRegdate()==null ? null :
-                    java.util.Date.from(d.getDraftRegdate().atZone(ZONE).toInstant()));
+            m.put("isEmergency", d.getIsEmergency()==null ? 0 : d.getIsEmergency());
+            m.put("regdate", toDate(d.getDraftRegdate()));  // fmt:formatDate로 포맷
             preview.add(m);
+
             if (preview.size() == limit) break;
         }
         return preview;
     }
+    
+ // SignService_imple
 
     @Override
     @Transactional(readOnly = true)
-    public List<Map<String, Object>> buildSentPreview(Long me, int limit) {
-        // 타입까지 미리 로딩되는 메서드로 교체
+    public List<Map<String, Object>> buildMyDraftboxAll(Long me) {
+        // 내가 올린 모든 문서(문서함 전체)
         var drafts = draftRepository.findByMemberWithType(me);
 
-        List<Map<String,Object>> rows = new ArrayList<>();
+        List<Map<String,Object>> rows = new ArrayList<>(drafts.size());
         for (Draft d : drafts) {
-            // 상태 계산
             var lines = draftLineRepository
                     .findByDraft_DraftSeqOrderByLineOrderAscDraftLineSeqAsc(d.getDraftSeq());
-            boolean anyReject  = lines.stream().anyMatch(l -> Integer.valueOf(9).equals(l.getSignStatus()));
-            boolean allApprove = !anyReject && lines.stream().allMatch(l -> Integer.valueOf(1).equals(l.getSignStatus()));
-            int status = anyReject ? 9 : (allApprove ? 1 : 0);
 
-            // JSP가 기대하는 키들을 정확히 넣기
+            boolean anyReject  = lines.stream().anyMatch(l -> Integer.valueOf(9).equals(l.getSignStatus()));
+            boolean allApprove = !lines.isEmpty() &&
+                                 lines.stream().allMatch(l -> Integer.valueOf(1).equals(l.getSignStatus()));
+            int status = anyReject ? 9 : (allApprove ? 1 : 0);  // 0 진행중, 1 완료, 9 반려
+
+            // 완료일(있으면)
+            Date signDate = lines.stream()
+                    .filter(l -> Integer.valueOf(1).equals(l.getSignStatus()) && l.getSignDate()!=null)
+                    .map(l -> Date.from(l.getSignDate().atZone(ZONE).toInstant()))
+                    .max(Date::compareTo)
+                    .orElse(null);
+
             Map<String,Object> m = new LinkedHashMap<>();
             m.put("draftSeq", d.getDraftSeq());
-            m.put("docType",
-                  (d.getDraftType()!=null && d.getDraftType().getDraftTypeName()!=null)
-                        ? d.getDraftType().getDraftTypeName() : "-");   // 유형
             m.put("title", d.getDraftTitle());
-            m.put("regdate",
-                  d.getDraftRegdate()==null ? null :
-                          java.util.Date.from(d.getDraftRegdate()
-                          .atZone(java.time.ZoneId.of("Asia/Seoul")).toInstant()));
-            m.put("isEmergency", d.getIsEmergency()==null ? 0 : d.getIsEmergency()); // ✅ 긴급
-            m.put("status", status);
-
+            m.put("docType", d.getDraftType()!=null ? d.getDraftType().getDraftTypeName() : "-");
+            m.put("regdate", toDate(d.getDraftRegdate()));
+            m.put("isEmergency", d.getIsEmergency()==null ? 0 : d.getIsEmergency());
+            m.put("status", status);   // JSP status-0/1/9 사용 가능
+            m.put("signDate", signDate);
             rows.add(m);
-            if (rows.size() == limit) break;
         }
+
+        // 최신 작성일 기준 내림차순
+        rows.sort((a,b) -> {
+            Date da = (Date)a.get("regdate");
+            Date db = (Date)b.get("regdate");
+            if (da == null && db == null) return 0;
+            if (da == null) return 1;
+            if (db == null) return -1;
+            return db.compareTo(da);
+        });
         return rows;
     }
 
 
     @Override
     @Transactional(readOnly = true)
-    public List<Map<String, Object>> buildHistoryPreview(Long me, int limit) {
-        var rows = draftLineRepository.findHistory(me); // 내 결재라인만, 가급적 signStatus in (1,9)
-        List<Map<String,Object>> preview = new ArrayList<>(Math.min(limit, rows.size()));
+    public List<Map<String, Object>> buildSentPreview(Long me, int limit) {
+        // ✅ 문서함: 내가 올린 "모든" 문서를 가져와서
+        var drafts = draftRepository.findByMemberWithType(me);
 
+        // 완료가 아닌 문서만 = 결재 진행 문서 (승인 0건, 승인 일부, 반려 포함)
+        List<Map<String,Object>> out = new ArrayList<>();
+
+        for (Draft d : drafts) {
+            var lines = draftLineRepository
+                    .findByDraft_DraftSeqOrderByLineOrderAscDraftLineSeqAsc(d.getDraftSeq());
+
+            boolean anyReject  = lines.stream().anyMatch(l -> Integer.valueOf(9).equals(l.getSignStatus()));
+            boolean allApprove = !lines.isEmpty()
+                    && lines.stream().allMatch(l -> Integer.valueOf(1).equals(l.getSignStatus()));
+
+            int status = anyReject ? 9 : (allApprove ? 1 : 0);
+
+            // 완료(=allApprove)면 이 메서드에서는 제외
+            if (allApprove) continue;
+
+            Map<String,Object> m = new LinkedHashMap<>();
+            m.put("draftSeq", d.getDraftSeq());
+            m.put("docType", d.getDraftType()!=null ? d.getDraftType().getDraftTypeName() : "-");
+            m.put("title", d.getDraftTitle());
+            m.put("regdate", toDate(d.getDraftRegdate()));
+            m.put("isEmergency", d.getIsEmergency()==null ? 0 : d.getIsEmergency());
+            m.put("status", status); // JSP의 status-0/1/9
+            out.add(m);
+
+            if (out.size() == limit) break;
+        }
+
+        // 최신순 정렬(작성일 기준)
+        out.sort((a,b) -> {
+            Date da = (Date)a.get("regdate");
+            Date db = (Date)b.get("regdate");
+            if (da == null && db == null) return 0;
+            if (da == null) return 1;
+            if (db == null) return -1;
+            return db.compareTo(da);
+        });
+        return out;
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<Map<String, Object>> buildHistoryPreview(Long me, int limit) {
+        // ✅ 문서함: 내가 올린 "모든" 문서 중 완료만
+        var drafts = draftRepository.findByMemberWithType(me);
+
+        List<Map<String,Object>> out = new ArrayList<>();
+
+        for (Draft d : drafts) {
+            var lines = draftLineRepository
+                    .findByDraft_DraftSeqOrderByLineOrderAscDraftLineSeqAsc(d.getDraftSeq());
+
+            boolean allApprove = !lines.isEmpty()
+                    && lines.stream().allMatch(l -> Integer.valueOf(1).equals(l.getSignStatus()));
+            if (!allApprove) continue;
+
+            // 완료 시각 = 승인된 라인의 signDate 중 최댓값 (없으면 regdate로 fallback)
+            Date signDate = lines.stream()
+                    .filter(l -> Integer.valueOf(1).equals(l.getSignStatus()) && l.getSignDate()!=null)
+                    .map(l -> Date.from(l.getSignDate().atZone(ZONE).toInstant()))
+                    .max(Date::compareTo)
+                    .orElse(toDate(d.getDraftRegdate()));
+
+            Map<String,Object> m = new LinkedHashMap<>();
+            m.put("draftSeq", d.getDraftSeq());
+            m.put("title", d.getDraftTitle());
+            m.put("docType", d.getDraftType()!=null ? d.getDraftType().getDraftTypeName() : "문서");
+            m.put("drafterName", d.getMember()!=null ? d.getMember().getMemberName() : "-");
+            m.put("signDate", signDate);
+            out.add(m);
+
+            if (out.size() == limit) break;
+        }
+
+        // 완료일 내림차순
+        out.sort((a,b) -> {
+            Date da = (Date)a.get("signDate");
+            Date db = (Date)b.get("signDate");
+            if (da == null && db == null) return 0;
+            if (da == null) return 1;
+            if (db == null) return -1;
+            return db.compareTo(da);
+        });
+        return out;
+    }
+    
+    @Override
+    @Transactional(readOnly = true)
+    public List<Map<String, Object>> buildApprovalHistory(Long me, int limit) {
+        var rows = draftLineRepository.findHistory(me); // 내가 승인/반려했던 라인들
+
+        List<Map<String,Object>> out = new ArrayList<>(Math.min(limit, rows.size()));
         for (var dl : rows) {
             var d = dl.getDraft();
+
             Map<String,Object> m = new LinkedHashMap<>();
             m.put("draftSeq", d.getDraftSeq());
             m.put("title", d.getDraftTitle());
@@ -260,12 +368,18 @@ public class SignService_imple implements SignService {
             m.put("drafterName", d.getMember()!=null ? d.getMember().getMemberName() : "-");
             m.put("signDate", dl.getSignDate()==null ? null
                     : java.util.Date.from(dl.getSignDate().atZone(ZONE).toInstant()));
-            m.put("myStatus", dl.getSignStatus()==null ? 0 : dl.getSignStatus()); // ★ 추가
-            preview.add(m);
-            if (preview.size() == limit) break;
+            m.put("myStatus", dl.getSignStatus()==null ? 0 : dl.getSignStatus()); // 1=승인, 9=반려
+            out.add(m);
+            if (out.size() == limit) break;
         }
-        return preview;
+        return out;
     }
+
+    /* 공통 유틸 */
+    private static Date toDate(java.time.LocalDateTime ldt) {
+        return ldt == null ? null : Date.from(ldt.atZone(ZONE).toInstant());
+    }
+
 
     /* ===================== 상세 뷰 모델 ===================== */
     @Override
@@ -631,9 +745,10 @@ public class SignService_imple implements SignService {
     @Override
     @Transactional(readOnly = true)
     public void exportDraftToExcel(Long draftSeq, Model model) {
-        // 필요한 데이터를 모델에 담아 View(예: excelDownloadView)에서 처리
+        // === 1) 도메인 조회(기존 로직 유지) ===
         Draft draft = draftRepository.findById(draftSeq).orElseThrow();
-        List<DraftLine> lines = draftLineRepository.findByDraft_DraftSeqOrderByLineOrderAscDraftLineSeqAsc(draftSeq);
+        List<DraftLine> lines = draftLineRepository
+                .findByDraft_DraftSeqOrderByLineOrderAscDraftLineSeqAsc(draftSeq);
         model.addAttribute("draft", draft);
         model.addAttribute("lines", lines);
         vacationRepository.findByDraftSeq(draftSeq).ifPresent(v -> model.addAttribute("vacation", v));
@@ -645,7 +760,206 @@ public class SignService_imple implements SignService {
         });
         businessRepository.findByDraftSeq(draftSeq).ifPresent(b -> model.addAttribute("business", b));
         businessConformRepository.findByDraftSeq(draftSeq).ifPresent(c -> model.addAttribute("conform", c));
+
+        // === 2) 워크북/시트 생성(디자인 포함) ===
+        org.apache.poi.xssf.streaming.SXSSFWorkbook wb = new org.apache.poi.xssf.streaming.SXSSFWorkbook();
+        var sheet = wb.createSheet("전자결재");
+
+        // 컬럼 폭(문자폭 * 256)
+        int[] widths = { 10, 18, 40, 38, 20 };
+        for (int i = 0; i < widths.length; i++) sheet.setColumnWidth(i, widths[i] * 256);
+
+        // --- 폰트
+        var fontTitle = wb.createFont();
+        fontTitle.setBold(true); fontTitle.setFontHeightInPoints((short)14);
+
+        var fontBold  = wb.createFont();
+        fontBold.setBold(true);
+
+        var fontNormal = wb.createFont();
+
+        // --- 스타일 헬퍼
+        java.util.function.Function<Boolean, org.apache.poi.ss.usermodel.CellStyle> boxStyle =
+                (Boolean label) -> {
+                    var cs = wb.createCellStyle();
+                    cs.setVerticalAlignment(org.apache.poi.ss.usermodel.VerticalAlignment.CENTER);
+                    cs.setBorderTop(org.apache.poi.ss.usermodel.BorderStyle.THIN);
+                    cs.setBorderBottom(org.apache.poi.ss.usermodel.BorderStyle.THIN);
+                    cs.setBorderLeft(org.apache.poi.ss.usermodel.BorderStyle.THIN);
+                    cs.setBorderRight(org.apache.poi.ss.usermodel.BorderStyle.THIN);
+                    if (Boolean.TRUE.equals(label)) {
+                        cs.setFillForegroundColor(org.apache.poi.ss.usermodel.IndexedColors.GREY_25_PERCENT.getIndex());
+                        cs.setFillPattern(org.apache.poi.ss.usermodel.FillPatternType.SOLID_FOREGROUND);
+                        cs.setFont(fontBold);
+                        cs.setAlignment(org.apache.poi.ss.usermodel.HorizontalAlignment.CENTER);
+                    } else {
+                        cs.setFont(fontNormal);
+                    }
+                    return cs;
+                };
+
+        var titleStyle = wb.createCellStyle();
+        titleStyle.setFont(fontTitle);
+        titleStyle.setAlignment(org.apache.poi.ss.usermodel.HorizontalAlignment.CENTER);
+        titleStyle.setVerticalAlignment(org.apache.poi.ss.usermodel.VerticalAlignment.CENTER);
+        titleStyle.setFillForegroundColor(org.apache.poi.ss.usermodel.IndexedColors.GREY_25_PERCENT.getIndex());
+        titleStyle.setFillPattern(org.apache.poi.ss.usermodel.FillPatternType.SOLID_FOREGROUND);
+
+        var sectionStyle = wb.createCellStyle();
+        sectionStyle.setFont(fontBold);
+        sectionStyle.setAlignment(org.apache.poi.ss.usermodel.HorizontalAlignment.LEFT);
+        sectionStyle.setVerticalAlignment(org.apache.poi.ss.usermodel.VerticalAlignment.CENTER);
+        sectionStyle.setFillForegroundColor(org.apache.poi.ss.usermodel.IndexedColors.GREY_25_PERCENT.getIndex());
+        sectionStyle.setFillPattern(org.apache.poi.ss.usermodel.FillPatternType.SOLID_FOREGROUND);
+        sectionStyle.setBorderTop(org.apache.poi.ss.usermodel.BorderStyle.THIN);
+        sectionStyle.setBorderBottom(org.apache.poi.ss.usermodel.BorderStyle.THIN);
+        sectionStyle.setBorderLeft(org.apache.poi.ss.usermodel.BorderStyle.THIN);
+        sectionStyle.setBorderRight(org.apache.poi.ss.usermodel.BorderStyle.THIN);
+
+        var headerStyle = wb.createCellStyle();
+        headerStyle.setFont(fontBold);
+        headerStyle.setAlignment(org.apache.poi.ss.usermodel.HorizontalAlignment.CENTER);
+        headerStyle.setVerticalAlignment(org.apache.poi.ss.usermodel.VerticalAlignment.CENTER);
+        headerStyle.setFillForegroundColor(org.apache.poi.ss.usermodel.IndexedColors.GREY_25_PERCENT.getIndex());
+        headerStyle.setFillPattern(org.apache.poi.ss.usermodel.FillPatternType.SOLID_FOREGROUND);
+        headerStyle.setBorderTop(org.apache.poi.ss.usermodel.BorderStyle.THIN);
+        headerStyle.setBorderBottom(org.apache.poi.ss.usermodel.BorderStyle.THIN);
+        headerStyle.setBorderLeft(org.apache.poi.ss.usermodel.BorderStyle.THIN);
+        headerStyle.setBorderRight(org.apache.poi.ss.usermodel.BorderStyle.THIN);
+
+        var cellLeft = wb.createCellStyle();
+        cellLeft.setVerticalAlignment(org.apache.poi.ss.usermodel.VerticalAlignment.CENTER);
+        cellLeft.setBorderTop(org.apache.poi.ss.usermodel.BorderStyle.THIN);
+        cellLeft.setBorderBottom(org.apache.poi.ss.usermodel.BorderStyle.THIN);
+        cellLeft.setBorderLeft(org.apache.poi.ss.usermodel.BorderStyle.THIN);
+        cellLeft.setBorderRight(org.apache.poi.ss.usermodel.BorderStyle.THIN);
+        cellLeft.setWrapText(true);
+
+        var cellCenter = wb.createCellStyle();
+        cellCenter.cloneStyleFrom(cellLeft);
+        cellCenter.setAlignment(org.apache.poi.ss.usermodel.HorizontalAlignment.CENTER);
+
+        var cellDate = wb.createCellStyle();
+        cellDate.cloneStyleFrom(cellLeft);
+        var df = wb.createDataFormat();
+        cellDate.setDataFormat(df.getFormat("yyyy-mm-dd hh:mm"));
+
+        // --- 좌표 유틸
+        java.util.function.BiConsumer<Integer, String> mergeAcrossToE = (rowIdx, value) -> {
+            var row = sheet.createRow(rowIdx);
+            var c0 = row.createCell(0); c0.setCellValue(value); c0.setCellStyle(sectionStyle);
+            sheet.addMergedRegion(new org.apache.poi.ss.util.CellRangeAddress(rowIdx, rowIdx, 0, 4));
+        };
+
+        int r = 0;
+
+        // === 2-1) 타이틀(병합 A1:E1)
+        var titleRow = sheet.createRow(r++);
+        titleRow.setHeightInPoints(26);
+        var cellTitle = titleRow.createCell(0);
+        String docTitle = (draft.getDraftTitle() == null || draft.getDraftTitle().isBlank())
+                ? "전자결재"
+                : ("전자결재 - " + draft.getDraftTitle());
+        cellTitle.setCellValue(docTitle);
+        cellTitle.setCellStyle(titleStyle);
+        sheet.addMergedRegion(new org.apache.poi.ss.util.CellRangeAddress(0, 0, 0, 4));
+
+        r++; // 빈 줄
+
+        // === 2-2) 상단 정보 박스 (라벨/값 병합)
+        String drafterName = (draft.getMember() == null) ? "-" :
+                (draft.getMember().getMemberName() == null ? "-" : draft.getMember().getMemberName());
+        String typeName = (draft.getDraftType() == null || draft.getDraftType().getDraftTypeName() == null)
+                ? "-" : draft.getDraftType().getDraftTypeName();
+        String emergency = (draft.getIsEmergency() != null && draft.getIsEmergency() == 1) ? "긴급" : "-";
+        String regWhen = (draft.getDraftRegdate() == null) ? ""
+                : java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")
+                  .format(draft.getDraftRegdate().atZone(java.time.ZoneId.of("Asia/Seoul")));
+
+        // 라벨/값 한 줄씩, 값은 B~E 병합
+        String[][] box = new String[][]{
+                {"문서번호", String.valueOf(draft.getDraftSeq())},
+                {"제목", (draft.getDraftTitle() == null ? "" : draft.getDraftTitle())},
+                {"기안자", drafterName},
+                {"유형", typeName},
+                {"긴급", emergency},
+                {"작성일", regWhen}
+        };
+        for (String[] row : box) {
+            var rr = sheet.createRow(r++);
+            var l = rr.createCell(0); l.setCellValue(row[0]); l.setCellStyle(boxStyle.apply(true));
+            var v = rr.createCell(1); v.setCellValue(row[1]); v.setCellStyle(boxStyle.apply(false));
+            rr.createCell(2).setCellStyle(boxStyle.apply(false));
+            rr.createCell(3).setCellStyle(boxStyle.apply(false));
+            rr.createCell(4).setCellStyle(boxStyle.apply(false));
+            sheet.addMergedRegion(new org.apache.poi.ss.util.CellRangeAddress(rr.getRowNum(), rr.getRowNum(), 1, 4));
+        }
+
+        r++; // 빈 줄
+
+        // === 2-3) 섹션 헤더: 결재 라인
+        mergeAcrossToE.accept(r++, "결재 라인");
+
+        // === 2-4) 테이블 헤더
+        var th = sheet.createRow(r++);
+        String[] headers = {"순서", "결재자", "상태", "의견", "결재일시"};
+        for (int c = 0; c < headers.length; c++) {
+            var hc = th.createCell(c);
+            hc.setCellValue(headers[c]);
+            hc.setCellStyle(headerStyle);
+        }
+
+        // === 2-5) 라인 데이터
+        java.time.ZoneId ZONE = java.time.ZoneId.of("Asia/Seoul");
+        for (var dl : lines) {
+            var row = sheet.createRow(r++);
+            // 순서
+            var c0 = row.createCell(0); c0.setCellValue(dl.getLineOrder() == null ? 0 : dl.getLineOrder()); c0.setCellStyle(cellCenter);
+            // 결재자
+            String approver = (dl.getApprover() == null) ? "-" :
+                    (dl.getApprover().getMemberName() == null ? "-" : dl.getApprover().getMemberName());
+            var c1 = row.createCell(1); c1.setCellValue(approver); c1.setCellStyle(cellLeft);
+            // 상태
+            int st = (dl.getSignStatus() == null ? 0 : dl.getSignStatus());
+            String stTxt = (st == 1 ? "승인" : (st == 9 ? "반려" : "대기"));
+            var c2 = row.createCell(2); c2.setCellValue(stTxt); c2.setCellStyle(cellCenter);
+            // 의견
+            var c3 = row.createCell(3); c3.setCellValue(dl.getSignComment() == null ? "" : dl.getSignComment()); c3.setCellStyle(cellLeft);
+            // 결재일시
+            var c4 = row.createCell(4); c4.setCellStyle(cellDate);
+            if (dl.getSignDate() != null) {
+                java.util.Date signedAt = java.util.Date.from(dl.getSignDate().atZone(ZONE).toInstant());
+                c4.setCellValue(signedAt);
+            } else {
+                c4.setCellValue("");
+            }
+            // 가독성을 위해 의견 줄 높이 조금
+            row.setHeightInPoints(22);
+        }
+
+        r++; // 빈 줄
+
+        // === 2-6) (선택) 본문 섹션
+        mergeAcrossToE.accept(r++, "본문");
+        var bodyRow = sheet.createRow(r++);
+        var bodyCell = bodyRow.createCell(0);
+        bodyCell.setCellValue(draft.getDraftContent() == null ? "" : draft.getDraftContent());
+        bodyCell.setCellStyle(cellLeft);
+        // 본문은 A~E 병합
+        for (int c = 1; c <= 4; c++) bodyRow.createCell(c).setCellStyle(cellLeft);
+        sheet.addMergedRegion(new org.apache.poi.ss.util.CellRangeAddress(bodyRow.getRowNum(), bodyRow.getRowNum(), 0, 4));
+        bodyRow.setHeightInPoints(60);
+
+        // === 3) 파일명 앞부분(workbookName) + locale ===
+        String baseName = (draft.getDraftTitle() != null && !draft.getDraftTitle().isBlank())
+                ? draft.getDraftTitle() : ("전자결재_" + draftSeq);
+        baseName = baseName.replaceAll("[\\\\/:*?\"<>|]", "_");
+
+        model.addAttribute("workbook", wb);                    // SXSSFWorkbook (ExcelDownloadView가 write/close)
+        model.addAttribute("workbookName", baseName);
+        model.addAttribute("locale", java.util.Locale.KOREA);
     }
+
 
     /* ===================== 푸시 알림 ===================== */
     private String getMemberName(Long memberSeq) {

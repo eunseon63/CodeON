@@ -27,13 +27,13 @@ public class MailScheduler {
         int fkBoardTypeSeq = 0; // 예: 사내게시판
         Integer fkDepartmentSeq = null; // 전체
         
-        // DB에서 이번주 인기글 조회
+        // DB에서인기글 조회
         List<BoardDTO> popularBoards = boardService.getWeeklyPopularBoard(fkBoardTypeSeq, fkDepartmentSeq);
 
         // 메일 내용 구성
      // 메일 내용 구성 (HTML)
         StringBuilder content = new StringBuilder();
-        content.append("<h2>📌 이번 주 인기글 TOP5</h2>");
+        content.append("<h2>📌 실시간 인기글 TOP5</h2>");
         content.append("<table style='border-collapse:collapse; width:100%;'>");
         content.append("<thead><tr style='background:#f3f4f6;'>")
                .append("<th style='border:1px solid #ddd; padding:8px;'>순위</th>")
@@ -60,7 +60,7 @@ public class MailScheduler {
         MailDTO mail = MailDTO.builder()
                 .sendMemberEmail("park@CodeON.com")
                 .receiveMemberEmail("leess@CodeON.com")
-                .emailTitle("현재 인기글 목록")
+                .emailTitle("실시간 인기글 현황(관리자용)")
                 .emailContent(content.toString())
                 .build();
 

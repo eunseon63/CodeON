@@ -1,5 +1,6 @@
 package com.spring.app.calendar.model;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 
@@ -75,6 +76,11 @@ public class CalendarDAO_imple implements CalendarDAO {
 	@Override
 	public List<CalendarAjaxDTO> selectCompanyCalendar() {
 	    return sqlsession.selectList("calendar.selectCompanyCalendar");
+	}
+
+	@Override
+	public List<CalendarAjaxDTO> getTodayCompanyEvents(LocalDate today) {
+		return sqlsession.selectList("calendar.getTodayCompanyEvents", today);
 	}
 
 	

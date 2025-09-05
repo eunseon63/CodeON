@@ -144,8 +144,11 @@ function initCalendar(){
             const normType=normalizeCategory(item.calendarType);
             const color=resolveColor(item.calendarColor,normType);
             return {
-              id:item.calendarSeq, title:item.calendarName,
-              start:item.calendarStart, end:item.calendarEnd,
+              id:item.calendarSeq, 
+			  title:item.calendarName,
+              start:item.calendarStart, 
+			  end:item.calendarEnd,
+			  allDay: !item.calendarStart.includes('T'),
               url:'<%= ctxPath %>/Calendar/detailCalendar?calendarSeq='+item.calendarSeq,
               color:color, backgroundColor:color, borderColor:color,
               extendedProps:{
