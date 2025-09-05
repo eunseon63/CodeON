@@ -1,6 +1,7 @@
 package com.spring.app.ai.service;
 
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.stereotype.Service;
@@ -56,17 +57,39 @@ public class OpenAiService {
             String userQuestion // 사용자가 입력한 질문 추가
     ) {
         // 1. 사원 정보
-        StringBuilder memberInfo = new StringBuilder();
-        for (MemberDTO m : members) {
-            memberInfo.append(String.format(
-                "사원:%s, 부서:%s, 직급:%s, 입사일:%s, 성별:%s\n",
-                m.getMemberName(),
-                m.getDepartmentName(),
-                m.getGradeName(),
-                m.getMemberHiredate(),
-                m.getMemberGender() == 0 ? "남자" : "여자"
-            ));
-        }
+    	// 부서 코드 → 이름 매핑
+    	Map<Integer, String> departmentMap = Map.of(
+    	    10, "인사팀",
+    	    20, "개발팀",
+    	    30, "기획팀",
+    	    40, "영업팀",
+    	    50, "고객지원팀"
+    	);
+
+    	// 직급 코드 → 이름 매핑
+    	Map<Integer, String> gradeMap = Map.of(
+    	    1, "사원",
+    	    2, "대리",
+    	    3, "과장",
+    	    4, "부장",
+    	    5, "사장"
+    	);
+
+    	StringBuilder memberInfo = new StringBuilder();
+    	for (MemberDTO m : members) {
+    	    String departmentName = departmentMap.getOrDefault(m.getFkDepartmentSeq(), "알수없음");
+    	    String gradeName = gradeMap.getOrDefault(m.getFkGradeSeq(), "알수없음");
+
+    	    memberInfo.append(String.format(
+    	        "사원: %s, 부서: %s, 직급: %s, 입사일: %s, 성별: %s\n",
+    	        m.getMemberName(),
+    	        departmentName,
+    	        gradeName,
+    	        m.getMemberHiredate(),
+    	        m.getMemberGender() == 0 ? "남자" : "여자"
+    	    ));
+    	}
+
 
         // 2. 연차 정보
         StringBuilder vacationInfo = new StringBuilder();
@@ -116,8 +139,6 @@ public class OpenAiService {
         // 사용자 질문을 포함한 프롬프트 생성
         String prompt = """
                 당신은 회사 HR 종합 도우미입니다.
-                부서(10:인사팀, 20:개발팀, 30:기획팀, 40:영업팀, 50:고객지원팀)
-                직급(1:사원, 2:대리, 3:과장, 4:부장, 5:사장)
                 
                 1. 사원 정보:
                 %s
