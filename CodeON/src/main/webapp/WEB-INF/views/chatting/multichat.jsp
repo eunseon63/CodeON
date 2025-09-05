@@ -23,12 +23,7 @@ $(function(){
   let messageObj = {};
 
   websocket.onopen = function() {
-    messageObj = {
-      message: "채팅방에 <span style='color: red;'>입장</span> 했습니다.",
-      type   : "all",
-      to     : "all"
-    };
-    websocket.send(JSON.stringify(messageObj));
+
   };
 
   websocket.onmessage = function(event) {
@@ -136,11 +131,6 @@ $(function(){
 
 });
 </script>
-
-<!-- ===== 화면 ===== -->
-<table id="tbl" class="table table-bordered table-dark">
-  <tbody></tbody>
-</table>
 
 <style>
 :root{

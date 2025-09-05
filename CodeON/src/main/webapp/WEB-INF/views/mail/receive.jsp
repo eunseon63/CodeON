@@ -1,8 +1,10 @@
+
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%
     String ctxPath = request.getContextPath();
 %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 
 <!-- Bootstrap CSS & Icons -->
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -27,7 +29,7 @@ $(function () {
         var row = $(this);
         var emailSeq = row.data('emailseq');
         var icon = row.find('.read-icon'); 
-        var currentStatus = String(icon.data('readstatus'));
+        var currentStatus = String(icon.data('readStatus'));
 
         if (currentStatus === '0') {
             $.ajax({
@@ -39,7 +41,8 @@ $(function () {
                 success: function(json) {
                     if (json.n === 1) {
                         icon.removeClass('bi-envelope-fill text-primary').addClass('bi-envelope-open-fill text-secondary');
-                        icon.data('readstatus', '1');
+                        icon.data('readStatus', '1');
+                        icon.attr('data-read-status', '1'); // HTML 속성 동기화
                         updateRowReadStatus(row, '1');
                     }
                 }
@@ -53,7 +56,7 @@ $(function () {
         event.stopPropagation();
         var icon = $(this);
         var emailSeq = icon.data('emailseq');
-        var currentStatus = String(icon.data('importantstatus'));
+        var currentStatus = String(icon.data('importantStatus'));
         var newStatus = currentStatus === '1' ? '0' : '1';
 
         $.ajax({
@@ -66,7 +69,8 @@ $(function () {
                     icon.removeClass('bi-star bi-star-fill text-warning');
                     if (newStatus === '1') icon.addClass('bi-star-fill text-warning');
                     else icon.addClass('bi-star');
-                    icon.data('importantstatus', newStatus);
+                    icon.data('importantStatus', newStatus);
+                    icon.attr('data-important-status', newStatus); // HTML 속성 동기화
                 }
             }
         });
@@ -78,7 +82,7 @@ $(function () {
         var icon = $(this);
         var row = icon.closest('tr');
         var emailSeq = icon.data('emailseq');
-        var currentStatus = String(icon.data('readstatus'));
+        var currentStatus = String(icon.data('readStatus'));
         var newStatus = currentStatus === '1' ? '0' : '1';
 
         $.ajax({
@@ -91,7 +95,8 @@ $(function () {
                     icon.removeClass('bi-envelope-fill bi-envelope-open-fill text-primary text-secondary');
                     if (newStatus === '1') icon.addClass('bi-envelope-open-fill text-secondary');
                     else icon.addClass('bi-envelope-fill text-primary');
-                    icon.data('readstatus', newStatus);
+                    icon.data('readStatus', newStatus);
+                    icon.attr('data-read-status', newStatus); // HTML 속성 동기화
                     updateRowReadStatus(row, newStatus);
                 }
             }
@@ -158,7 +163,7 @@ $(function () {
 	                    <th style="width:40px;"><input type="checkbox" id="chkAll"></th>
 	                    <th style="width:80px;"></th>
 	                    <th>보낸 사람</th>
-	                    <th>제목</th>
+	                    <th>제목 / 받는 사람</th>
 	                    <th>날짜</th>
 	                </tr>
 	            </thead>
@@ -170,27 +175,39 @@ $(function () {
 	                                <td class="align-middle text-center">
 	                                    <input type="checkbox" name="chkMail" value="${mail.emailSeq}">
 	                                </td>
-	                                <td class="text-center align-middle">
-	                                    <div class="d-flex justify-content-center align-items-center gap-2" style="font-size:1.25rem;">
-	                                        <i class="bi ${mail.importantStatus == '1' ? 'bi-star-fill text-warning' : 'bi-star'} important-icon"
-	                                           data-emailseq="${mail.emailSeq}" 
-	                                           data-importantstatus="${mail.importantStatus}" 
-	                                           title="중요"></i>
-	                                        <i class="bi ${mail.readStatus == '1' ? 'bi-envelope-open-fill text-secondary' : 'bi-envelope-fill text-primary'} read-icon"
-	                                           data-emailseq="${mail.emailSeq}" 
-	                                           data-readstatus="${mail.readStatus}" 
-	                                           title="메일 상태"></i>
-	                                        <c:if test="${not empty mail.emailFilename}">
-	                                            <i class="bi bi-paperclip attach-icon" title="첨부파일"></i>
-	                                        </c:if>
-	                                    </div>
-	                                </td>
+									<td class="text-center align-middle">
+									    <div class="d-flex justify-content-center align-items-center gap-2" style="width:80px; font-size:1.25rem;">
+									        <i class="bi ${mail.importantStatus == '1' ? 'bi-star-fill text-warning' : 'bi-star'} important-icon"
+									           data-emailseq="${mail.emailSeq}" 
+									           data-important-status="${mail.importantStatus}" 
+									           title="중요"></i>
+									        <i class="bi ${mail.readStatus == '1' ? 'bi-envelope-open-fill text-secondary' : 'bi-envelope-fill text-primary'} read-icon"
+									           data-emailseq="${mail.emailSeq}" 
+									           data-read-status="${mail.readStatus}" 
+									           title="메일 상태"></i>
+									        <i class="bi bi-paperclip attach-icon text-secondary" 
+									           title="첨부파일"
+									           style="${empty mail.emailFilename ? 'visibility:hidden;' : ''}"></i>
+									    </div>
+									</td>
+
 	                                <td class="align-middle ${mail.readStatus == '1' ? 'text-secondary' : 'text-dark'}">
 	                                    ${mail.sendMemberEmail}
 	                                </td>
-	                                <td class="align-middle ${mail.readStatus == '1' ? 'text-secondary' : 'text-dark'}">
-	                                    ${mail.emailTitle}
-	                                </td>
+                                    <td class="align-middle ${mail.readStatus == '1' ? 'text-secondary' : 'text-dark'}">
+                                        <div>${mail.emailTitle}</div>
+                                        <small class="text-muted">
+                                            <c:set var="emails" value="${fn:split(mail.receiveMemberEmail, ',')}" />
+                                            <c:choose>
+                                                <c:when test="${fn:length(emails) == 1}">
+                                                    ${emails[0]}
+                                                </c:when>
+                                                <c:otherwise>
+                                                    ${emails[0]} 외 ${fn:length(emails) - 1}명
+                                                </c:otherwise>
+                                            </c:choose>
+                                        </small>
+                                    </td>
 	                                <td class="align-middle ${mail.readStatus == '1' ? 'text-secondary' : 'text-dark'}">
 	                                    ${mail.emailRegdate}
 	                                </td>
@@ -214,5 +231,5 @@ $(function () {
 
     </div>
 </main>
-
+<br><br>
 <jsp:include page="../footer/footer.jsp" />

@@ -45,11 +45,11 @@ public interface MemberRepository extends JpaRepository<Member, Integer> {
 	@Query("select m from Member m left join fetch m.department d where m.fkGradeSeq <> 1 order by m.fkDepartmentSeq asc, m.memberName asc")
 	List<Member> getSignlineMember();
 	
-
+	// 부서정보, 사원정보, 직급 조회
 	@Query("""
 			  select new com.spring.app.domain.AddressDTO(
-			    d.departmentSeq, d.departmentName,
-			    m.memberSeq, m.memberName, m.memberEmail, m.memberMobile, m.memberUserid,
+			    d.departmentSeq, d.departmentName,	
+			    m.memberSeq, m.memberName, m.memberEmail, m.memberMobile, m.memberUserid,	
 			    g.gradeName
 			  )
 			  from Member m
@@ -83,6 +83,8 @@ public interface MemberRepository extends JpaRepository<Member, Integer> {
 		    """)
 		    Optional<MemberProfileDTO> findProfileDtoByMemberSeq(@Param("memberSeq") Integer memberSeq);
 
+			// 이메일 중복 검사(본인 제외): 파생 쿼리 메서드 → select count(*) > 0 를 Boolean으로 매핑
+			// 해당 이메일을 쓰는 다른 회원이 존재하는지 검사	
 		    boolean existsByMemberEmailAndMemberSeqNot(String email, Integer memberSeq);
 
 		    @Query("select d.departmentName from Department d where d.departmentSeq = :seq")

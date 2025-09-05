@@ -112,12 +112,13 @@
                      placeholder="010-1234-5678" required
                      pattern="^\d{2,3}-\d{3,4}-\d{4}$"/>
             </div>
-
             <div class="form-row">
-              <label>이메일</label>
-              <input type="email" name="email" class="input" value="${profile.email}" required maxlength="50"/>
-            </div>
-
+			  <label>이메일</label>
+			  <!-- readonly: 수정은 막고, 제출은 되게 -->
+			  <input type="email" name="email" class="input"
+			         value="${profile.email}" readonly maxlength="50"
+			         title="이메일은 보안 정책상 변경할 수 없습니다."/>
+			</div>
             <div class="form-row">
               <label>부서</label>
               <div style="display:flex; align-items:center; gap:10px;">

@@ -130,8 +130,6 @@ public class MemberService_imple implements MemberService {
     @Transactional
     public Member updateMember(Member member) {
 
-        member.setMemberEmail(member.getMemberEmail() + "@CodeON.com");
-
         return memberRepository.save(member);
     }
 

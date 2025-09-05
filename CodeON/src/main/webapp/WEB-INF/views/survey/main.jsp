@@ -208,8 +208,8 @@
             <option value="">부서 선택</option>
             <option value="10">인사팀</option>
             <option value="20">개발팀</option>
-            <option value="30">영업팀</option>
-            <option value="40">영업팀(예시)</option>
+            <option value="30">기획팀</option>
+            <option value="40">영업팀</option>
             <option value="50">고객지원팀</option>
           </select>
         </div>

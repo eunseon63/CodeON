@@ -32,21 +32,22 @@ public class AttendanceController {
                            @RequestParam(value = "month", required = false)
                            @DateTimeFormat(pattern = "yyyy-MM") YearMonth month) {	// URL 파라미터 month 값을 받음
 
-        MemberDTO login = (MemberDTO) session.getAttribute("loginuser");
+        MemberDTO login = (MemberDTO) session.getAttribute("loginuser");	// 로그인 체크
         if (login == null) {
             return "redirect:/login/loginStart";
         }
 
-        int memberSeq = login.getMemberSeq();
-        String userName = login.getMemberName();
+        int memberSeq = login.getMemberSeq();	    // 로그인한 유저의 정보를 변수에 담음
+        String userName = login.getMemberName();	// 로그인한 유저의 정보를 변수에 담음
         if (month == null) month = YearMonth.now();
 
         // 월별 근태 데이터 조회
         List<AttendanceRecord> list = attendanceService.getMonthly(memberSeq, month);
         
+        // 누적근무시간, 근무일수, 연장근무 조회
         WorkSummary summary = attendanceService.getMonthlySummary(memberSeq, month);
         
-        // ✅ 연차 조회
+        // 연차 조회
         var leave = attendanceService.getAnnualLeave(memberSeq);
         
         // JSP로 데이터 전달
@@ -54,10 +55,8 @@ public class AttendanceController {
         model.addAttribute("attendanceList", list);
         model.addAttribute("currentMonth", month);
         model.addAttribute("todayStr", LocalDate.now(ZONE).format(YMD));
-        
         model.addAttribute("summary", summary);
         model.addAttribute("leave", leave);   
-        
         return "member/work";
     }
 

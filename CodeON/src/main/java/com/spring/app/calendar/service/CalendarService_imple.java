@@ -1,5 +1,6 @@
 package com.spring.app.calendar.service;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 
@@ -77,6 +78,12 @@ public class CalendarService_imple implements CalendarService {
 		public List<CalendarAjaxDTO> selectCompanyCalendar() {
 		    return dao.selectCompanyCalendar();
 		}
+
+		//<!-- 오늘 사내 일정 조회 -->
+		@Override
+	    public List<CalendarAjaxDTO> getTodayCompanyEvents(LocalDate today) {
+	        return dao.getTodayCompanyEvents(today);
+	    }
 
 		
 
