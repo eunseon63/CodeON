@@ -190,10 +190,10 @@ public class SignController {
     @PostMapping("lines/write")
     @Transactional
     public void saveLine(
-            @RequestParam String lineName,
-            @RequestParam(value="approverSeq",  required=false) List<Long> approverSeqs,
-            @RequestParam(value="approverSeq[]",required=false) List<Long> approverSeqsAlt,
-            @RequestParam(value="id", required=false) Long id,
+            @RequestParam(name = "lineName") String lineName,
+            @RequestParam(name="approverSeq",  required=false) List<Long> approverSeqs,
+            @RequestParam(name="approverSeq[]",required=false) List<Long> approverSeqsAlt,
+            @RequestParam(name="id", required=false) Long id,
             HttpSession session,
             HttpServletRequest request,
             HttpServletResponse response
@@ -295,19 +295,20 @@ public class SignController {
     }
 
     /* ===================== 상신(4종) ===================== */
+
     @PostMapping(value="/draft/proposal", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @Transactional
     public String submitProposal(
-            @RequestParam Integer fk_draft_type_seq,
-            @RequestParam Long fk_member_seq,
+            @RequestParam(name="fk_draft_type_seq") Integer fk_draft_type_seq,
+            @RequestParam(name="fk_member_seq") Long fk_member_seq,
             @RequestParam(name="is_emergency", defaultValue="0") Integer isEmergency,
-            @RequestParam String conform_title,
-            @RequestParam String conform_content,
-            @RequestPart(required=false) List<MultipartFile> files,
-            @RequestParam List<Long> approverSeq,
-            @RequestParam List<Integer> lineOrder,
-            @RequestParam(required=false) String draft_title,
-            @RequestParam(required=false) String draft_content,
+            @RequestParam(name="conform_title") String conform_title,
+            @RequestParam(name="conform_content") String conform_content,
+            @RequestPart(name="files", required=false) List<MultipartFile> files,
+            @RequestParam(name="approverSeq") List<Long> approverSeq,
+            @RequestParam(name="lineOrder") List<Integer> lineOrder,
+            @RequestParam(name="draft_title", required=false) String draft_title,
+            @RequestParam(name="draft_content", required=false) String draft_content,
             HttpSession session
     ){
         Draft draft = signService.createDraft(
@@ -319,7 +320,6 @@ public class SignController {
         signService.saveBusinessConform(draft.getDraftSeq(), conform_title, conform_content);
         signService.saveApprovalLine(draft, approverSeq, lineOrder);
 
-        // 첨부 파일 저장
         String root = session.getServletContext().getRealPath("/");
         signService.saveDraftFiles(
                 draft, files,
@@ -332,20 +332,20 @@ public class SignController {
     @PostMapping(value="/draft/vacation", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @Transactional
     public String submitVacation(
-            @RequestParam Integer fk_draft_type_seq,
-            @RequestParam Long fk_member_seq,
+            @RequestParam(name="fk_draft_type_seq") Integer fk_draft_type_seq,
+            @RequestParam(name="fk_member_seq") Long fk_member_seq,
             @RequestParam(name="is_emergency", defaultValue="0") Integer isEmergency,
-            @RequestParam String vacation_title,
-            @RequestParam @DateTimeFormat(iso=DateTimeFormat.ISO.DATE) LocalDate vacation_start,
-            @RequestParam @DateTimeFormat(iso=DateTimeFormat.ISO.DATE) LocalDate vacation_end,
-            @RequestParam String vacation_content,
-            @RequestParam String vacation_type, // ANNUAL | HALF
-            @RequestParam List<Long> approverSeq,
-            @RequestParam List<Integer> lineOrder,
-            @RequestParam(required=false) String draft_title,
-            @RequestParam(required=false) String draft_content,
-            @RequestPart(required=false) List<MultipartFile> files,   // ★ 추가
-            HttpSession session                                        // ★ 추가
+            @RequestParam(name="vacation_title") String vacation_title,
+            @RequestParam(name="vacation_start") @DateTimeFormat(iso=DateTimeFormat.ISO.DATE) LocalDate vacation_start,
+            @RequestParam(name="vacation_end")   @DateTimeFormat(iso=DateTimeFormat.ISO.DATE) LocalDate vacation_end,
+            @RequestParam(name="vacation_content") String vacation_content,
+            @RequestParam(name="vacation_type") String vacation_type, // ANNUAL | HALF
+            @RequestParam(name="approverSeq") List<Long> approverSeq,
+            @RequestParam(name="lineOrder") List<Integer> lineOrder,
+            @RequestParam(name="draft_title", required=false) String draft_title,
+            @RequestParam(name="draft_content", required=false) String draft_content,
+            @RequestPart(name="files", required=false) List<MultipartFile> files,
+            HttpSession session
     ){
         Draft draft = signService.createDraft(
                 fk_draft_type_seq, fk_member_seq,
@@ -356,7 +356,6 @@ public class SignController {
         signService.saveVacation(draft.getDraftSeq(), vacation_start, vacation_end, vacation_type, vacation_title, vacation_content);
         signService.saveApprovalLine(draft, approverSeq, lineOrder);
 
-        // ★ 첨부 저장
         String root = session.getServletContext().getRealPath("/");
         signService.saveDraftFiles(
                 draft, files,
@@ -369,20 +368,20 @@ public class SignController {
     @PostMapping(value="/draft/expense", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @Transactional
     public String submitExpense(
-            @RequestParam Integer fk_draft_type_seq,
-            @RequestParam Long fk_member_seq,
+            @RequestParam(name="fk_draft_type_seq") Integer fk_draft_type_seq,
+            @RequestParam(name="fk_member_seq") Long fk_member_seq,
             @RequestParam(name="is_emergency", defaultValue="0") Integer isEmergency,
-            @RequestParam String payment_title,
-            @RequestParam String payment_content,
-            @RequestParam("payment_list_regdate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) List<LocalDate> payment_list_regdate,
+            @RequestParam(name="payment_title") String payment_title,
+            @RequestParam(name="payment_content") String payment_content,
+            @RequestParam(name="payment_list_regdate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) List<LocalDate> payment_list_regdate,
             @RequestParam(name="payment_list_content") List<String> uses,
             @RequestParam(name="payment_list_price[]") List<Long> prices,
-            @RequestParam(defaultValue="0") Long total_amount,
-            @RequestParam List<Long> approverSeq,
-            @RequestParam List<Integer> lineOrder,
-            @RequestParam(required=false) String draft_title,
-            @RequestParam(required=false) String draft_content,
-            @RequestPart(required=false) List<MultipartFile> files,   // ★ 추가
+            @RequestParam(name="total_amount", defaultValue="0") Long total_amount,
+            @RequestParam(name="approverSeq") List<Long> approverSeq,
+            @RequestParam(name="lineOrder") List<Integer> lineOrder,
+            @RequestParam(name="draft_title", required=false) String draft_title,
+            @RequestParam(name="draft_content", required=false) String draft_content,
+            @RequestPart(name="files", required=false) List<MultipartFile> files,
             HttpSession session
     ){
         Draft draft = signService.createDraft(
@@ -395,7 +394,6 @@ public class SignController {
                 total_amount == null ? 0L : total_amount, payment_list_regdate, uses, prices);
         signService.saveApprovalLine(draft, approverSeq, lineOrder);
 
-        // ★ 첨부 저장
         String root = session.getServletContext().getRealPath("/");
         signService.saveDraftFiles(
                 draft, files,
@@ -408,20 +406,20 @@ public class SignController {
     @PostMapping(value="/draft/trip", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @Transactional
     public String submitTrip(
-            @RequestParam Integer fk_draft_type_seq,
-            @RequestParam Long fk_member_seq,
+            @RequestParam(name="fk_draft_type_seq") Integer fk_draft_type_seq,
+            @RequestParam(name="fk_member_seq") Long fk_member_seq,
             @RequestParam(name="is_emergency", defaultValue="0") Integer isEmergency,
-            @RequestParam String business_title,
-            @RequestParam String business_content,
-            @RequestParam @DateTimeFormat(iso=DateTimeFormat.ISO.DATE) LocalDate business_start,
-            @RequestParam @DateTimeFormat(iso=DateTimeFormat.ISO.DATE) LocalDate business_end,
-            @RequestParam String business_location,
-            @RequestParam String business_result,
-            @RequestParam List<Long> approverSeq,
-            @RequestParam List<Integer> lineOrder,
-            @RequestParam(required=false) String draft_title,
-            @RequestParam(required=false) String draft_content,
-            @RequestPart(required=false) List<MultipartFile> files,   // ★ 추가
+            @RequestParam(name="business_title") String business_title,
+            @RequestParam(name="business_content") String business_content,
+            @RequestParam(name="business_start") @DateTimeFormat(iso=DateTimeFormat.ISO.DATE) LocalDate business_start,
+            @RequestParam(name="business_end")   @DateTimeFormat(iso=DateTimeFormat.ISO.DATE) LocalDate business_end,
+            @RequestParam(name="business_location") String business_location,
+            @RequestParam(name="business_result") String business_result,
+            @RequestParam(name="approverSeq") List<Long> approverSeq,
+            @RequestParam(name="lineOrder") List<Integer> lineOrder,
+            @RequestParam(name="draft_title", required=false) String draft_title,
+            @RequestParam(name="draft_content", required=false) String draft_content,
+            @RequestPart(name="files", required=false) List<MultipartFile> files,
             HttpSession session
     ){
         Draft draft = signService.createDraft(
@@ -433,7 +431,6 @@ public class SignController {
         signService.saveBusiness(draft.getDraftSeq(), business_title, business_content, business_start, business_end, business_location, business_result);
         signService.saveApprovalLine(draft, approverSeq, lineOrder);
 
-        // ★ 첨부 저장
         String root = session.getServletContext().getRealPath("/");
         signService.saveDraftFiles(
                 draft, files,
@@ -455,8 +452,8 @@ public class SignController {
         var res = signService.approve(draftLineSeq, me, comment);
         Map<String, Object> body = new java.util.LinkedHashMap<>();
         body.put("ok", res.ok());
-        body.put("lineSeq", res.lineSeq());             
-        body.put("msg", res.msg());                     
+        body.put("lineSeq", res.lineSeq());
+        body.put("msg", res.msg());
         return body;
     }
 
