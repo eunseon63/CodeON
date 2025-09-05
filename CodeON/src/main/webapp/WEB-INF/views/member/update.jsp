@@ -170,7 +170,7 @@ $(function() {
             <form name="updateFrm" novalidate>
                 <div class="row g-3">
                     <div class="col-md-6">
-                        <label for="memberName" class="form-label">이름 <span class="required-symbol">*</span></label>
+                        <label for="memberName" class="form-label">이름</label>
                         <input type="hidden" name="memberSeq" id="memberSeq" value="${mbrDto.memberSeq}">
                         <input type="text" name="memberName" id="memberName" class="form-control" value="${mbrDto.memberName}" readonly>
                     </div>
@@ -186,15 +186,15 @@ $(function() {
                         <input type="password" name="memberPwd" id="memberPwd" class="form-control" placeholder="비밀번호를 입력하세요">
                     </div>
                     <div class="col-md-6">
-                        <label for="memberEmail" class="form-label">이메일 <span class="required-symbol">*</span></label>
-                        <input type="email" name="memberEmail" id="memberEmail" class="form-control" value="${mbrDto.memberEmail}" placeholder="example@domain.com">
+                        <label for="memberEmail" class="form-label">이메일</label>
+                        <input type="email" name="memberEmail" id="memberEmail" class="form-control" value="${mbrDto.memberEmail}" readonly>
                     </div>
                 </div>
 
                 <div class="row g-3 mt-3">
                     <div class="col-12">
                         <label for="memberMobile" class="form-label">전화번호 <span class="required-symbol">*</span></label>
-                        <input type="tel" name="memberMobile" id="memberMobile" class="form-control" value="${mbrDto.memberMobile}" placeholder="010-1234-5678">
+                        <input type="tel" name="memberMobile" id="memberMobile" class="form-control" value="${mbrDto.memberMobile}" placeholder="010-1234-5678" >
                     </div>
                 </div>
 

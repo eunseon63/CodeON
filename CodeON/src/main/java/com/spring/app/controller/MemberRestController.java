@@ -2,7 +2,6 @@ package com.spring.app.controller;
 
 import java.io.File;
 import java.text.SimpleDateFormat;
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -21,7 +20,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.multipart.MultipartHttpServletRequest;
@@ -68,28 +66,31 @@ public class MemberRestController {
 	// 직원수정
 	@PostMapping("update")
 	public Map<String, Member> update(MemberDTO mbrDto) {
-		
-		Member member = Member.builder()
-							  .memberSeq(mbrDto.getMemberSeq())
-							  .memberName(mbrDto.getMemberName())
-							  .memberUserid(mbrDto.getMemberUserid())
-							  .memberPwd(mbrDto.getMemberPwd())
-							  .memberEmail(mbrDto.getMemberEmail())
-							  .memberMobile(mbrDto.getMemberMobile())
-							  .fkGradeSeq(mbrDto.getFkGradeSeq())
-							  .fkDepartmentSeq(mbrDto.getFkDepartmentSeq())
-							  .memberBirthday(mbrDto.getMemberBirthday())
-							  .memberHiredate(mbrDto.getMemberHiredate())
-							  .memberGender(mbrDto.getMemberGender())
-							  .build();
-		
-		Member mbr = memberService.updateMember(member);
-		
-		Map<String, Member> map = new HashMap<>();
-		map.put("member", mbr);
-		
-		return map;
+	    
+	    Member member = Member.builder()
+	                          .memberSeq(mbrDto.getMemberSeq())
+	                          .fkGradeSeq(mbrDto.getFkGradeSeq())
+	                          .fkDepartmentSeq(mbrDto.getFkDepartmentSeq())
+	                          .memberName(mbrDto.getMemberName())
+	                          .memberUserid(mbrDto.getMemberUserid())
+	                          .memberPwd(mbrDto.getMemberPwd())
+	                          .memberEmail(mbrDto.getMemberEmail())   // ✅ 누락 방지
+	                          .memberSalary(mbrDto.getMemberSalary()) // ✅ 누락 방지
+	                          .memberHiredate(mbrDto.getMemberHiredate())
+	                          .memberMobile(mbrDto.getMemberMobile())
+	                          .memberBirthday(mbrDto.getMemberBirthday())
+	                          .memberGender(mbrDto.getMemberGender())
+	                          .stampImage(mbrDto.getStampImage())     // ✅ 누락 방지
+	                          .build();
+	    
+	    Member mbr = memberService.updateMember(member);
+	    
+	    Map<String, Member> map = new HashMap<>();
+	    map.put("member", mbr);
+	    
+	    return map;
 	}
+
 	
 	// 회원 삭제
 	@DeleteMapping("delete")
