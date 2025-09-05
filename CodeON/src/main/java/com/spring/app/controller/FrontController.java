@@ -89,5 +89,10 @@ public class FrontController {
 
         return "index"; // /WEB-INF/views/index.jsp
     }
+    
+    @GetMapping("chat")
+    public String chat() {
+    	return "chat";
+    }
 
 }

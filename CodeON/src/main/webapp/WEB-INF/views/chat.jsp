@@ -6,22 +6,9 @@
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css">
 </head>
-<body>
-<div class="container mt-5">
-    <h2 class="mb-4">DB 기반 RAG 챗봇</h2>
 
-    <div class="form-group">
-        <label for="question">질문 입력:</label>
-        <input type="text" class="form-control" id="question" placeholder="질문을 입력하세요">
-    </div>
-
-    <button class="btn btn-primary" id="btnSend">전송</button>
-
-    <hr>
-
-    <h4>챗봇 답변:</h4>
-    <pre id="response" class="border p-3 bg-light" style="white-space: pre-wrap;"></pre>
-</div>
+<jsp:include page="header/header.jsp" />
+<jsp:include page="admin/adminsidebar.jsp" />
 
 <script>
 $(document).ready(function() {
@@ -60,5 +47,24 @@ $(document).ready(function() {
     });
 });
 </script>
-</body>
-</html>
+
+
+<main style="margin-left: 240px; padding-top: 20px;">
+	<div class="container mt-5">
+	    <h2 class="mb-4">인사 도우미</h2>
+	
+	    <div class="form-group">
+	        <label for="question">질문 입력:</label>
+	        <input type="text" class="form-control" id="question" placeholder="질문을 입력하세요">
+	    </div>
+	
+	    <button class="btn btn-primary" id="btnSend">전송</button>
+	
+	    <hr>
+	
+	    <h4>답변:</h4>
+	    <pre id="response" class="border p-3 bg-light" style="white-space: pre-wrap;"></pre>
+	</div>
+</main>
+
+<jsp:include page="footer/footer.jsp" />
