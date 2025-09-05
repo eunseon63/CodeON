@@ -81,7 +81,6 @@
             <td>
                 <span id="startdate"><c:out value="${map.calendarStart}" /></span> ~ 
                 <span id="enddate"><c:out value="${map.calendarEnd}" /></span>
-                &nbsp;<input type="checkbox" id="allDay" disabled> 종일
             </td>
         </tr>
         <tr>

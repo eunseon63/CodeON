@@ -1,5 +1,6 @@
 package com.spring.app.calendar.model;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 
@@ -31,6 +32,9 @@ public interface CalendarDAO {
 
 	// 사내일정 조회
 	List<CalendarAjaxDTO> selectCompanyCalendar();
+
+	//<!-- 오늘 사내 일정 조회 -->
+	List<CalendarAjaxDTO> getTodayCompanyEvents(LocalDate today);
 
 	
 	

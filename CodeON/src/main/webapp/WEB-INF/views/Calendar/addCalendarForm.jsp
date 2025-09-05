@@ -54,22 +54,22 @@ span.plusUser > i {
   <form action="<%= ctxPath %>/Calendar/addCalendarForm" method="post" onsubmit="return validateForm();">
 
     <!-- 대분류 -->
-	<label>캘린더 선택</label>
-	<select name="bigCategorySeq" id="bigCategorySeq" required>
-	  <option value="">-- 선택하세요 --</option>
-	  <c:forEach var="bigCat" items="${bigCategoryList}">
-	    <c:choose>
-	     
-	      <c:when test="${bigCat.bigCategoryName eq '부서 캘린더' && sessionScope.loginuser.fkGradeSeq lt 3}">
-	      
-	      </c:when>
-	      <c:otherwise>
-	        <option value="${bigCat.bigCategorySeq}">${bigCat.bigCategoryName}</option>
-	      </c:otherwise>
-	    </c:choose>
-	  </c:forEach>
-	</select>
-	<div class="helper">예: 사내 / 부서 / 내 캘린더 등</div>
+   <label>캘린더 선택</label>
+   <select name="bigCategorySeq" id="bigCategorySeq" required>
+     <option value="">-- 선택하세요 --</option>
+     <c:forEach var="bigCat" items="${bigCategoryList}">
+       <c:choose>
+        
+         <c:when test="${bigCat.bigCategoryName eq '부서 캘린더' && sessionScope.loginuser.fkGradeSeq lt 3}">
+         
+         </c:when>
+         <c:otherwise>
+           <option value="${bigCat.bigCategorySeq}">${bigCat.bigCategoryName}</option>
+         </c:otherwise>
+       </c:choose>
+     </c:forEach>
+   </select>
+   <div class="helper">예: 사내 / 부서 / 내 캘린더 등</div>
 
     <!-- 소분류 -->
     <label>일정 선택</label>
@@ -132,57 +132,57 @@ span.plusUser > i {
 
 <script>
 
-	function validateForm() {
-		  // 제목 필수
-		  if (!$("#title").val().trim()) {
-		    alert("일정 제목을 입력하세요.");
-		    $("#title").focus();
-		    return false;
-		  }
+   function validateForm() {
+        // 제목 필수
+        if (!$("#title").val().trim()) {
+          alert("일정 제목을 입력하세요.");
+          $("#title").focus();
+          return false;
+        }
 
-		  // 대분류 필수
-		  if (!$("#bigCategorySeq").val()) {
-		    alert("캘린더(대분류)를 선택하세요.");
-		    $("#bigCategorySeq").focus();
-		    return false;
-		  }
+        // 대분류 필수
+        if (!$("#bigCategorySeq").val()) {
+          alert("캘린더(대분류)를 선택하세요.");
+          $("#bigCategorySeq").focus();
+          return false;
+        }
 
-		  // 소분류 필수
-		  if (!$("#smallCategorySeq").val()) {
-		    alert("일정을 선택하세요.");
-		    $("#smallCategorySeq").focus();
-		    return false;
-		  }
+        // 소분류 필수
+        if (!$("#smallCategorySeq").val()) {
+          alert("일정을 선택하세요.");
+          $("#smallCategorySeq").focus();
+          return false;
+        }
 
-		  // 시작 / 종료 날짜 검사
-		  const start = $("#startDate").val();
-		  const end = $("#endDate").val();
-		  if (!start || !end) {
-		    alert("시작일과 종료일을 입력하세요.");
-		    return false;
-		  }
-		  if (start > end) {
-		    alert("종료일은 시작일 이후여야 합니다.");
-		    $("#endDate").focus();
-		    return false;
-		  }
+        // 시작 / 종료 날짜 검사
+        const start = $("#startDate").val();
+        const end = $("#endDate").val();
+        if (!start || !end) {
+          alert("시작일과 종료일을 입력하세요.");
+          return false;
+        }
+        if (start > end) {
+          alert("종료일은 시작일 이후여야 합니다.");
+          $("#endDate").focus();
+          return false;
+        }
 
-		  // 장소 (선택이지만 길이 제한)
-		  if ($("#calendarLocation").val().length > 50) {
-		    alert("장소는 50자 이내로 입력하세요.");
-		    $("#calendarLocation").focus();
-		    return false;
-		  }
+        // 장소 (선택이지만 길이 제한)
+        if ($("#calendarLocation").val().length > 50) {
+          alert("장소는 50자 이내로 입력하세요.");
+          $("#calendarLocation").focus();
+          return false;
+        }
 
-		  // 내용 (선택이지만 길이 제한)
-		  if ($("textarea[name=content]").val().length > 500) {
-		    alert("내용은 500자 이내로 입력하세요.");
-		    $("textarea[name=content]").focus();
-		    return false;
-		  }
+        // 내용 (선택이지만 길이 제한)
+        if ($("textarea[name=content]").val().length > 500) {
+          alert("내용은 500자 이내로 입력하세요.");
+          $("textarea[name=content]").focus();
+          return false;
+        }
 
-		  return true; // 통과 시 submit 진행
-		}
+        return true; // 통과 시 submit 진행
+      }
 
 
 

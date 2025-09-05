@@ -1,5 +1,6 @@
 package com.spring.app.calendar.service;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 
@@ -31,6 +32,9 @@ public interface CalendarService {
 
 	// 사내일정 조회
 	List<CalendarAjaxDTO> selectCompanyCalendar();
+
+	// 메인화면에 일정 넣기.
+	List<CalendarAjaxDTO> getTodayCompanyEvents(LocalDate today);
 
 	
 	
